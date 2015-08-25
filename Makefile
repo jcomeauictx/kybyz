@@ -3,9 +3,9 @@ L := Petaluma
 O := Unternet
 E := hostmaster
 OU := Tech
-localtest:
-	wget -O- --quiet http://127.0.0.1:9090/
-client_test:
+localtest: kybyz.py
+	python $<
+client_test: localtest
 	wget -O- --quiet --no-check-certificate https://kybyz/
 %.key: Makefile
 	openssl genrsa -out $@ 1024
