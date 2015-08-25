@@ -14,7 +14,7 @@ from markdown import markdown
 MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
 logging.basicConfig(level = logging.DEBUG)
 
-def kybyz():
+def kybyz_client():
     output = []
     os.chdir(os.path.join(pwd.getpwuid(os.geteuid()).pw_dir, '.kybyz'))
     posts = sorted(os.listdir('.'))
@@ -39,9 +39,9 @@ def read(filename, maxread = MAXLENGTH):
     infile.close()
     return data
 
-def application(env, start_response):
+def client(env, start_response):
     start_response('200 OK', [('Content-Type','text/html')])
-    return kybyz()
+    return kybyz_client()
 
 def debug(message = None):
     if __debug__:
@@ -50,4 +50,4 @@ def debug(message = None):
         return True
 
 if __name__ == '__main__':
-    print '\n'.join(kybyz())
+    print '\n'.join(kybyz_client())
