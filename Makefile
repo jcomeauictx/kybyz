@@ -6,7 +6,7 @@ OU := Tech
 localtest: kybyz.py
 	python $<
 client_test: localtest
-	wget -O- --quiet --no-check-certificate https://kybyz/
+	wget -O- --quiet http://kybyz:2424
 %.key: Makefile
 	openssl genrsa -out $@ 1024
 %.csr: %.key
@@ -29,7 +29,7 @@ keys:	$(HOME)/etc/kybyz
 	$(MAKE) $</kybyz.crt
 	$(MAKE) $</kybyz.public.pem
 restart: ini
-	sudo /etc/init.d/nginx restart
+	#sudo /etc/init.d/nginx restart
 	sudo /etc/init.d/uwsgi restart
 ini:
 	cwd=$(PWD); for file in *.ini; do \
