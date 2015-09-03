@@ -9,8 +9,13 @@ must first mate a local IP address with the name `kybyz` in /etc/hosts, e.g.:
 
 127.0.1.125 kybyz
 '''
-import sys, os, urllib2, logging, pwd
+import sys, os, urllib2, logging, pwd, subprocess
 from markdown import markdown
+try:
+    import rsa
+except ImportError:
+    subprocess.check_call(['pip', 'install', '--user', 'rsa'])
+    import rsa
 MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
 logging.basicConfig(level = logging.DEBUG)
 
