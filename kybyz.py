@@ -2,6 +2,10 @@
 '''
 implement local website http://kybyz/
 
+Copyright 2015 John Otis Comeau <jc@unternet.net>
+distributed under the terms of the GNU General Public License Version 3
+(see COPYING)
+
 automatically uploads to and downloads from kybyz.com to populate the
 local website.
 
