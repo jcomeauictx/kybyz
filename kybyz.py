@@ -16,12 +16,16 @@ try:
 except ImportError:
     subprocess.check_call(['pip', 'install', '--user', 'rsa'])
     import rsa
-MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
 logging.basicConfig(level = logging.DEBUG)
+MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
+HOMEDIR = pwd.getpwuid(os.geteuid()).pw_dir
+USER_CONFIG = os.path.join(HOMEDIR, 'etc', 'kybyz')
+PRIVATE_KEY = os.path.join(USER_CONFIG, 'kybyz.private.pem')
+PUBLIC_KEY = os.path.join(USER_CONFIG, 'kybyz.public.pem')
 
 def kybyz_client():
     output = []
-    os.chdir(os.path.join(pwd.getpwuid(os.geteuid()).pw_dir, '.kybyz'))
+    os.chdir(os.path.join(HOMEDIR, '.kybyz'))
     posts = sorted(os.listdir('.'))
     debug('posts: %s' % posts)
     for post in posts:
@@ -53,6 +57,13 @@ def debug(message = None):
         if message:
             logging.debug(message)
         return True
+
+def load_keys():
+    '''
+    load client keys, creating them if necessary
+    '''
+    private = rsa.PrivateKey.load_pkcs1(read(PRIVATE_KEY), 'PEM')
+    public = rsa.PublicKey.load_pkcs1(read(PUBLIC_KEY), 'PEM')
 
 if __name__ == '__main__':
     print '\n'.join(kybyz_client())
