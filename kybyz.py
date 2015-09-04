@@ -28,6 +28,7 @@ PRIVATE_KEY = os.path.join(USER_CONFIG, 'kybyz.private.pem')
 PUBLIC_KEY = os.path.join(USER_CONFIG, 'kybyz.public.pem')
 
 def kybyz_client():
+    private, public = load_keys()
     output = []
     os.chdir(os.path.join(HOMEDIR, '.kybyz'))
     posts = sorted(os.listdir('.'))
@@ -52,6 +53,14 @@ def read(filename, maxread = MAXLENGTH):
     infile.close()
     return data
 
+def write(filename, data):
+    '''
+    write data to a file, closing it properly
+    '''
+    outfile = open(filename, 'w')
+    outfile.write(data)
+    outfile.close()
+
 def client(env, start_response):
     start_response('200 OK', [('Content-Type','text/html')])
     return kybyz_client()
@@ -66,8 +75,17 @@ def load_keys():
     '''
     load client keys, creating them if necessary
     '''
-    private = rsa.PrivateKey.load_pkcs1(read(PRIVATE_KEY), 'PEM')
-    public = rsa.PublicKey.load_pkcs1(read(PUBLIC_KEY), 'PEM')
+    try:
+        private = rsa.PrivateKey.load_pkcs1(read(PRIVATE_KEY))
+    except IOError:
+        public, private = rsa.newkeys(MAXLENGTH)
+        write(PRIVATE_KEY, private.save_pkcs1())
+        write(PUBLIC_KEY, public.save_pkcs1())
+    try:
+        public = rsa.PublicKey.load_pkcs1(read(PUBLIC_KEY))
+    except ValueError:
+        public = rsa.PublicKey.load_pkcs1_openssl_pem(read(PUBLIC_KEY))
+    return private, public
 
 if __name__ == '__main__':
     print '\n'.join(kybyz_client())
