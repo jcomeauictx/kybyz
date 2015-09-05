@@ -34,6 +34,7 @@ def kybyz_client():
     posts = sorted(os.listdir('.'))
     debug('posts: %s' % posts)
     for post in posts:
+        page = ''
         if post.endswith('.md'):
             debug('running markdown on %s' % post)
             page = markdown(read(post)).encode('utf8')
@@ -74,6 +75,10 @@ def debug(message = None):
 def load_keys():
     '''
     load client keys, creating them if necessary
+
+    note: key creation takes *forever* (or overnight anyway) on a slow
+    computer. if you have openssl installed, use the Makefile to
+    `make kybyz.public.key'
     '''
     try:
         private = rsa.PrivateKey.load_pkcs1(read(PRIVATE_KEY))
