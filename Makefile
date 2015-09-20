@@ -35,3 +35,6 @@ ini:
 	cwd=$(PWD); for file in *.ini; do \
 	 (cd /etc/uwsgi/apps-enabled && sudo ln -sf $$cwd/$$file .); \
 	done
+wsgitest:
+	sudo /etc/init.d/uwsgi stop
+	sudo uwsgi client.ini

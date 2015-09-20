@@ -15,17 +15,18 @@ must first mate a local IP address with the name `kybyz` in /etc/hosts, e.g.:
 '''
 import sys, os, urllib2, logging, pwd, subprocess
 from markdown import markdown
+logging.basicConfig(level = logging.DEBUG)
+MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
+HOMEDIR = pwd.getpwuid(os.getuid()).pw_dir
+logging.debug('HOMEDIR: %s' % HOMEDIR)
+USER_CONFIG = os.path.join(HOMEDIR, 'etc', 'kybyz')
+PRIVATE_KEY = os.path.join(USER_CONFIG, 'kybyz.private.pem')
+PUBLIC_KEY = os.path.join(USER_CONFIG, 'kybyz.public.pem')
 try:
     import rsa
 except ImportError:
     subprocess.check_call(['pip', 'install', '--user', 'rsa'])
     import rsa
-logging.basicConfig(level = logging.DEBUG)
-MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
-HOMEDIR = pwd.getpwuid(os.geteuid()).pw_dir
-USER_CONFIG = os.path.join(HOMEDIR, 'etc', 'kybyz')
-PRIVATE_KEY = os.path.join(USER_CONFIG, 'kybyz.private.pem')
-PUBLIC_KEY = os.path.join(USER_CONFIG, 'kybyz.public.pem')
 
 def kybyz_client():
     private, public = load_keys()
