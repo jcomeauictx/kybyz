@@ -13,12 +13,13 @@ must first mate a local IP address with the name `kybyz` in /etc/hosts, e.g.:
 
 127.0.1.125 kybyz
 '''
-import sys, os, urllib2, logging, pwd, subprocess
+import sys, os, urllib2, logging, pwd, subprocess, site
 from markdown import markdown
 logging.basicConfig(level = logging.DEBUG)
 MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
 HOMEDIR = pwd.getpwuid(os.getuid()).pw_dir
 logging.debug('HOMEDIR: %s' % HOMEDIR)
+logging.debug('USER_SITE: %s' % site.USER_SITE)
 USER_CONFIG = os.path.join(HOMEDIR, 'etc', 'kybyz')
 PRIVATE_KEY = os.path.join(USER_CONFIG, 'kybyz.private.pem')
 PUBLIC_KEY = os.path.join(USER_CONFIG, 'kybyz.public.pem')
