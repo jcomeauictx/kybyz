@@ -28,13 +28,14 @@ $(HOME)/etc/kybyz:
 keys:	$(HOME)/etc/kybyz
 	$(MAKE) $</kybyz.crt
 	$(MAKE) $</kybyz.public.pem
-restart: ini
-	#sudo /etc/init.d/nginx restart
+server_restart: ini
+	sudo /etc/init.d/nginx restart
 	sudo /etc/init.d/uwsgi restart
 ini:
 	cwd=$(PWD); for file in *.ini; do \
 	 (cd /etc/uwsgi/apps-enabled && sudo ln -sf $$cwd/$$file .); \
 	done
-wsgitest:
+restart:
 	sudo /etc/init.d/uwsgi stop
-	sudo uwsgi client.ini
+	killall uwsgi
+	uwsgi client.ini &
