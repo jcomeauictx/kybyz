@@ -37,5 +37,5 @@ ini:
 	done
 restart:
 	sudo /etc/init.d/uwsgi stop
-	killall uwsgi
-	uwsgi client.ini &
+	killall -q uwsgi || true
+	uwsgi client.ini 2>>/tmp/kybyz.log &
