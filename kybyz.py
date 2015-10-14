@@ -65,7 +65,7 @@ def makepage(directory, output, level):
         elif os.path.isdir(post):
             headerlevel = len(level) + 1 # <h2> and higher
             page.append('<h%d>%s</h%d>' % (headerlevel, post, headerlevel))
-            page.append(makepage(post, [], level))
+            page += makepage(post, [], level)
         debug('page: "%s"' % page) 
         output += page
     debug('output: "%s"' % (' '.join(output)).replace('\n', ' '))
