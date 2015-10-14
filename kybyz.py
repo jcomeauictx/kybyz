@@ -31,21 +31,59 @@ except ImportError:
 
 def kybyz_client():
     private, public = load_keys()
-    output = []
-    os.chdir(os.path.join(HOMEDIR, '.kybyz'))
-    posts = sorted(os.listdir('.'))
+    start = os.path.join(HOMEDIR, '.kybyz')
+    return makepage(start, [], [])
+
+def pushdir(stack, directory):
+    '''
+    implementation of MSDOS `PUSHD`
+    '''
+    stack.append(directory)
+    debug('stack after `pushdir` now: %s'% stack)
+    os.chdir(directory)
+
+def popdir(stack):
+    '''
+    implementation of MSDOS `popd`
+    '''
+    stack.pop(-1)
+    debug('stack after `popdir` now: %s'% stack)
+    os.chdir('..')
+
+def makepage(directory, output, level):
+    debug('running `makepage` on %s' % directory)
+    pushdir(level, directory)
+    posts = specialsort(os.listdir('.'))
     debug('posts: %s' % posts)
     for post in posts:
-        page = ''
+        page = []
         if post.endswith('.md'):
             debug('running markdown on %s' % post)
-            page = markdown(read(post)).encode('utf8')
-        elif post.endswith(('.htm', '.html')):
-            page = read(post)
-        debug('page: "%s"' % (' '.join(page.split())))
-        output.append(page)
-    debug('output: "%s"' % (' '.join(output).replace('\n', ' ')))
+            page.append(markdown(read(post)).encode('utf8'))
+        elif post.endswith('.html'):
+            page.append(read(post))
+        elif os.path.isdir(post):
+            headerlevel = len(level) + 1 # <h2> and higher
+            page.append('<h%d>%s</h%d>' % (headerlevel, post, headerlevel))
+            page.append(makepage(post, [], level))
+        debug('page: "%s"' % page) 
+        output += page
+    debug('output: "%s"' % (' '.join(output)).replace('\n', ' '))
+    popdir(level)
     return output
+
+def specialsort(listing):
+    '''
+    sort files first, then subdirectories
+
+    (and/or any other method that makes sense as we progress
+    note that symlinks will also be identified properly as files or dirs
+    '''
+    subdirs = filter(os.path.isdir, listing)
+    files = filter(os.path.isfile, listing)
+    if set(listing) != set(subdirs + files):
+        raise ValueError('%s != %s' % (listing, subdirs + files))
+    return sorted(files) + sorted(subdirs)
 
 def read(filename, maxread = MAXLENGTH):
     '''
