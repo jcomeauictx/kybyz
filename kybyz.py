@@ -29,12 +29,14 @@ except ImportError:
     subprocess.check_call(['pip', 'install', '--user', 'rsa'])
     import rsa
 
-def kybyz_client():
+def kybyz_client(*args):
+    debug('unexpected args: %s' % repr(args))
     private, public = load_keys()
     start = os.path.join(HOMEDIR, '.kybyz')
     return makepage(start, [], [])
 
-def example_client():
+def example_client(*args):
+    debug('unexpected args: %s' % repr(args))
     start = os.path.join(os.path.dirname(sys.argv[0]), 'example.kybyz')
     return makepage(start, [], [])
 

@@ -40,6 +40,7 @@ restart:
 	sudo /etc/init.d/uwsgi stop
 	killall -q uwsgi || true
 	uwsgi client.ini 2>>/tmp/kybyz.log &
+	uwsgi example.ini 2>>/tmp/kybyz_example.log &
 backup:
 	for server in backup1 backup2; do \
 	 rsync -avuz $(DRYRUN) --delete ~/.kybyz/ $$server:.kybyz/; \
