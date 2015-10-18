@@ -34,6 +34,10 @@ def kybyz_client():
     start = os.path.join(HOMEDIR, '.kybyz')
     return makepage(start, [], [])
 
+def example_client():
+    start = os.path.join(os.path.dirname(sys.argv[0]), 'example.kybyz')
+    return makepage(start, [], [])
+
 def pushdir(stack, directory):
     '''
     implementation of MSDOS `PUSHD`
