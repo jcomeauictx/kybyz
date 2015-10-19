@@ -18,8 +18,7 @@ from markdown import markdown
 if not sys.stdin.isatty():  # command-line testing won't have module available
     import uwsgi
 else:
-    uwsgi = type('', (), {})()  # new, empty object
-    uwsgi.opt = {}
+    uwsgi = type('', (), dict(opt = {}))  # object with empty opt attribute
 logging.basicConfig(level = logging.DEBUG)
 MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
 HOMEDIR = pwd.getpwuid(os.getuid()).pw_dir
