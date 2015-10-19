@@ -15,6 +15,10 @@ must first mate a local IP address with the name `kybyz` in /etc/hosts, e.g.:
 '''
 import sys, os, urllib2, logging, pwd, subprocess, site
 from markdown import markdown
+if not sys.stdin.isatty():  # command-line testing won't have module available
+    import uwsgi
+else:
+    uwsgi = None
 logging.basicConfig(level = logging.DEBUG)
 MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
 HOMEDIR = pwd.getpwuid(os.getuid()).pw_dir
@@ -29,23 +33,58 @@ except ImportError:
     subprocess.check_call(['pip', 'install', '--user', 'rsa'])
     import rsa
 
-def kybyz_client(*args):
-    debug('unexpected args: %s' % repr(args))
-    private, public = load_keys()
+def kybyz_client(env = None, start_response = None):
+    '''
+    primary client process, shows contents of $HOME/.kybyz
+    '''
     start = os.path.join(HOMEDIR, '.kybyz')
+    debug('start: %s' % start)
+    os.chdir(start)
+    if static_page(env, start_response, process = False):
+        return static_page(env, start_response)
+    start_response('200 groovy', [('Content-type', 'text/html')])
+    private, public = load_keys()
     return makepage(start, [], [])
 
-def example_client(*args):
-    debug('unexpected args: %s' % repr(args))
-    start = os.path.join(os.path.dirname(sys.argv[0]), 'example.kybyz')
+def example_client(env = None, start_response = None):
+    '''
+    testing client process, shows contents of $PWD
+    '''
+    debug('env: %s' % repr(env))
+    if uwsgi is not None:
+        debug('uwsgi.opt: %s' % repr(uwsgi.opt))
+    cwd = os.path.dirname(sys.argv[0]) or os.path.abspath('.')
+    start = os.path.join(cwd, 'example.kybyz')
+    debug('cwd: %s, start: %s' % (cwd, start))
+    os.chdir(start)
+    start_response('200 groovy', [('Content-type', 'text/html')])
     return makepage(start, [], [])
+
+def static_page(env, start_response, process = True):
+    '''
+    check if static page called for, and return it if it exists
+    '''
+    page = env.get('REQUEST_URI', '').lstrip('/').split('?')[0].split('#')[0]
+    debug('page: %s' % page)
+    if page and os.path.exists(page):
+        if not process:
+            return True
+        else:
+            start_response('200 groovy', [('Content-type', 'text/html')])
+            return [read(page)]
+    else:
+        if not process:
+            return False
+        else:
+            start_response('404 not found', [('Content-type', 'text/html')])
+            return ['Page not found']
 
 def pushdir(stack, directory):
     '''
     implementation of MSDOS `PUSHD`
     '''
     stack.append(directory)
-    debug('stack after `pushdir` now: %s'% stack)
+    debug('stack after `pushdir` now: %s' % stack)
     os.chdir(directory)
 
 def popdir(stack):
@@ -65,18 +104,30 @@ def makepage(directory, output, level):
         page = []
         if post.endswith('.md'):
             debug('running markdown on %s' % post)
-            page.append(markdown(read(post)).encode('utf8'))
+            page.append(postwrap(markdown(read(post)).encode('utf8')))
         elif post.endswith('.html'):
+            '''
+            cannot use postwrap here, this could be header or trailer
+            must use markdown for proper post wrapping, or add your own
+            <div class="post"> tags to HTML'''
             page.append(read(post))
         elif os.path.isdir(post):
             headerlevel = len(level) + 1 # <h2> and higher
+            page.append(postwrap(True))
             page.append('<h%d>%s</h%d>' % (headerlevel, post, headerlevel))
             page += makepage(post, [], level)
+            page.append(postwrap(False))
         debug('page: "%s"' % page) 
         output += page
     debug('output: "%s"' % (' '.join(output)).replace('\n', ' '))
     popdir(level)
     return output
+
+def postwrap(something):
+    if isinstance(something, int):  # expecting True (1) or False (0)
+        return ['</div>', '<div class="post">'][something]
+    else:
+        return '<div class="post">%s</div>' % something
 
 def specialsort(listing):
     '''
@@ -108,10 +159,6 @@ def write(filename, data):
     outfile.write(data)
     outfile.close()
 
-def client(env, start_response):
-    start_response('200 OK', [('Content-Type','text/html')])
-    return kybyz_client()
-
 def debug(message = None):
     if __debug__:
         if message:
@@ -139,4 +186,4 @@ def load_keys():
     return private, public
 
 if __name__ == '__main__':
-    print '\n'.join(kybyz_client())
+    print '\n'.join(kybyz_client(os.environ, lambda *args: None))
