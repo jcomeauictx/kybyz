@@ -39,9 +39,6 @@ def kybyz_client(env = None, start_response = None):
     '''
     start = os.path.join(HOMEDIR, '.kybyz')
     debug('start: %s' % start)
-    os.chdir(start)
-    if static_page(env, start_response, process = False):
-        return static_page(env, start_response)
     start_response('200 groovy', [('Content-type', 'text/html')])
     private, public = load_keys()
     return makepage(start, [], [])
@@ -56,28 +53,8 @@ def example_client(env = None, start_response = None):
     cwd = os.path.dirname(sys.argv[0]) or os.path.abspath('.')
     start = os.path.join(cwd, 'example.kybyz')
     debug('cwd: %s, start: %s' % (cwd, start))
-    os.chdir(start)
     start_response('200 groovy', [('Content-type', 'text/html')])
     return makepage(start, [], [])
-
-def static_page(env, start_response, process = True):
-    '''
-    check if static page called for, and return it if it exists
-    '''
-    page = env.get('REQUEST_URI', '').lstrip('/').split('?')[0].split('#')[0]
-    debug('page: %s' % page)
-    if page and os.path.exists(page):
-        if not process:
-            return True
-        else:
-            start_response('200 groovy', [('Content-type', 'text/html')])
-            return [read(page)]
-    else:
-        if not process:
-            return False
-        else:
-            start_response('404 not found', [('Content-type', 'text/html')])
-            return ['Page not found']
 
 def pushdir(stack, directory):
     '''
