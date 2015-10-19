@@ -18,7 +18,8 @@ from markdown import markdown
 if not sys.stdin.isatty():  # command-line testing won't have module available
     import uwsgi
 else:
-    uwsgi = None
+    uwsgi = type('', (), {})()  # new, empty object
+    uwsgi.opt = {}
 logging.basicConfig(level = logging.DEBUG)
 MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
 HOMEDIR = pwd.getpwuid(os.getuid()).pw_dir
@@ -37,7 +38,9 @@ def kybyz_client(env = None, start_response = None):
     '''
     primary client process, shows contents of $HOME/.kybyz
     '''
-    start = os.path.join(HOMEDIR, '.kybyz')
+    debug('env: %s' % repr(env))
+    debug('uwsgi.opt: %s' % repr(uwsgi.opt))
+    start = uwsgi.opt.get('check_static', os.path.join(HOMEDIR, '.kybyz'))
     debug('start: %s' % start)
     start_response('200 groovy', [('Content-type', 'text/html')])
     private, public = load_keys()
@@ -48,10 +51,9 @@ def example_client(env = None, start_response = None):
     testing client process, shows contents of $PWD
     '''
     debug('env: %s' % repr(env))
-    if uwsgi is not None:
-        debug('uwsgi.opt: %s' % repr(uwsgi.opt))
+    debug('uwsgi.opt: %s' % repr(uwsgi.opt))
     cwd = os.path.dirname(sys.argv[0]) or os.path.abspath('.')
-    start = os.path.join(cwd, 'example.kybyz')
+    start = uwsgi.opt.get('check_static', os.path.join(cwd, 'example.kybyz'))
     debug('cwd: %s, start: %s' % (cwd, start))
     start_response('200 groovy', [('Content-type', 'text/html')])
     return makepage(start, [], [])
@@ -163,4 +165,4 @@ def load_keys():
     return private, public
 
 if __name__ == '__main__':
-    print '\n'.join(kybyz_client(os.environ, lambda *args: None))
+    print '\n'.join(example_client(os.environ, lambda *args: None))
