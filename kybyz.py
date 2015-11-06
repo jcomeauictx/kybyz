@@ -59,7 +59,7 @@ def example_client(env = None, start_response = None):
 
 def pushdir(stack, directory):
     '''
-    implementation of MSDOS `PUSHD`
+    implementation of MSDOS `pushd`
     '''
     stack.append(directory)
     debug('stack after `pushdir` now: %s' % stack)
@@ -90,11 +90,17 @@ def makepage(directory, output, level):
             <div class="post"> tags to HTML'''
             page.append(read(post))
         elif os.path.isdir(post):
-            headerlevel = len(level) + 1 # <h2> and higher
-            page.append(postwrap(True))
-            page.append('<h%d>%s</h%d>' % (headerlevel, post, headerlevel))
-            page += makepage(post, [], level)
-            page.append(postwrap(False))
+            if not post.startswith('.'):
+                headerlevel = len(level) + 1 # <h2> and higher
+                page.append(postwrap(True))
+                page.append('<h%d>%s</h%d>' % (headerlevel, post, headerlevel))
+                page += makepage(post, [], level)
+                page.append(postwrap(False))
+            elif post == '.accomplished' and os.listdir(post):
+                if 'goals' in level:
+                    debug('goal %s accomplished' % level[-1])
+                elif 'tasks' in level:
+                    debug('task %s has activity' % level[-1])
         debug('page: "%s"' % page) 
         output += page
     debug('output: "%s"' % (' '.join(output)).replace('\n', ' '))
@@ -145,18 +151,16 @@ def debug(message = None):
 
 def load_keys():
     '''
-    load client keys, creating them if necessary
+    load client keys, aborting if not already created
 
     note: key creation takes *forever* (or overnight anyway) on a slow
     computer. if you have openssl installed, use the Makefile to
-    `make kybyz.public.key'
+    `make kybyz.public.key`
     '''
     try:
         private = rsa.PrivateKey.load_pkcs1(read(PRIVATE_KEY))
     except IOError:
-        public, private = rsa.newkeys(MAXLENGTH)
-        write(PRIVATE_KEY, private.save_pkcs1())
-        write(PUBLIC_KEY, public.save_pkcs1())
+        raise Exception('First create keys using `make kybyz.public.key`')
     try:
         public = rsa.PublicKey.load_pkcs1(read(PUBLIC_KEY))
     except ValueError:
