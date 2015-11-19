@@ -13,7 +13,7 @@ must first mate a local IP address with the name `kybyz` in /etc/hosts, e.g.:
 
 127.0.1.125 kybyz
 '''
-import sys, os, urllib2, logging, pwd, subprocess, site
+import sys, os, urllib2, logging, pwd, subprocess, site, cgi
 from markdown import markdown
 if not sys.stdin.isatty():  # command-line testing won't have module available
     import uwsgi
@@ -73,6 +73,22 @@ def popdir(stack):
     debug('stack after `popdir` now: %s'% stack)
     os.chdir('..')
 
+def render(pagename):
+    if pagename.endswith('.md'):
+        debug('running markdown on %s' % pagename)
+        return postwrap(markdown(read(pagename)).encode('utf8'))
+    elif pagename.endswith('.html'):
+        '''
+        cannot use postwrap here, this could be header or trailer
+        must use markdown for proper post wrapping, or add your own
+        <div class="post"> tags to HTML'''
+        return read(pagename)
+    else:
+        '''
+        assume plain text
+        '''
+        return '<div class="post">%s</div>' % cgi.escape(read(pagename))
+
 def makepage(directory, output, level):
     debug('running `makepage` on %s' % directory)
     pushdir(level, directory)
@@ -80,27 +96,28 @@ def makepage(directory, output, level):
     debug('posts: %s' % posts)
     for post in posts:
         page = []
-        if post.endswith('.md'):
-            debug('running markdown on %s' % post)
-            page.append(postwrap(markdown(read(post)).encode('utf8')))
-        elif post.endswith('.html'):
+        if post.startswith('.'):
             '''
-            cannot use postwrap here, this could be header or trailer
-            must use markdown for proper post wrapping, or add your own
-            <div class="post"> tags to HTML'''
-            page.append(read(post))
-        elif os.path.isdir(post):
-            if not post.startswith('.'):
-                headerlevel = len(level) + 1 # <h2> and higher
-                page.append(postwrap(True))
-                page.append('<h%d>%s</h%d>' % (headerlevel, post, headerlevel))
-                page += makepage(post, [], level)
-                page.append(postwrap(False))
-            elif post == '.accomplished' and os.listdir(post):
-                if 'goals' in level:
-                    debug('goal %s accomplished' % level[-1])
-                elif 'tasks' in level:
-                    debug('task %s has activity' % level[-1])
+            files and directories with a special meaning
+            '''
+            if post.startswith('.accomplished'):
+                '''
+                an '.accomplished' *directory* means it contains steps to
+                accomplishment; an '.accomplished' *file* means it is *done*.
+                '''
+                if os.path.isdir(post):
+                    debug('task %s has accomplishment activity' % level[-1])
+                else:
+                    debug('goal %s has been accomplished' % level[-1])
+                page.append('&#x2713;')
+        elif not os.path.isdir(post):
+            page.append(render(post))
+        else:
+            headerlevel = len(level) + 1 # <h2> and higher
+            page.append(postwrap(True))
+            page.append('<h%d>%s</h%d>' % (headerlevel, post, headerlevel))
+            page += makepage(post, [], level)
+            page.append(postwrap(False))
         debug('page: "%s"' % page) 
         output += page
     debug('output: "%s"' % (' '.join(output)).replace('\n', ' '))
