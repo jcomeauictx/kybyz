@@ -33,6 +33,11 @@ except ImportError:
     subprocess.check_call(['pip', 'install', '--user', 'rsa'])
     import rsa
 
+class Entry(object):
+    summary = ''
+    categories = []
+    text = ''
+
 def kybyz_client(env = None, start_response = None):
     '''
     primary client process, shows contents of $HOME/.kybyz
@@ -47,7 +52,7 @@ def kybyz_client(env = None, start_response = None):
 
 def example_client(env = None, start_response = None):
     '''
-    testing client process, shows contents of $PWD
+    testing client process, shows contents of $PWD/example.kybyz/
     '''
     debug('env: %s' % repr(env))
     debug('uwsgi.opt: %s' % repr(uwsgi.opt))
@@ -83,11 +88,11 @@ def render(pagename):
         must use markdown for proper post wrapping, or add your own
         <div class="post"> tags to HTML'''
         return read(pagename)
-    else:
-        '''
-        assume plain text
-        '''
+    elif not pagename.endswith(('.png', '.ico', '.jpg', '.jpeg')):
+        'assume plain text'
         return '<div class="post">%s</div>' % cgi.escape(read(pagename))
+    else:
+        return ''
 
 def makepage(directory, output, level):
     debug('running `makepage` on %s' % directory)
