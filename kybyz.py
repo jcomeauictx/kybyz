@@ -34,9 +34,10 @@ except ImportError:
     import rsa
 
 class Entry(object):
-    summary = ''
-    categories = []
-    text = ''
+    categories = {}
+    def __init__(self, filename, **kwargs):
+        entryname, extension = os.path.splitext(filename)
+        self.name = entryname
 
 def kybyz_client(env = None, start_response = None):
     '''
@@ -101,6 +102,7 @@ def makepage(directory, output, level):
     debug('posts: %s' % posts)
     for post in posts:
         page = []
+        entry = Entry(post)
         if post.startswith('.'):
             '''
             files and directories with a special meaning
