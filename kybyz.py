@@ -34,10 +34,18 @@ except ImportError:
     import rsa
 
 class Entry(object):
-    categories = {}
+    head = None
+    categories = []
     def __init__(self, filename, **kwargs):
         entryname, extension = os.path.splitext(filename)
         self.name = entryname
+        if self.head is None:
+            self.head = self
+        else:
+            self.categories[-1].subordinates.append(self)
+        self.categories.append(self)
+        self.subordinates = []
+        debug('Entry.categories: %s' % self.categories)
 
 def kybyz_client(env = None, start_response = None):
     '''
