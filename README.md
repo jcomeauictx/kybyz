@@ -7,4 +7,6 @@ other ideas: everything takes place on one's own machine. app for smartphones an
 
 not keeping server logs will make it impossible for agencies to get any data.
 
+can tweet kybyzym to other adopters by using hashtag #kybyz followed by enough letters of message hash to make it unique to that adopter, followed by the one-character icon plus the text. it is fetched through twitter API periodically by client programs.
+
 more thoughts as posted on Fb: https://www.facebook.com/jcomeauictx/posts/10155975677545615?pnref=story
