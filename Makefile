@@ -45,7 +45,7 @@ backup:
 	for server in backup1 backup2; do \
 	 rsync -avuz $(DRYRUN) --delete ~/.kybyz/ $$server:.kybyz/; \
 	done
-%/favicon.ico: %
+%/favicon.ico: % .FORCE
 	convert -background none -fill green \
 	 -size 128x128 -gravity center \
 	 -font Helvetica label:k png:- | \
@@ -55,3 +55,4 @@ backup:
 	 \( -clone 0 -resize '48x48!' \) \
 	 \( -clone 0 -resize '64x64!' \) \
    	 -delete 0 -alpha off -colors 256 $@
+.FORCE:
