@@ -27,6 +27,8 @@ logging.debug('USER_SITE: %s' % site.USER_SITE)
 USER_CONFIG = os.path.join(HOMEDIR, 'etc', 'kybyz')
 PRIVATE_KEY = os.path.join(USER_CONFIG, 'kybyz.private.pem')
 PUBLIC_KEY = os.path.join(USER_CONFIG, 'kybyz.public.pem')
+MIMETYPES = {'png': 'image/png', 'ico': 'image/x-icon', 'jpg': 'image/jpeg',
+             'jpg': 'image/jpeg',}
 try:
     import rsa
 except ImportError:
@@ -55,9 +57,15 @@ def kybyz_client(env = None, start_response = None):
     debug('uwsgi.opt: %s' % repr(uwsgi.opt))
     start = uwsgi.opt.get('check_static', os.path.join(HOMEDIR, '.kybyz'))
     debug('start: %s' % start)
-    start_response('200 groovy', [('Content-type', 'text/html')])
     private, public = load_keys()
-    return makepage(start, [], [])
+    path = (env['HTTP_PATH'] or '/').lstrip('/')
+    if not path:
+        mimetype = 'text/html'
+        page = makepage(start, [], [])
+    else:
+        page, mimetype = render(path)
+    start_response('200 groovy', [('Content-type', mimetype)])
+    return page
 
 def example_client(env = None, start_response = None):
     '''
@@ -87,21 +95,25 @@ def popdir(stack):
     debug('stack after `popdir` now: %s'% stack)
     os.chdir('..')
 
-def render(pagename):
+def render(pagename, standalone=False):
     if pagename.endswith('.md'):
         debug('running markdown on %s' % pagename)
-        return postwrap(markdown(read(pagename)).encode('utf8'))
+        return postwrap(markdown(read(pagename)).encode('utf8')), 'text/html'
     elif pagename.endswith('.html'):
         '''
         cannot use postwrap here, this could be header or trailer
         must use markdown for proper post wrapping, or add your own
         <div class="post"> tags to HTML'''
-        return read(pagename)
+        return read(pagename), 'text/html'
     elif not pagename.endswith(('.png', '.ico', '.jpg', '.jpeg')):
         'assume plain text'
-        return '<div class="post">%s</div>' % cgi.escape(read(pagename))
+        return ('<div class="post">%s</div>' % cgi.escape(
+            read(pagename, maxread=32768)), 'text/plain')
+    elif standalone:
+        return (read(pagename, maxread=32768),
+            MIMETYPES[os.path.splitext(pagename)[1]])
     else:
-        return ''
+        return '', None
 
 def makepage(directory, output, level):
     debug('running `makepage` on %s' % directory)
@@ -126,7 +138,7 @@ def makepage(directory, output, level):
                     debug('goal %s has been accomplished' % level[-1])
                 page.append('&#x2713;')
         elif not os.path.isdir(post):
-            page.append(render(post))
+            page.append(render(post)[0])
         else:
             headerlevel = len(level) + 1 # <h2> and higher
             page.append(postwrap(True))
