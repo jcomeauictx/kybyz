@@ -58,7 +58,7 @@ def kybyz_client(env = None, start_response = None):
     start = uwsgi.opt.get('check_static', os.path.join(HOMEDIR, '.kybyz'))
     debug('start: %s' % start)
     private, public = load_keys()
-    path = (env['HTTP_PATH'] or '/').lstrip('/')
+    path = (env.get('HTTP_PATH', env.get('REQUEST_URI', '/'))).lstrip('/')
     if not path:
         mimetype = 'text/html'
         page = makepage(start, [], [])
