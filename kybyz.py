@@ -2,7 +2,7 @@
 '''
 implement local website http://kybyz/
 
-Copyright 2015 John Otis Comeau <jc@unternet.net>
+Copyright 2015-2016 John Otis Comeau <jc@unternet.net>
 distributed under the terms of the GNU General Public License Version 3
 (see COPYING)
 
