@@ -29,14 +29,27 @@ USER_CONFIG = os.path.join(HOMEDIR, 'etc', 'kybyz')
 PRIVATE_KEY = os.path.join(USER_CONFIG, 'kybyz.private.pem')
 PUBLIC_KEY = os.path.join(USER_CONFIG, 'kybyz.public.pem')
 MIMETYPES = {'png': 'image/png', 'ico': 'image/x-icon', 'jpg': 'image/jpeg',
-             'jpg': 'image/jpeg',}
+             'jpeg': 'image/jpeg',}
 
-class Node(object):
+class Node(str):
     '''
     a node is either a category or an action item (goal, task, etc.)
     '''
-    def __init__(self, filename):
-        pass
+    def __new__(cls, parent_node, filename):
+        parts = os.path.basename(filename).split('.')
+        name = parts[0]
+        try:
+            siblings = parent_node.children
+        except AttributeError:
+            siblings = []
+        if name in siblings:
+            logging.info('Parent node already has child %s', name)
+        else:
+            node = super(Node, cls).__new__(cls, name)
+            return node
+
+    def __init__(self, parent_node, filename):
+        logging.debug('Node.__init__(%s, %s)', parent_node, filename)
 
 class Entry(object):
     head = None
