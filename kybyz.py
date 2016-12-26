@@ -36,6 +36,9 @@ class Node(str):
     a node is either a category or an action item (goal, task, etc.)
     '''
     def __new__(cls, parent_node, filename):
+        '''
+        create a new Node object
+        '''
         parts = os.path.basename(filename).split('.')
         name = parts[0]
         try:
@@ -43,13 +46,24 @@ class Node(str):
         except AttributeError:
             siblings = []
         if name in siblings:
-            logging.info('Parent node already has child %s', name)
+            logging.info('Returning pre-existing node %s', name)
+            node = siblings[siblings.index(name)]
         else:
             node = super(Node, cls).__new__(cls, name)
-            return node
+        return node
 
     def __init__(self, parent_node, filename):
+        '''
+        initialize the current node, which may have already been initialized
+
+        so we can't just assume, e.g., that we can set self.children = []
+        '''
         logging.debug('Node.__init__(%s, %s)', parent_node, filename)
+        parts = os.path.basename(filename).split('.')
+        self.filename = filename
+        self.name = parts[0]
+        self.parent = parent_node or self
+        self.children = getattr(self, 'children', [])
 
 class Entry(object):
     head = None
@@ -63,16 +77,16 @@ class Entry(object):
             self.categories[-1].subordinates.append(self)
         self.categories.append(self)
         self.subordinates = []
-        debug('Entry.categories: %s' % self.categories)
+        logging.debug('Entry.categories: %s' % self.categories)
 
 def kybyz_client(env = None, start_response = None):
     '''
     primary client process, shows contents of $HOME/.kybyz
     '''
-    debug('env: %s' % repr(env))
-    debug('uwsgi.opt: %s' % repr(uwsgi.opt))
+    logging.debug('env: %s' % repr(env))
+    logging.debug('uwsgi.opt: %s' % repr(uwsgi.opt))
     start = uwsgi.opt.get('check_static', os.path.join(HOMEDIR, '.kybyz'))
-    debug('start: %s' % start)
+    logging.debug('start: %s' % start)
     private, public = load_keys()
     path = (env.get('HTTP_PATH', env.get('REQUEST_URI', '/'))).lstrip('/')
     if not path:
@@ -87,11 +101,11 @@ def example_client(env = None, start_response = None):
     '''
     testing client process, shows contents of $PWD/example.kybyz/
     '''
-    debug('env: %s' % repr(env))
-    debug('uwsgi.opt: %s' % repr(uwsgi.opt))
+    logging.debug('env: %s' % repr(env))
+    logging.debug('uwsgi.opt: %s' % repr(uwsgi.opt))
     cwd = os.path.dirname(sys.argv[0]) or os.path.abspath('.')
     start = uwsgi.opt.get('check_static', os.path.join(cwd, 'example.kybyz'))
-    debug('cwd: %s, start: %s' % (cwd, start))
+    logging.debug('cwd: %s, start: %s' % (cwd, start))
     start_response('200 groovy', [('Content-type', 'text/html')])
     return makepage(start, [], [])
 
@@ -100,7 +114,7 @@ def pushdir(stack, directory):
     implementation of MSDOS `pushd`
     '''
     stack.append(directory)
-    debug('stack after `pushdir` now: %s' % stack)
+    logging.debug('stack after `pushdir` now: %s' % stack)
     os.chdir(directory)
 
 def popdir(stack):
@@ -108,21 +122,25 @@ def popdir(stack):
     implementation of MSDOS `popd`
     '''
     stack.pop(-1)
-    debug('stack after `popdir` now: %s'% stack)
+    logging.debug('stack after `popdir` now: %s'% stack)
     os.chdir('..')
 
 def render(pagename, standalone=False):
+    '''
+    Return content with Content-type header
+
+    If it's markdown, we assume it's a post and will wrap it with
+    <div class="post">, but if it's HTML we can't assume anything as
+    it could be the header or footer or something else. So if you're using
+    HTML for a post, wrap it yourself.
+    '''
     if pagename.endswith('.md'):
-        debug('running markdown on %s' % pagename)
+        logging.debug('running markdown on %s' % pagename)
         return postwrap(markdown(read(pagename)).encode('utf8')), 'text/html'
     elif pagename.endswith('.html'):
-        '''
-        cannot use postwrap here, this could be header or trailer
-        must use markdown for proper post wrapping, or add your own
-        <div class="post"> tags to HTML'''
         return read(pagename), 'text/html'
     elif not pagename.endswith(('.png', '.ico', '.jpg', '.jpeg')):
-        'assume plain text'
+        # assume plain text
         return ('<div class="post">%s</div>' % cgi.escape(
             read(pagename, maxread=32768)), 'text/plain')
     elif standalone:
@@ -132,10 +150,13 @@ def render(pagename, standalone=False):
         return '', None
 
 def makepage(directory, output, level):
-    debug('running `makepage` on %s' % directory)
+    '''
+    Scan folders and files to build the Kybyz page
+    '''
+    logging.debug('running `makepage` on %s' % directory)
     pushdir(level, directory)
     posts = specialsort(os.listdir('.'))
-    debug('posts: %s' % posts)
+    logging.debug('posts: %s' % posts)
     for post in posts:
         page = []
         entry = Entry(post)
@@ -149,9 +170,10 @@ def makepage(directory, output, level):
                 accomplishment; an '.accomplished' *file* means it is *done*.
                 '''
                 if os.path.isdir(post):
-                    debug('task %s has accomplishment activity' % level[-1])
+                    logging.debug('task %s has accomplishment activity',
+                                  level[-1])
                 else:
-                    debug('goal %s has been accomplished' % level[-1])
+                    logging.debug('goal %s has been accomplished', level[-1])
                 page.append('&#x2713;')
         elif not os.path.isdir(post):
             page.append(render(post)[0])
@@ -161,13 +183,19 @@ def makepage(directory, output, level):
             page.append('<h%d>%s</h%d>' % (headerlevel, post, headerlevel))
             page += makepage(post, [], level)
             page.append(postwrap(False))
-        debug('page: "%s"' % page) 
+        logging.debug('page: "%s"' % page) 
         output += page
-    debug('output: "%s"' % (' '.join(output)).replace('\n', ' '))
+    logging.debug('output: "%s"' % (' '.join(output)).replace('\n', ' '))
     popdir(level)
     return output
 
 def postwrap(something):
+    '''
+    Encapsulate post in DIV tags.
+
+    Works one-shot with a string, or in 2 steps by passing in True (open)
+    or False (close)
+    '''
     if isinstance(something, int):  # expecting True (1) or False (0)
         return ['</div>', '<div class="post">'][something]
     else:
@@ -202,12 +230,6 @@ def write(filename, data):
     outfile = open(filename, 'w')
     outfile.write(data)
     outfile.close()
-
-def debug(message = None):
-    if __debug__:
-        if message:
-            logging.debug(message)
-        return True
 
 def load_keys():
     '''
