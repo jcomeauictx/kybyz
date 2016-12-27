@@ -30,11 +30,21 @@ PRIVATE_KEY = os.path.join(USER_CONFIG, 'kybyz.private.pem')
 PUBLIC_KEY = os.path.join(USER_CONFIG, 'kybyz.public.pem')
 MIMETYPES = {'png': 'image/png', 'ico': 'image/x-icon', 'jpg': 'image/jpeg',
              'jpeg': 'image/jpeg',}
+FILETYPES = [
+    'md',
+    'html',
+] + MIMETYPES.keys()
+ATTRIBUTES = {  # dict of attribute name with name of routine for displaying it
+    'accomplished': 'accomplished',
+}
 
 class Node(str):
     '''
-    a node is either a category or an action item (goal, task, etc.)
+    a Node is either a category or an action item (goal, task, etc.)
     '''
+    # class attributes
+    root = None  # filled in during __init__()
+
     def __new__(cls, parent_node, filename):
         '''
         create a new Node object
@@ -57,13 +67,39 @@ class Node(str):
         initialize the current node, which may have already been initialized
 
         so we can't just assume, e.g., that we can set self.children = []
+
+        names must be in 2 or 3 parts, e.g.:
+
+        mygoal.md: a markdown file for "mygoal"
+        mygoal.accomplished: a directory for accomplishments of mygoal
+        mygoal.related.md: a file for other nodes related to "mygoal"
         '''
         logging.debug('Node.__init__(%s, %s)', parent_node, filename)
         parts = os.path.basename(filename).split('.')
         self.filename = filename
         self.name = parts[0]
-        self.parent = parent_node or self
-        self.children = getattr(self, 'children', [])
+        attribute = parts[1]
+        filetype = parts[-1]
+        if filetype not in FILETYPES:
+            if attribute != filetype:
+                raise(ValueError('Unknown filetype: "%s"' % filetype))
+            else:
+                filetype = 'directory'  # e.g. mygoal.accomplished
+        elif len(parts) == 2:
+            attribute = None
+        if attribute and attribute not in ATTRIBUTES:
+            logging.warn('No routine assigned for attribute "%s"', attribute)
+            ATTRIBUTES[attribute] = None
+        if attribute and filetype == 'directory':
+            setattr(self, attribute, [])
+        elif attribute:
+            setattr(self, attribute, render(filetype))
+        if parent_node is None:
+            self.root = self  # class attribute
+            self.parent = self
+        else:
+            parent_node.children.add(self)
+        self.children = getattr(self, 'children', set())
 
 class Entry(object):
     head = None
