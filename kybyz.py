@@ -86,34 +86,20 @@ class Node(str):
             else:
                 filetype = 'directory'  # e.g. mygoal.accomplished
         elif len(parts) == 2:
-            attribute = None
+            attribute = None  # e.g. mygoal.md or header.html
         if attribute and attribute not in ATTRIBUTES:
             logging.warn('No routine assigned for attribute "%s"', attribute)
             ATTRIBUTES[attribute] = None
         if attribute and filetype == 'directory':
-            setattr(self, attribute, [])
+            setattr(self, attribute, [render(f) for f in listdir(filename)])
         elif attribute:
-            setattr(self, attribute, render(filetype))
+            setattr(self, attribute, render(filename))
         if parent_node is None:
             self.root = self  # class attribute
             self.parent = self
         else:
             parent_node.children.add(self)
         self.children = getattr(self, 'children', set())
-
-class Entry(object):
-    head = None
-    categories = []
-    def __init__(self, filename, **kwargs):
-        entryname, extension = os.path.splitext(filename)
-        self.name = entryname
-        if self.head is None:
-            self.head = self
-        else:
-            self.categories[-1].subordinates.append(self)
-        self.categories.append(self)
-        self.subordinates = []
-        logging.debug('Entry.categories: %s' % self.categories)
 
 def kybyz_client(env = None, start_response = None):
     '''
@@ -144,6 +130,12 @@ def example_client(env = None, start_response = None):
     logging.debug('cwd: %s, start: %s' % (cwd, start))
     start_response('200 groovy', [('Content-type', 'text/html')])
     return makepage(start, [], [])
+
+def listdir(directory):
+    '''
+    os.listdir() but returns full path of each file
+    '''
+    return [os.path.join(directory, f) for f in os.listdir(directory)]
 
 def pushdir(stack, directory):
     '''
@@ -185,6 +177,31 @@ def render(pagename, standalone=False):
     else:
         return '', None
 
+def buildpage(directory):
+    '''
+    Rewrite of `makepage` using Node
+    
+    Note that this constructs Nodes out of the same path more than once,
+    which is why Node.__new__ has to return an existing node when found.
+    '''
+    parent = None
+    for dirpath, dirnames, filenames in os.walk(directory):
+        node = Node(parent, dirpath)
+        parent = node
+        for entry in dirnames + filenames:
+            subnode = Node(parent, os.path.join(dirpath, entry))
+
+def walk(node):
+    '''
+    Like os.walk, but for Node objects
+
+    http://stackoverflow.com/a/3010038/493161
+    '''
+    yield node
+    for child in node.children:
+        for entry in walk(child):
+            yield entry
+
 def makepage(directory, output, level):
     '''
     Scan folders and files to build the Kybyz page
@@ -195,7 +212,6 @@ def makepage(directory, output, level):
     logging.debug('posts: %s' % posts)
     for post in posts:
         page = []
-        entry = Entry(post)
         if post.startswith('.'):
             '''
             files and directories with a special meaning
