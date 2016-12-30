@@ -34,9 +34,6 @@ FILETYPES = [
     'md',
     'html',
 ] + MIMETYPES.keys()
-ATTRIBUTES = {  # dict of attribute name with name of routine for displaying it
-    'accomplished': 'accomplished',
-}
 
 class Node(str):
     '''
@@ -52,8 +49,8 @@ class Node(str):
         parts = os.path.basename(filename).split('.')
         name = parts[0]
         try:
-            siblings = parent_node.children
-        except AttributeError:
+            siblings = parent_node.attributes['children']
+        except KeyError:
             siblings = []
         if name in siblings:
             logging.info('Returning pre-existing node %s', name)
@@ -77,29 +74,36 @@ class Node(str):
         logging.debug('Node.__init__(%s, %s)', parent_node, filename)
         parts = os.path.basename(filename).split('.')
         self.filename = filename
+        self.attributes = {}
         self.name = parts[0]
         attribute = parts[1]
         filetype = parts[-1]
+        if parent_node is None:
+            attribute = None
+            filetype = 'directory'
+            self.root = self  # set class attribute
+            self.parent = self
+        else:
+            self.parent = parent_node
+            parent_node.attributes['children'].add(self)
         if filetype not in FILETYPES:
             if attribute != filetype:
                 raise(ValueError('Unknown filetype: "%s"' % filetype))
+            elif not os.path.isdir(filename):
+                logging.error('%s does not have filetype extension', filename)
+                raise(TypeError('Path without extension must be directory'))
             else:
                 filetype = 'directory'  # e.g. mygoal.accomplished
         elif len(parts) == 2:
             attribute = None  # e.g. mygoal.md or header.html
-        if attribute and attribute not in ATTRIBUTES:
-            logging.warn('No routine assigned for attribute "%s"', attribute)
-            ATTRIBUTES[attribute] = None
         if attribute and filetype == 'directory':
-            setattr(self, attribute, [render(f) for f in listdir(filename)])
+            self.attributes[attribute] = [render(f) for f in listdir(filename)]
         elif attribute:
-            setattr(self, attribute, render(filename))
+            self.attributes[attribute] = [render(filename)]
         if parent_node is None:
             self.root = self  # class attribute
             self.parent = self
-        else:
-            parent_node.children.add(self)
-        self.children = getattr(self, 'children', set())
+        self.attributes['children'] = self.attributes.get('children', set())
 
 def kybyz_client(env = None, start_response = None):
     '''
@@ -198,7 +202,7 @@ def walk(node):
     http://stackoverflow.com/a/3010038/493161
     '''
     yield node
-    for child in node.children:
+    for child in node.attributes['children']:
         for entry in walk(child):
             yield entry
 
