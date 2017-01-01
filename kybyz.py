@@ -38,6 +38,7 @@ FILETYPES = [
     'directory',
     'md',
     'html',
+    'css',
 ] + MIMETYPES.keys()
 
 class Node(str):
@@ -94,22 +95,23 @@ class Node(str):
         attribute = parts[1] if len(parts) > 1 else None
         filetype = 'directory' if os.path.isdir(filename) else parts[-1]
         if parent_node is None:
-            logging.debug('root element, parent_node is None')
             attribute = None
             if not os.path.isdir(filename):
                 raise(AttributeError('root filename must be directory'))
             filetype = 'directory'
             self.root = self  # set class attribute
             self.parent = self
+            self.attributes['children'] = self.attributes.get('children', [])
+            logging.debug('initialized root node')
         elif os.path.isdir(filename):
-            logging.debug('element %s, parent_node=%s', self, parent_node)
             self.parent = parent_node
-            parent_node.attributes['children'].add(self)
+            if not self in parent_node.attributes['children']:
+                parent_node.attributes['children'].append(self)
         else:
-            logging.debug('element %s, parent_node=%s', self, parent_node)
             self.parent = parent_node
-            parent_node.attributes['children'].add(self)
-            self.attributes['children'] = self.attributes.get('children', set())
+            if not self in parent_node.attributes['children']:
+                parent_node.attributes['children'].append(self)
+            self.attributes['children'] = self.attributes.get('children', [])
         if filetype not in FILETYPES:
             if attribute != filetype:
                 raise(ValueError('Unknown filetype: "%s"' % filetype))
