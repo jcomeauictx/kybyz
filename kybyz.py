@@ -43,6 +43,15 @@ FILETYPES = [
 class Node(str):
     '''
     a Node is either a category or an action item (goal, task, etc.)
+
+    nodes must be named as follows:
+
+    if a directory, it can be a singleton, e.g. '.kybyz' or 'goals'
+    it can also be a word followed by an attribute, e.g. 'jogging.accomplished'
+
+    if a file, it can be in two or 3 parts.
+    the final part should always be a filetype, e.g. 'jogging.html'
+    a middle part can be added as an attribute, e.g. 'house.accomplished.md'
     '''
     # class attributes
     root = None  # filled in during __init__()
@@ -52,7 +61,8 @@ class Node(str):
         create a new Node object
         '''
         parts = os.path.basename(filename).split('.')
-        name = parts[0]
+        name = parts[0]  # .kybyz will be ''
+        # obviously there can be only one .hidden name in a directory
         try:
             siblings = parent_node.attributes['children']
         except (KeyError, AttributeError):
@@ -82,15 +92,24 @@ class Node(str):
         self.attributes = {}
         self.name = parts[0]
         attribute = parts[1] if len(parts) > 1 else None
-        filetype = parts[-1]
+        filetype = 'directory' if os.path.isdir(filename) else parts[-1]
         if parent_node is None:
+            logging.debug('root element, parent_node is None')
             attribute = None
+            if not os.path.isdir(filename):
+                raise(AttributeError('root filename must be directory'))
             filetype = 'directory'
             self.root = self  # set class attribute
             self.parent = self
-        else:
+        elif os.path.isdir(filename):
+            logging.debug('element %s, parent_node=%s', self, parent_node)
             self.parent = parent_node
             parent_node.attributes['children'].add(self)
+        else:
+            logging.debug('element %s, parent_node=%s', self, parent_node)
+            self.parent = parent_node
+            parent_node.attributes['children'].add(self)
+            self.attributes['children'] = self.attributes.get('children', set())
         if filetype not in FILETYPES:
             if attribute != filetype:
                 raise(ValueError('Unknown filetype: "%s"' % filetype))
@@ -98,9 +117,7 @@ class Node(str):
                 logging.error('%s does not have filetype extension', filename)
                 raise(TypeError('Path without extension must be directory'))
             else:
-                filetype = 'directory'  # e.g. mygoal.accomplished
-        elif len(parts) == 2:
-            attribute = None  # e.g. mygoal.md or header.html
+                attribute = None  # e.g. running.md or mygoal.html
         if attribute and filetype == 'directory':
             self.attributes[attribute] = [render(f) for f in listdir(filename)]
         elif attribute:
@@ -108,7 +125,6 @@ class Node(str):
         if parent_node is None:
             self.root = self  # class attribute
             self.parent = self
-        self.attributes['children'] = self.attributes.get('children', set())
 
 def kybyz_client(env = None, start_response = None):
     '''
