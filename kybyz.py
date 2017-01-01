@@ -16,13 +16,17 @@ must first mate a local IP address with the name `kybyz` in /etc/hosts, e.g.:
 import sys, os, urllib2, logging, pwd, subprocess, site, cgi
 import rsa
 from markdown import markdown
-if not sys.stdin.isatty():  # command-line testing won't have module available
+try:  # command-line testing won't have module available
     import uwsgi
-else:
-    uwsgi = type('', (), dict(opt = {}))  # object with empty opt attribute
+except ImportError:
+    uwsgi = type('uwsgi', (), {'opt': {}})  # object with empty opt attribute
 logging.basicConfig(level = logging.DEBUG)
+logging.debug('uwsgi.opt: %s' % repr(uwsgi.opt))
 MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
 HOMEDIR = pwd.getpwuid(os.getuid()).pw_dir
+DATADIR = uwsgi.opt.get('check_static', os.path.join(HOMEDIR, '.kybyz'))
+THISDIR = os.path.dirname(sys.argv[0]) or os.path.abspath('.')
+EXAMPLE = uwsgi.opt.get('check_static', os.path.join(THISDIR, 'example.kybyz'))
 logging.debug('HOMEDIR: %s' % HOMEDIR)
 logging.debug('USER_SITE: %s' % site.USER_SITE)
 USER_CONFIG = os.path.join(HOMEDIR, 'etc', 'kybyz')
@@ -110,8 +114,7 @@ def kybyz_client(env = None, start_response = None):
     primary client process, shows contents of $HOME/.kybyz
     '''
     logging.debug('env: %s' % repr(env))
-    logging.debug('uwsgi.opt: %s' % repr(uwsgi.opt))
-    start = uwsgi.opt.get('check_static', os.path.join(HOMEDIR, '.kybyz'))
+    start = DATADIR
     logging.debug('start: %s' % start)
     private, public = load_keys()
     path = (env.get('HTTP_PATH', env.get('REQUEST_URI', '/'))).lstrip('/')
@@ -127,11 +130,9 @@ def example_client(env = None, start_response = None):
     '''
     testing client process, shows contents of $PWD/example.kybyz/
     '''
-    logging.debug('env: %s' % repr(env))
-    logging.debug('uwsgi.opt: %s' % repr(uwsgi.opt))
-    cwd = os.path.dirname(sys.argv[0]) or os.path.abspath('.')
-    start = uwsgi.opt.get('check_static', os.path.join(cwd, 'example.kybyz'))
-    logging.debug('cwd: %s, start: %s' % (cwd, start))
+    logging.debug('env: %s', repr(env))
+    start = EXAMPLE
+    logging.debug('start: %s', start)
     start_response('200 groovy', [('Content-type', 'text/html')])
     return makepage(start, [], [])
 
@@ -181,7 +182,7 @@ def render(pagename, standalone=False):
     else:
         return '', None
 
-def buildpage(directory):
+def buildpage(directory=DATADIR):
     '''
     Rewrite of `makepage` using Node
     
@@ -206,11 +207,12 @@ def walk(node):
         for entry in walk(child):
             yield entry
 
-def makepage(directory, output, level):
+def makepage(directory=DATADIR, output=None, level=None):
     '''
     Scan folders and files to build the Kybyz page
     '''
     logging.debug('running `makepage` on %s' % directory)
+    output, level = output if output else [], level if level else []
     pushdir(level, directory)
     posts = specialsort(os.listdir('.'))
     logging.debug('posts: %s' % posts)
