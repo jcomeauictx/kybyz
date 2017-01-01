@@ -55,4 +55,7 @@ backup:
 	 \( -clone 0 -resize '48x48!' \) \
 	 \( -clone 0 -resize '64x64!' \) \
    	 -delete 0 -alpha off -colors 256 -transparent white $@
+%.pylint: %.py
+	pylint $<
+pylint: kybyz.pylint
 .FORCE:
