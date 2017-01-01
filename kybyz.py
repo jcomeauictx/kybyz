@@ -35,6 +35,7 @@ PUBLIC_KEY = os.path.join(USER_CONFIG, 'kybyz.public.pem')
 MIMETYPES = {'png': 'image/png', 'ico': 'image/x-icon', 'jpg': 'image/jpeg',
              'jpeg': 'image/jpeg',}
 FILETYPES = [
+    'directory',
     'md',
     'html',
 ] + MIMETYPES.keys()
@@ -54,7 +55,7 @@ class Node(str):
         name = parts[0]
         try:
             siblings = parent_node.attributes['children']
-        except KeyError:
+        except (KeyError, AttributeError):
             siblings = []
         if name in siblings:
             logging.info('Returning pre-existing node %s', name)
@@ -80,7 +81,7 @@ class Node(str):
         self.filename = filename
         self.attributes = {}
         self.name = parts[0]
-        attribute = parts[1]
+        attribute = parts[1] if len(parts) > 1 else None
         filetype = parts[-1]
         if parent_node is None:
             attribute = None
