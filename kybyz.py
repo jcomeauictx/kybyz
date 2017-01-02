@@ -13,6 +13,7 @@ must first mate a local IP address with the name `kybyz` in /etc/hosts, e.g.:
 
 127.0.1.125 kybyz
 '''
+from __future__ import print_function
 import sys, os, urllib2, logging, pwd, subprocess, site, cgi
 import rsa
 from markdown import markdown
@@ -123,9 +124,10 @@ class Node(str):
             else:
                 attribute = None  # e.g. running.md or mygoal.html
         if attribute and filetype == 'directory':
-            self.attributes[attribute] = [render(f) for f in listdir(filename)]
+            self.attributes[attribute] = [render(f)[0]
+                                          for f in listdir(filename)]
         elif attribute:
-            self.attributes[attribute] = [render(filename)]
+            self.attributes[attribute] = [render(filename)[0]]
         if parent_node is None:
             self.root = self  # class attribute
             self.parent = self
@@ -216,6 +218,8 @@ def buildpage(directory=DATADIR):
         parent = node
         for entry in dirnames + filenames:
             subnode = Node(parent, os.path.join(dirpath, entry))
+    for node in walk(Node.root):
+        print(node)
 
 def walk(node):
     '''
@@ -224,9 +228,10 @@ def walk(node):
     http://stackoverflow.com/a/3010038/493161
     '''
     yield node
-    for child in node.attributes['children']:
-        for entry in walk(child):
-            yield entry
+    for attribute in getattr(node, 'attributes', {}):
+        for child in node.attributes[attribute]:
+            for entry in walk(child):
+                yield entry
 
 def makepage(directory=DATADIR, output=None, level=None):
     '''
@@ -329,4 +334,4 @@ def load_keys():
     return private, public
 
 if __name__ == '__main__':
-    print '\n'.join(example_client(os.environ, lambda *args: None))
+    print('\n'.join(example_client(os.environ, lambda *args: None)))
