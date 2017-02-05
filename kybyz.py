@@ -156,8 +156,15 @@ def example_client(env = None, start_response = None):
     logging.debug('env: %s', repr(env))
     start = EXAMPLE
     logging.debug('start: %s', start)
-    start_response('200 groovy', [('Content-type', 'text/html')])
-    return makepage(start, [], [])
+    private, public = load_keys()
+    path = (env.get('HTTP_PATH', env.get('REQUEST_URI', '/'))).lstrip('/')
+    if not path:
+        mimetype = 'text/html'
+        page = buildpage(start)
+    else:
+        page, mimetype = render(path)
+    start_response('200 groovy', [('Content-type', mimetype)])
+    return page
 
 def listdir(directory):
     '''
@@ -213,13 +220,15 @@ def buildpage(directory=DATADIR):
     which is why Node.__new__ has to return an existing node when found.
     '''
     parent = None
+    page = ''
     for dirpath, dirnames, filenames in os.walk(directory):
         node = Node(parent, dirpath)
         parent = node
         for entry in dirnames + filenames:
             subnode = Node(parent, os.path.join(dirpath, entry))
     for node in walk(Node.root):
-        print(node)
+        page += str(node)
+    return page
 
 def walk(node):
     '''
