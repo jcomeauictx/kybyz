@@ -23,7 +23,7 @@ except ImportError:
     uwsgi = type('uwsgi', (), {'opt': {}})  # object with empty opt attribute
 logging.basicConfig(level = logging.DEBUG)
 logging.debug('uwsgi.opt: %s' % repr(uwsgi.opt))
-MAXLENGTH = 4096  # maximum size in bytes of markdown source of post
+MAXLENGTH = 1024 * 1024  # maximum size in bytes of markdown source of post
 HOMEDIR = pwd.getpwuid(os.getuid()).pw_dir
 DATADIR = uwsgi.opt.get('check_static', os.path.join(HOMEDIR, '.kybyz'))
 THISDIR = os.path.dirname(sys.argv[0]) or os.path.abspath('.')
