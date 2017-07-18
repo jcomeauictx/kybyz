@@ -15,13 +15,17 @@ must first mate a local IP address with the name `kybyz` in /etc/hosts, e.g.:
 '''
 from __future__ import print_function
 import sys, os, urllib2, logging, pwd, subprocess, site, cgi
+logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
+logging.debug('os.getuid(): %s', os.getuid())
+logging.debug('os.geteuid(): %s', os.geteuid())
+logging.debug('site.ENABLE_USER_SITE: %s', site.ENABLE_USER_SITE)
+logging.debug('site.USER_SITE: %s', site.USER_SITE)
 import rsa
 from markdown import markdown
 try:  # command-line testing won't have module available
     import uwsgi
 except ImportError:
     uwsgi = type('uwsgi', (), {'opt': {}})  # object with empty opt attribute
-logging.basicConfig(level = logging.DEBUG)
 logging.debug('uwsgi.opt: %s' % repr(uwsgi.opt))
 MAXLENGTH = 1024 * 1024  # maximum size in bytes of markdown source of post
 HOMEDIR = pwd.getpwuid(os.getuid()).pw_dir
