@@ -168,7 +168,7 @@ def example_client(env = None, start_response = None):
     else:
         page, mimetype = render(path)
     start_response('200 groovy', [('Content-type', mimetype)])
-    return page
+    return [page]
 
 def listdir(directory):
     '''
