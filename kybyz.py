@@ -20,6 +20,7 @@ logging.debug('os.getuid(): %s', os.getuid())
 logging.debug('os.geteuid(): %s', os.geteuid())
 logging.debug('site.ENABLE_USER_SITE: %s', site.ENABLE_USER_SITE)
 logging.debug('site.USER_SITE: %s', site.USER_SITE)
+logging.debug('sys.path: %s', sys.path)
 import rsa
 from markdown import markdown
 try:  # command-line testing won't have module available
