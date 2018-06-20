@@ -29,18 +29,12 @@ $(HOME)/etc/kybyz:
 keys:	$(HOME)/etc/kybyz
 	$(MAKE) $</kybyz.crt
 	$(MAKE) $</kybyz.public.pem
-server_restart: ini
-	sudo /etc/init.d/nginx restart
-	sudo /etc/init.d/uwsgi restart
 ini:
 	cwd=$(PWD); for file in *.ini; do \
 	 (cd /etc/uwsgi/apps-enabled && sudo ln -sf $$cwd/$$file .); \
 	done
-restart:
-	sudo /etc/init.d/uwsgi stop
-	killall --quiet --wait uwsgi || true
-	uwsgi client.ini 2>>/tmp/kybyz.log &
-	uwsgi example.ini 2>>/tmp/kybyz_example.log &
+restart: ini
+	sudo /etc/init.d/uwsgi restart
 backup:
 	for server in backup1 backup2; do \
 	 rsync -avuz $(DRYRUN) --delete ~/.kybyz/ $$server:.kybyz/; \
