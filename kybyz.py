@@ -334,7 +334,7 @@ def load_keys():
 
     note: key creation takes *forever* (or overnight anyway) on a slow
     computer. if you have openssl installed, use the Makefile to
-    `make kybyz.public.key`
+    `make keys`
     '''
     try:
         private = rsa.PrivateKey.load_pkcs1(read(PRIVATE_KEY))
