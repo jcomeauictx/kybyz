@@ -151,6 +151,7 @@ def kybyz_client(env = None, start_response = None):
         page = makepage(start, [], [])
     else:
         page, mimetype = render(path)
+        logging.debug('mimetype: %s', mimetype)
     start_response('200 groovy', [('Content-type', mimetype)])
     return page
 
@@ -193,7 +194,7 @@ def popdir(stack):
     logging.debug('stack after `popdir` now: %s'% stack)
     os.chdir('..')
 
-def render(pagename, standalone=False):
+def render(pagename):
     '''
     Return content with Content-type header
 
@@ -210,12 +211,9 @@ def render(pagename, standalone=False):
     elif not pagename.endswith(('.png', '.ico', '.jpg', '.jpeg')):
         # assume plain text
         return ('<div class="post">%s</div>' % cgi.escape(
-            read(pagename, maxread=32768)), 'text/plain')
-    elif standalone:
-        return (read(pagename, maxread=32768),
-            MIMETYPES[os.path.splitext(pagename)[1]])
+            read(pagename)), 'text/plain')
     else:
-        return '', None
+        return (read(pagename), MIMETYPES[os.path.splitext(pagename)[1][1:]])
 
 def buildpage(directory=DATADIR):
     '''
