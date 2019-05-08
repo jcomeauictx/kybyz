@@ -314,10 +314,16 @@ def read(filename, maxread = MAXLENGTH):
     '''
     return contents of a file, closing it properly
     '''
-    infile = open(filename)
-    data = infile.read(MAXLENGTH)
-    infile.close()
-    return data
+    try:
+        infile = open(filename)
+        data = infile.read(MAXLENGTH)
+        infile.close()
+        return data
+    except IOError:
+        message = ('File %s was not found relative to %s' %
+                   (filename, os.path.abspath(os.curdir)))
+        logging.error(message)
+        return message
 
 def write(filename, data):
     '''
@@ -347,3 +353,5 @@ def load_keys():
 
 if __name__ == '__main__':
     print('\n'.join(example_client(os.environ, lambda *args: None)))
+
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
