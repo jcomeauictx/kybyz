@@ -33,8 +33,8 @@ ini:
 	cwd=$(PWD); for file in *.ini; do \
 	 (cd /etc/uwsgi/apps-enabled && sudo ln -sf $$cwd/$$file .); \
 	done
-restart: ini
-	sudo /etc/init.d/uwsgi restart
+restart: favicon.ico
+	uwsgi client.ini >/tmp/kybyz.log 2>&1 &
 backup:
 	for server in backup1 backup2; do \
 	 rsync -avuz $(DRYRUN) --delete ~/.kybyz/ $$server:.kybyz/; \
