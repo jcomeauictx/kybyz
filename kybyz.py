@@ -20,6 +20,7 @@ logging.debug('os.getuid(): %s', os.getuid())
 logging.debug('os.geteuid(): %s', os.geteuid())
 logging.debug('site.ENABLE_USER_SITE: %s', site.ENABLE_USER_SITE)
 logging.debug('site.USER_SITE: %s', site.USER_SITE)
+logging.debug('sys.path: %s', sys.path)
 import rsa
 from markdown import markdown
 try:  # command-line testing won't have module available
@@ -150,6 +151,7 @@ def kybyz_client(env = None, start_response = None):
         page = makepage(start, [], [])
     else:
         page, mimetype = render(path)
+        logging.debug('mimetype: %s', mimetype)
     start_response('200 groovy', [('Content-type', mimetype)])
     return page
 
@@ -192,7 +194,7 @@ def popdir(stack):
     logging.debug('stack after `popdir` now: %s'% stack)
     os.chdir('..')
 
-def render(pagename, standalone=False):
+def render(pagename):
     '''
     Return content with Content-type header
 
@@ -209,12 +211,9 @@ def render(pagename, standalone=False):
     elif not pagename.endswith(('.png', '.ico', '.jpg', '.jpeg')):
         # assume plain text
         return ('<div class="post">%s</div>' % cgi.escape(
-            read(pagename, maxread=32768)), 'text/plain')
-    elif standalone:
-        return (read(pagename, maxread=32768),
-            MIMETYPES[os.path.splitext(pagename)[1]])
+            read(pagename)), 'text/plain')
     else:
-        return '', None
+        return (read(pagename), MIMETYPES[os.path.splitext(pagename)[1][1:]])
 
 def buildpage(directory=DATADIR):
     '''
@@ -315,15 +314,20 @@ def read(filename, maxread = MAXLENGTH):
     '''
     return contents of a file, closing it properly
     '''
-    infile = open(filename)
-    data = infile.read(MAXLENGTH)
     try:
+        infile = open(filename)
+        data = infile.read(MAXLENGTH)
+        infile.close()
         decoded = data.decode('utf8')
+        return decoded
     except UnicodeDecodeError:
         logging.error('Cannot decode %r as utf8', data)
         raise
-    infile.close()
-    return data
+    except IOError:
+        message = ('File %s was not found relative to %s' %
+                   (filename, os.path.abspath(os.curdir)))
+        logging.error(message)
+        return message
 
 def write(filename, data):
     '''
@@ -339,7 +343,7 @@ def load_keys():
 
     note: key creation takes *forever* (or overnight anyway) on a slow
     computer. if you have openssl installed, use the Makefile to
-    `make kybyz.public.key`
+    `make keys`
     '''
     try:
         private = rsa.PrivateKey.load_pkcs1(read(PRIVATE_KEY))
@@ -353,3 +357,5 @@ def load_keys():
 
 if __name__ == '__main__':
     print('\n'.join(example_client(os.environ, lambda *args: None)))
+
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
