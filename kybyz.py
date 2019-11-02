@@ -38,7 +38,7 @@ USER_CONFIG = os.path.join(HOMEDIR, 'etc', 'kybyz')
 PRIVATE_KEY = os.path.join(USER_CONFIG, 'kybyz.private.pem')
 PUBLIC_KEY = os.path.join(USER_CONFIG, 'kybyz.public.pem')
 MIMETYPES = {'png': 'image/png', 'ico': 'image/x-icon', 'jpg': 'image/jpeg',
-             'jpeg': 'image/jpeg',}
+             'jpeg': 'image/jpeg', 'pdf': 'application/pdf'}
 FILETYPES = [
     'directory',
     'md',
@@ -317,6 +317,11 @@ def read(filename, maxread = MAXLENGTH):
     '''
     infile = open(filename)
     data = infile.read(MAXLENGTH)
+    try:
+        decoded = data.decode('utf8')
+    except UnicodeDecodeError:
+        logging.error('Cannot decode %r as utf8', data)
+        raise
     infile.close()
     return data
 
