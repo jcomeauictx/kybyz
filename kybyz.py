@@ -213,7 +213,8 @@ def render(pagename):
         return ('<div class="post">%s</div>' % cgi.escape(
             read(pagename)), 'text/plain')
     else:
-        return (read(pagename), MIMETYPES[os.path.splitext(pagename)[1][1:]])
+        return (read(pagename, raw=True),
+                MIMETYPES[os.path.splitext(pagename)[1][1:]])
 
 def buildpage(directory=DATADIR):
     '''
@@ -281,7 +282,10 @@ def makepage(directory=DATADIR, output=None, level=None):
             page.append(postwrap(False))
         logging.debug('page: "%s"' % page) 
         output += page
-    logging.debug('output: "%s"' % (' '.join(output)).replace('\n', ' '))
+    try:
+        logging.debug('output: "%s"' % (' '.join(output)).replace('\n', ' '))
+    except UnicodeDecodeError:
+        pass
     popdir(level)
     return output
 
@@ -310,7 +314,7 @@ def specialsort(listing):
         raise ValueError('%s != %s' % (listing, subdirs + files))
     return sorted(files) + sorted(subdirs)
 
-def read(filename, maxread = MAXLENGTH):
+def read(filename, maxread = MAXLENGTH, raw=False):
     '''
     return contents of a file, closing it properly
     '''
@@ -318,8 +322,11 @@ def read(filename, maxread = MAXLENGTH):
         infile = open(filename)
         data = infile.read(MAXLENGTH)
         infile.close()
-        decoded = data.decode('utf8')
-        return decoded
+        if not raw:
+            decoded = data.decode('utf8')
+            return decoded
+        else:
+            return data
     except UnicodeDecodeError:
         logging.error('Cannot decode %r as utf8', data)
         raise
