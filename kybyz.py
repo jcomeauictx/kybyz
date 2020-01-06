@@ -129,8 +129,18 @@ class Node(str):
             else:
                 attribute = None  # e.g. running.md or mygoal.html
         if attribute and filetype == 'directory':
-            self.attributes[attribute] = [render(f)[0]
-                                          for f in listdir(filename)]
+            files = listdir(filename)
+            header, trailer = None, None
+            if 'header.html' in files:
+                header = files.pop(files.index('header.html'))
+            if 'trailer.html' in files:
+                trailer = files.pop(files.index('trailer.html'))
+            self.attributes[attribute] = []
+            if header:
+                self.attributes[attribute].append(render(header))
+            self.attributes[attribute].extend([render(f)[0] for f in files])
+            if trailer:
+                self.attributes[attribute].append(render(trailer))
         elif attribute:
             self.attributes[attribute] = [render(filename)[0]]
         if parent_node is None:
@@ -204,15 +214,17 @@ def render(pagename):
     HTML for a post, wrap it yourself.
     '''
     if pagename.endswith('.md'):
-        logging.debug('running markdown on %s' % pagename)
+        logging.debug('running markdown on %s', pagename)
         return postwrap(markdown(read(pagename)).encode('utf8')), 'text/html'
     elif pagename.endswith('.html'):
+        logging.debug('rendering %s as html', pagename)
         return read(pagename), 'text/html'
     elif not pagename.endswith(('.png', '.ico', '.jpg', '.jpeg')):
-        # assume plain text
+        logging.debug('rendering %s as plain text', pagename)
         return ('<div class="post">%s</div>' % cgi.escape(
             read(pagename)), 'text/plain')
     else:
+        logging.debug('rendering %s using its mimetype', pagename)
         return (read(pagename, raw=True),
                 MIMETYPES[os.path.splitext(pagename)[1][1:]])
 
