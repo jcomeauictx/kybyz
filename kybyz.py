@@ -215,7 +215,8 @@ def render(pagename):
     '''
     if pagename.endswith('.md'):
         logging.debug('running markdown on %s', pagename)
-        return postwrap(markdown(read(pagename)).encode('utf8')), 'text/html'
+        return postwrap(markdown(read(pagename),
+                        extensions=['fenced_code']).encode('utf8')), 'text/html'
     elif pagename.endswith('.html'):
         logging.debug('rendering %s as html', pagename)
         return read(pagename), 'text/html'
