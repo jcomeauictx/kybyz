@@ -314,16 +314,21 @@ def read(filename, maxread = MAXLENGTH):
     '''
     return contents of a file, closing it properly
     '''
+    decode = None
     try:
         infile = open(filename)
         data = infile.read(MAXLENGTH)
         infile.close()
-        return data
+        try:
+            decoded = data.decode('utf8')
+        except UnicodeDecodeError:
+            decoded = data.decode('latin1')
     except IOError:
         message = ('File %s was not found relative to %s' %
                    (filename, os.path.abspath(os.curdir)))
         logging.error(message)
-        return message
+        decoded = message
+    return decoded
 
 def write(filename, data):
     '''
