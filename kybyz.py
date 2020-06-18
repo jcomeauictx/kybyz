@@ -279,9 +279,9 @@ def makepage(directory=DATADIR, output=None, level=None):
             page.append('<h%d>%s</h%d>' % (headerlevel, post, headerlevel))
             page += makepage(post, [], level)
             page.append(postwrap(False))
-        logging.debug('page: "%s"' % page) 
+        logging.debug('page: "%s"', page) 
         output += page
-    logging.debug('output: "%s"' % (' '.join(output)).replace('\n', ' '))
+    logging.debug('output: "%r"', output)
     popdir(level)
     return output
 
