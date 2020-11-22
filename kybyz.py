@@ -220,7 +220,7 @@ def render(pagename):
     elif pagename.endswith('.html'):
         logging.debug('rendering %s as html', pagename)
         return read(pagename), 'text/html'
-    elif not pagename.endswith(('.png', '.ico', '.jpg', '.jpeg')):
+    elif not pagename.endswith(('.pdf', '.png', '.ico', '.jpg', '.jpeg')):
         logging.debug('rendering %s as plain text', pagename)
         return ('<div class="post">%s</div>' % cgi.escape(
             read(pagename)), 'text/plain')
