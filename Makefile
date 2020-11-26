@@ -34,12 +34,13 @@ ini:
 	 (cd /etc/uwsgi/apps-enabled && sudo ln -sf $$cwd/$$file .); \
 	done
 restart: $(HOME)/.kybyz/favicon.ico
-	uwsgi client.ini >/tmp/kybyz.log 2>&1 &
+	sudo service uwsgi restart
+	#uwsgi client.ini >/tmp/kybyz.log 2>&1 &
 backup:
 	for server in backup1 backup2; do \
 	 rsync -avuz $(DRYRUN) --delete ~/.kybyz/ $$server:.kybyz/; \
 	done
-%/favicon.ico: % .FORCE
+%/favicon.ico: %
 	convert -background none -fill green \
 	 -size 128x128 -gravity center \
 	 -font Helvetica label:k png:- | \
