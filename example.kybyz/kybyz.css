@@ -1,0 +1,10 @@
+div.post {
+	border: 1px solid black;
+	padding: 1em;
+}
+body {
+	overflow-wrap: break-word;
+}
+pre {
+	white-space: pre-wrap;
+}
