@@ -244,6 +244,7 @@ def buildpage(directory=DATADIR):
         for entry in dirnames + filenames:
             subnode = Node(parent, os.path.join(dirpath, entry))
     for node in walk(Node.root):
+        logging.debug('node: %r', node[:50])
         page += str(node)
     return page
 
