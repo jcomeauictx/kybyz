@@ -5,6 +5,6 @@ div.post {
 body {
 	overflow-wrap: break-word;
 }
-pre {
+pre, code {
 	white-space: pre-wrap;
 }
