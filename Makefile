@@ -51,5 +51,8 @@ backup:
    	 -delete 0 -alpha off -colors 256 -transparent white $@
 %.pylint: %.py
 	pylint $<
-pylint: kybyz.pylint
+pylint: kybyz1.pylint kybyz.pylint
+%.doctest: %.py
+	python3 -mdoctest --verbose $<
+doctests: kybyz1.doctest
 .FORCE:
