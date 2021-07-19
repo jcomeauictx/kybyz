@@ -29,17 +29,21 @@ $(HOME)/etc/kybyz:
 keys:	$(HOME)/etc/kybyz
 	$(MAKE) $</kybyz.crt
 	$(MAKE) $</kybyz.public.pem
-ini:
-	cwd=$(PWD); for file in *.ini; do \
+$(USER)-kybyz.ini: client.ini.template
+	envsubst < $< > $@
+kybyz-example.ini: example.ini.template
+	envsubst < $< > $@
+ini: $(USER)-kybyz.ini kybyz-example.ini
+	cwd=$(PWD); for file in $+; do \
 	 (cd /etc/uwsgi/apps-enabled && sudo ln -sf $$cwd/$$file .); \
 	done
-restart: $(HOME)/.kybyz/favicon.ico
-	uwsgi client.ini >/tmp/kybyz.log 2>&1 &
+restart: $(HOME)/.kybyz/favicon.ico ini
+	sudo service uwsgi restart
 backup:
 	for server in backup1 backup2; do \
 	 rsync -avuz $(DRYRUN) --delete ~/.kybyz/ $$server:.kybyz/; \
 	done
-%/favicon.ico: % .FORCE
+%/favicon.ico: %
 	convert -background none -fill green \
 	 -size 128x128 -gravity center \
 	 -font Helvetica label:k png:- | \
