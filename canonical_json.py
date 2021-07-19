@@ -13,6 +13,7 @@ def canonicalize(obj):
     '''
     dump object as canonical json
 
+    https://gibson042.github.io/canonicaljson-spec/ and
     http://wiki.laptop.org/go/Canonical_JSON for reference
 
     >>> print(canonicalize({'test': [1, 2, 3, 'test again']}), end='')
