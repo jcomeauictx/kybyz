@@ -3,7 +3,7 @@ SOURCES := kybyz1.py
 PYTHON ?= python3
 PYLINT ?= pylint3
 export
-all: doctests pylint
+all: doctests pylint uwsgi
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
 doctests: $(SOURCES:.py=.doctest)
@@ -12,4 +12,3 @@ doctests: $(SOURCES:.py=.doctest)
 pylint: $(SOURCES:.py=.pylint)
 uwsgi: kybyz1.ini
 	uwsgi $<
-	

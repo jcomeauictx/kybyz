@@ -2,10 +2,13 @@
 '''
 Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
-import os, time, threading, logging  # pylint: disable=multiple-imports
+import sys, os, time, threading, logging  # pylint: disable=multiple-imports
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
+COMMAND = sys.argv[0]
+ARGS = sys.argv[1:]
+logging.info('COMMAND: %s, ARGS: %s', COMMAND, ARGS)
 HOME = os.path.expanduser('~')
 CACHE = os.path.join(HOME, '.kybyz1')
 CACHED = {'uptime': None}
@@ -19,7 +22,6 @@ def init():
     kybyz1 = threading.Thread(target=background, name='kybyz1')
     kybyz1.daemon = True
     kybyz1.start()
-    logging.debug('main process exiting, leaving daemon thread running')
 
 def serve(env=None, start_response=None):
     '''
@@ -31,7 +33,7 @@ def serve(env=None, start_response=None):
         headers = [('Content-type', 'text/html')]
         page = '<div>kybyz1 active %s seconds</div>' % CACHED['uptime']
         start_response(status, headers)
-    return page
+    return [page.encode()]
 
 def background():
     '''
@@ -41,9 +43,10 @@ def background():
     '''
     delay = 10  # seconds
     while True:
-        time.sleep(delay)
+        time.sleep(delay)  # releases the GIL for `serve`
         CACHED['uptime'] += delay
         logging.debug('uptime: %s seconds', CACHED['uptime'])
 
-if __name__ == '__main__':
+if __name__ == '__main__' or COMMAND == 'uwsgi':
     init()
+    logging.warning('main process exiting, leaving daemon thread running')
