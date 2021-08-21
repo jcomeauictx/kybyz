@@ -17,6 +17,7 @@ def init():
     os.makedirs(CACHE, 0o700, exist_ok=True)
     CACHED['uptime'] = 0
     kybyz1 = threading.Thread(target=background, name='kybyz1')
+    kybyz1.daemon = True
     kybyz1.start()
     logging.debug('main process exiting, leaving daemon thread running')
 
@@ -28,7 +29,7 @@ def serve(env=None, start_response=None):
     if env and start_response:
         status = '200 OK'
         headers = [('Content-type', 'text/html')]
-        page = '<div>kybyz1 active %d seconds</div>' % CACHED['uptime']
+        page = '<div>kybyz1 active %s seconds</div>' % CACHED['uptime']
         start_response(status, headers)
     return page
 
@@ -42,6 +43,7 @@ def background():
     while True:
         time.sleep(delay)
         CACHED['uptime'] += delay
+        logging.debug('uptime: %s seconds', CACHED['uptime'])
 
 if __name__ == '__main__':
     init()

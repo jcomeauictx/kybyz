@@ -10,3 +10,6 @@ doctests: $(SOURCES:.py=.doctest)
 %.pylint: %.py
 	$(PYLINT) $<
 pylint: $(SOURCES:.py=.pylint)
+uwsgi: kybyz1.ini
+	uwsgi $<
+	
