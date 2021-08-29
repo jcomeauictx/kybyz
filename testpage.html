@@ -1,14 +1,9 @@
 <!DOCTYPE html>
-<!-- https://visjs.github.io/
-             vis-network/examples/network/data/dynamicFiltering.html -->
 <html lang="en">
   <head>
-    <title>Vis Network | Data | Dynamic filtering</title>
+    <title>kybyz1 testpage</title>
 
-    <script
-      type="text/javascript"
-      src="../../../standalone/umd/vis-network.min.js"
-    ></script>
+    <script type="text/javascript" src="vis-network.min.js"></script>
 
     <style type="text/css">
       #mynetwork {
@@ -30,57 +25,9 @@
     </style>
   </head>
   <body>
-    <h1>Dynamic filtering</h1>
-    <p>
-      With
-      <a
-        href="https://visjs.github.io/vis-data/data/dataview.html"
-        target="_blank"
-      >
-        <code>vis.DataView</code></a
-      >
-      on top of vis.DataSet you can filter displayed data without modifying the
-      data source.
-    </p>
-    <label>
-      Filter nodes
-      <select id="nodeFilterSelect">
-        <option value="">All characters</option>
-        <option value="kid">kids</option>
-        <option value="adult">adults</option>
-        <option value="male">male</option>
-        <option value="female">female</option>
-      </select>
-    </label>
-    <br />
-    <br />
-    <label>
-      Filter edges
-      <div>
-        <label>
-          <input type="checkbox" name="edgesFilter" value="parent" checked />
-          Is <span style="color: green">parent</span> of
-        </label>
-      </div>
-      <div>
-        <label>
-          <input type="checkbox" name="edgesFilter" value="teacher" checked />
-          Is <span style="color: blue">teacher</span> of
-        </label>
-      </div>
-      <div>
-        <label>
-          <input type="checkbox" name="edgesFilter" value="friend" checked />
-          Is <span style="color: red">friend</span> of
-        </label>
-      </div>
-    </label>
-    <br />
+    <h1>kybyz1 example</h1>
     <div id="mynetwork"></div>
     <script type="text/javascript">
-      const nodeFilterSelector = document.getElementById("nodeFilterSelect");
-      const edgeFilters = document.getElementsByName("edgesFilter");
-
       function startNetwork(data) {
         const container = document.getElementById("mynetwork");
         const options = {};
@@ -149,67 +96,9 @@
           color: { color: "blue" },
         },
       ]);
-
-      /**
-       * filter values are updated in the outer scope.
-       * in order to apply filters to new values, DataView.refresh() should be called
-       */
-      let nodeFilterValue = "";
-      const edgesFilterValues = {
-        friend: true,
-        teacher: true,
-        parent: true,
-      };
-
-      /*
-      filter function should return true or false
-      based on whether item in DataView satisfies a given condition.
-    */
-      const nodesFilter = (node) => {
-        if (nodeFilterValue === "") {
-          return true;
-        }
-        switch (nodeFilterValue) {
-          case "kid":
-            return node.age === "kid";
-          case "adult":
-            return node.age === "adult";
-          case "male":
-            return node.gender === "male";
-          case "female":
-            return node.gender === "female";
-          default:
-            return true;
-        }
-      };
-
-      const edgesFilter = (edge) => {
-        return edgesFilterValues[edge.relation];
-      };
-
-      const nodesView = new vis.DataView(nodes, { filter: nodesFilter });
-      const edgesView = new vis.DataView(edges, { filter: edgesFilter });
-
-      nodeFilterSelector.addEventListener("change", (e) => {
-        // set new value to filter variable
-        nodeFilterValue = e.target.value;
-        /*
-        refresh DataView,
-        so that its filter function is re-calculated with the new variable
-      */
-        nodesView.refresh();
-      });
-
-      edgeFilters.forEach((filter) =>
-        filter.addEventListener("change", (e) => {
-          const { value, checked } = e.target;
-          edgesFilterValues[value] = checked;
-          edgesView.refresh();
-        })
-      );
-
+      const nodesView = new vis.DataView(nodes);
+      const edgesView = new vis.DataView(edges);
       startNetwork({ nodes: nodesView, edges: edgesView });
     </script>
   </body>
 </html>
-

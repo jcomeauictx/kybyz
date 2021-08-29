@@ -3,7 +3,7 @@
 #log-syslog
 http-socket = kybyz:2424
 plugin = python
-wsgi-file = $PWD/kybyz.py
+wsgi-file = $PWD/kybyz0.py
 callable = kybyz_client
 chdir = $PWD
 uid = $USER
