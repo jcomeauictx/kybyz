@@ -1,5 +1,6 @@
-# Has precedence over Makefile. Used for building and testing kybyz version 1
-SOURCES := kybyz1.py
+# set shell to Bash to allow use of bashisms in recipes
+SHELL := /bin/bash
+SOURCES ?= $(wildcard *.py)
 PYTHON ?= python3
 PYLINT ?= pylint3
 export
