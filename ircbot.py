@@ -25,8 +25,8 @@ class IRCBot():
         '''
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = server
-        self.nickname = nickname or pwd.getpwnam(os.geteuid()).pw_name
-        self.realname = realname or pwd.getpwnam(os.geteuid()).pw_gecos
+        self.nickname = nickname or pwd.getpwuid(os.geteuid()).pw_name
+        self.realname = realname or pwd.getpwuid(os.geteuid()).pw_gecos
         self.connection = self.connect(server, port,
                                        self.nickname, self.realname)
         self.terminate = False
@@ -41,11 +41,11 @@ class IRCBot():
         names = (nickname, realname)
         connection = self.client.connect((server, port))
         self.client.send(('USER %s 0 * :%s\r\n' % names).encode())
-        logging.info('received: %s', self.client.recv(2048).decode())
+        logging.info('received: \n%s\n', self.client.recv(2048).decode())
         self.client.send(('NICK %s\r\n' % nickname).encode())
-        logging.info('received: %s', self.client.recv(2048).decode())
+        logging.info('received: \n%s\n', self.client.recv(2048).decode())
         self.client.send(('JOIN %s\r\n' % CHANNEL).encode())
-        logging.info('received: %s', self.client.recv(2048).decode())
+        logging.info('received: \n%s\n', self.client.recv(2048).decode())
         return connection
 
     def monitor(self):
@@ -67,8 +67,9 @@ def test():
     '''
     try:
         ircbot = IRCBot()
-        time.sleep(60)
+        time.sleep(600)
     except KeyboardInterrupt:
+        logging.warning('Telling monitor to terminate')
         ircbot.terminate = True
 
 if __name__ == '__main__':
