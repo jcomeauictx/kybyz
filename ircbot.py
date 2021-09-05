@@ -48,6 +48,12 @@ class IRCBot():
         logging.info('received: \n%s\n', self.client.recv(2048).decode())
         return connection
 
+    def privmsg(self, message, target=CHANNEL):
+        '''
+        simulates typing a message in ircII with no preceding command
+        '''
+        self.client.send(('PRIVMSG %s %s\r\n', target, message).encode())
+
     def monitor(self):
         '''
         wait for input. send a PONG for every PING
@@ -59,6 +65,8 @@ class IRCBot():
         while not self.terminate:
             received = self.client.recv(2048).decode()
             logging.info(received)
+            if received.split()[0] == 'PING':
+                self.client.send(received.replace('I', 'O', 1).encode())
         logging.warning('IRC monitor terminated from launching thread')
 
 def test():
