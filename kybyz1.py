@@ -3,6 +3,7 @@
 Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
 import sys, os, time, threading, logging  # pylint: disable=multiple-imports
+from ircbot import IRCBot
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
@@ -42,6 +43,7 @@ def background():
     communicate with other kybyz servers
     '''
     delay = 10  # seconds
+    ircbot = IRCBot()
     while True:
         time.sleep(delay)  # releases the GIL for `serve`
         CACHED['uptime'] += delay
