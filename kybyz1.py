@@ -29,6 +29,7 @@ def serve(env=None, start_response=None):
     handle web requests
     '''
     page = None
+    logging.debug('requested: %s', env.get('REQUEST_URI'))
     if env and start_response:
         status = '200 OK'
         headers = [('Content-type', 'text/html')]
