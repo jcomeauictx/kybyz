@@ -52,7 +52,7 @@ class IRCBot():
         '''
         simulates typing a message in ircII with no preceding command
         '''
-        self.client.send(('PRIVMSG %s %s\r\n', target, message).encode())
+        self.client.send(('PRIVMSG %s %s\r\n' % (target, message)).encode())
 
     def monitor(self):
         '''
