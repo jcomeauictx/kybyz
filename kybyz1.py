@@ -14,12 +14,13 @@ HOME = os.path.expanduser('~')
 CACHE = os.path.join(HOME, '.kybyz1')
 CACHED = {'uptime': None}
 KYBYZ_HOME = os.path.join(CACHE, 'home')
+EXAMPLE = 'example.kybyz1'  # subdirectory with sample posts
 
 def init():
     '''
     initialize application
     '''
-    os.makedirs(CACHE, 0o700, exist_ok=True)
+    os.makedirs(KYBYZ_HOME, 0o700, exist_ok=True)
     CACHED['uptime'] = 0
     kybyz1 = threading.Thread(target=background, name='kybyz1')
     kybyz1.daemon = True
@@ -35,7 +36,10 @@ def serve(env=None, start_response=None):
         if env['REQUEST_URI'] == '/':
             status = '200 OK'
             headers = [('Content-type', 'text/html')]
-            page = '<div>kybyz1 active %s seconds</div>' % CACHED['uptime']
+            page = read('timeline.html').decode()
+            posts = ['<div>kybyz1 active %s seconds</div>' % CACHED['uptime']]
+            posts.extend(['<div>%s</div>' % post for post in loadposts()])
+            page = page.format(posts=posts)
         else:
             status = '404 Not Found'
             headers = [('Content-type', 'text/html')]
@@ -45,6 +49,29 @@ def serve(env=None, start_response=None):
     logging.warning('serve: failing with env=%s and start_response=%s',
                     env, start_response)
     return None
+
+def loadposts(to_html=False):
+    '''
+    fetch and return all posts from KYBYZ_HOME or, if empty, from EXAMPLE
+
+    setting to_html to True forces conversion from JSON format to HTML
+    '''
+    if os.listdir(KYBYZ_HOME):
+        directory = KYBYZ_HOME
+    else:
+        directory = EXAMPLE
+    posts = [read(os.path.join(directory, post))
+             for post in os.listdir(directory)]
+    if to_html:
+        logging.warning('loadposts: to_html not yet implemented')
+    return posts
+
+def read(filename):
+    '''
+    read and return file contents
+    '''
+    with open(filename, 'rb') as infile:
+        return infile.read()
 
 def background():
     '''

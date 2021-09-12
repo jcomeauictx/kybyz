@@ -7,7 +7,7 @@
   margin: auto;
   width: 450px;
   height: 450px;
-  background-image: url('{image}');
+  background-image: url('{post.image}');
   background-size: 100%; 
   text-align: center;
   position: relative;
