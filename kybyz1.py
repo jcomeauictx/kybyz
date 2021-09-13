@@ -39,7 +39,7 @@ def serve(env=None, start_response=None):
             page = read('timeline.html').decode()
             posts = ['<div>kybyz1 active %s seconds</div>' % CACHED['uptime']]
             posts.extend(['<div>%s</div>' % post for post in loadposts()])
-            page = page.format(posts=posts)
+            page = page.format(posts=''.join(posts))
         else:
             status = '404 Not Found'
             headers = [('Content-type', 'text/html')]
