@@ -16,6 +16,7 @@ CACHE = os.path.join(HOME, '.kybyz1')
 CACHED = {'uptime': None}
 KYBYZ_HOME = os.path.join(CACHE, 'home')
 EXAMPLE = 'example.kybyz1'  # subdirectory with sample posts
+KNOWN = ['post', 'netmeme', 'kybyz']  # known post types
 
 def init():
     '''

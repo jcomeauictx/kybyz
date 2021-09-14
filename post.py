@@ -2,15 +2,28 @@
 '''
 kybyz1 post
 '''
-from datetime import datetime, timezone
+import os
 from canonical_json import literal_eval
-from kbutils import read
+from kbutils import read, make_timestamp
 
 class Post():
     '''
     encapsulation of kybyz post
     '''
-    def __init__(self, filename=None, **kwargs):
+    def __new__(cls, filename, **kwargs):
+        mapping = {subclass.classname: subclass
+                   for subclass in [cls] + cls.__subclasses__}
+        if not kwargs:
+            kwargs = literal_eval(read(filename).decode().strip())
+        if not kwargs.get('type'):
+            post_type = os.path.splitext(filename)[1].lstrip('.')
+        else:
+            post_type = kwargs['type']
+        subclass = mapping[post_type]
+        instance = super(Post, subclass).__new__(subclass)
+        return instance
+
+    def __init__(self, filename, **kwargs):
         '''
         initialize instantiation from **dict
         '''
@@ -37,15 +50,17 @@ class Post():
         output contents as HTML
         '''
         template = read(self.classname + '.html')
-        return template.format(posting=self)
+        return template.format(post=self)
 
-def make_timestamp():
+class Netmeme(Post):
     '''
-    untrusted timestamp.
+    encapsulation of kybyz Internet meme (netmeme is my abbreviation)
+    '''
 
-    will need blockchain for a trusted timestamp
+class Kybyz(Post):
     '''
-    return datetime.now(timezone.utc).isoformat()
+    encapsulation of a "kybyz": a "thumbs-up" or other icon with optional text
+    '''
 
 if __name__ == '__main__':
     Post('exampe.kybyz1/testmeme.json').validate()
