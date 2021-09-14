@@ -4,6 +4,7 @@ Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
 import sys, os, time, threading, logging  # pylint: disable=multiple-imports
 from ircbot import IRCBot
+from kbutils import read
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
@@ -65,13 +66,6 @@ def loadposts(to_html=False):
     if to_html:
         logging.warning('loadposts: to_html not yet implemented')
     return posts
-
-def read(filename):
-    '''
-    read and return file contents
-    '''
-    with open(filename, 'rb') as infile:
-        return infile.read()
 
 def background():
     '''

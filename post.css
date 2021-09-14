@@ -1,0 +1,19 @@
+* {
+  box-sizing: border-box;
+}
+
+.post {
+  margin: auto;
+  width: 450px;
+  height: 450px;
+  text-align: center;
+  position: relative;
+}
+
+.bottom {
+  bottom: 0;
+}
+
+.top {
+  top: 0;
+}
