@@ -30,7 +30,7 @@ except ImportError:
 logging.debug('uwsgi.opt: %s' % repr(uwsgi.opt))
 MAXLENGTH = 1024 * 1024  # maximum size in bytes of markdown source of post
 HOMEDIR = pwd.getpwuid(os.getuid()).pw_dir
-DATADIR = uwsgi.opt.get('check_static', os.path.join(HOMEDIR, '.kybyz'))
+DATADIR = uwsgi.opt.get('check_static', os.path.join(HOMEDIR, '.kybyz_v0'))
 THISDIR = os.path.dirname(sys.argv[0]) or os.path.abspath('.')
 EXAMPLE = uwsgi.opt.get('check_static', os.path.join(THISDIR, 'example.kybyz'))
 logging.debug('HOMEDIR: %s' % HOMEDIR)
@@ -149,7 +149,7 @@ class Node(str):
 
 def kybyz_client(env = None, start_response = None):
     '''
-    primary client process, shows contents of $HOME/.kybyz
+    primary client process, shows contents of $HOME/.kybyz_v0
     '''
     logging.debug('env: %s' % repr(env))
     start = DATADIR

@@ -4,7 +4,7 @@ O := Unternet
 E := hostmaster
 OU := Tech
 DRYRUN ?= --dry-run
-localtest: kybyz0.py
+localtest: kybyz.py
 	python $<
 client_test: localtest
 	wget -O- --quiet http://kybyz:2424
@@ -55,8 +55,8 @@ backup:
    	 -delete 0 -alpha off -colors 256 -transparent white $@
 %.pylint: %.py
 	pylint $<
-pylint: kybyz1.pylint kybyz0.pylint
+pylint: kybyz.pylint
 %.doctest: %.py
 	python3 -mdoctest --verbose $<
-doctests: kybyz1.doctest
+doctests: kybyz.doctest
 .FORCE:

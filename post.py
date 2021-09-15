@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-kybyz1 post
+kybyz post
 '''
 import os
 from canonical_json import literal_eval
@@ -85,4 +85,4 @@ class Kybyz(BasePost):
 
 if __name__ == '__main__':
     logging.debug('testing post')
-    print(BasePost('example.kybyz1/testmeme.json'))
+    print(BasePost('example.kybyz/testmeme.json'))

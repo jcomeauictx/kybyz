@@ -12,10 +12,10 @@ COMMAND = sys.argv[0]
 ARGS = sys.argv[1:]
 logging.info('COMMAND: %s, ARGS: %s', COMMAND, ARGS)
 HOME = os.path.expanduser('~')
-CACHE = os.path.join(HOME, '.kybyz1')
+CACHE = os.path.join(HOME, '.kybyz')
 CACHED = {'uptime': None}
 KYBYZ_HOME = os.path.join(CACHE, 'home')
-EXAMPLE = 'example.kybyz1'  # subdirectory with sample posts
+EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
 KNOWN = ['post', 'netmeme', 'kybyz']  # known post types
 
 def init():
@@ -24,9 +24,9 @@ def init():
     '''
     os.makedirs(KYBYZ_HOME, 0o700, exist_ok=True)
     CACHED['uptime'] = 0
-    kybyz1 = threading.Thread(target=background, name='kybyz1')
-    kybyz1.daemon = True
-    kybyz1.start()
+    kybyz = threading.Thread(target=background, name='kybyz')
+    kybyz.daemon = True
+    kybyz.start()
 
 def serve(env=None, start_response=None):
     '''
@@ -41,7 +41,7 @@ def serve(env=None, start_response=None):
     if requested is not None and start_response:
         if requested == '':
             page = read('timeline.html').decode()
-            posts = ['<div>kybyz1 active %s seconds</div>' % CACHED['uptime']]
+            posts = ['<div>kybyz active %s seconds</div>' % CACHED['uptime']]
             posts.extend(['<div>%s</div>' % post for post in loadposts()])
             page = page.format(posts=''.join(posts)).encode()
         elif os.path.exists(requested):

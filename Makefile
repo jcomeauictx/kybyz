@@ -11,7 +11,7 @@ doctests: $(SOURCES:.py=.doctest)
 %.lint: %.py $(PYLINT)
 	$(PYLINT) $<
 lint: $(SOURCES:.py=.lint)
-uwsgi: kybyz1.ini
+uwsgi: kybyz.ini
 	uwsgi $<
 $(PYLINT):
 	which $@ || sudo apt-get install $@

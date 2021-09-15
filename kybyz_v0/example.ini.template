@@ -1,16 +1,15 @@
 [uwsgi]
 # symlink this under /etc/uwsgi/apps-enabled/ (Debian)
 #log-syslog
-http-socket = kybyz:2424
+http-socket = kybyz:2727
 plugin = python
-wsgi-file = $PWD/kybyz0.py
-callable = kybyz_client
+wsgi-file = $PWD/kybyz.py
+callable = example_client
 chdir = $PWD
+check-static = $PWD/example.kybyz
 uid = $USER
-check-static = /home/$USER/.kybyz
 # do not load `site` module while root, load it later as user
 no-site
-# log already created, no need for following
 #logto = /var/log/uwsgi/app/%n.log
 # guide to "magic" variables:
 # http://uwsgi-docs.readthedocs.io/en/latest/Configuration.html
