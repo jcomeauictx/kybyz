@@ -32,24 +32,41 @@ def serve(env=None, start_response=None):
     handle web requests
     '''
     page = None
-    logging.debug('requested: %s', env.get('REQUEST_URI'))
-    if env and start_response:
-        if env['REQUEST_URI'] == '/':
-            status = '200 OK'
-            headers = [('Content-type', 'text/html')]
+    env = env or {}
+    requested = env.get('REQUEST_URI', None).lstrip(os.sep)
+    logging.debug('requested: %s', requested)
+    status = '200 OK'
+    headers = [('Content-type', 'text/html')]
+    if requested and start_response:
+        if requested == '':
             page = read('timeline.html').decode()
             posts = ['<div>kybyz1 active %s seconds</div>' % CACHED['uptime']]
             posts.extend(['<div>%s</div>' % post for post in loadposts()])
-            page = page.format(posts=''.join(posts))
+            page = page.format(posts=''.join(posts)).encode()
+        elif os.path.exists(requested):
+            page = read(requested)
+            headers = [('Content-type', guess_mimetype(requested, page))]
         else:
+            logging.warning('%s not found', requested)
             status = '404 Not Found'
-            headers = [('Content-type', 'text/html')]
-            page = '<div>not yet implemented</div>'
+            page = b'<div>not yet implemented</div>'
         start_response(status, headers)
-        return [page.encode()]
+        return [page]
     logging.warning('serve: failing with env=%s and start_response=%s',
                     env, start_response)
     return None
+
+def guess_mimetype(filename, contents):
+    '''
+    guess and return mimetype based on name and/or contents
+    '''
+    logging.debug('filename: %s, contents: %r', filename, contents[:32])
+    extension = os.path.splitext(filename)[1]
+    mimetypes = {
+        '.jpg': 'image/jpeg',
+        '.css': 'stylesheet/css',
+    }
+    return mimetypes.get(extension, 'text/html')
 
 def loadposts(to_html=True):
     '''

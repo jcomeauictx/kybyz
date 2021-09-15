@@ -85,4 +85,4 @@ class Kybyz(BasePost):
 
 if __name__ == '__main__':
     logging.debug('testing post')
-    BasePost('example.kybyz1/testmeme.json').validate()
+    print(BasePost('example.kybyz1/testmeme.json'))
