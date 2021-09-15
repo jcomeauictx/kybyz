@@ -6,21 +6,27 @@ import os
 from canonical_json import literal_eval
 from kbutils import read, make_timestamp
 
-class Post():
+class BasePost():
     '''
-    encapsulation of kybyz post
+    base class for kybyz posts
     '''
     def __new__(cls, filename, **kwargs):
         mapping = {subclass.classname: subclass
-                   for subclass in [cls] + cls.__subclasses__}
+                   for subclass in cls.__subclasses__}
         if not kwargs:
-            kwargs = literal_eval(read(filename).decode().strip())
+            try:
+                kwargs = literal_eval(read(filename).decode().strip())
+            except TypeError:
+                kwargs = {}
         if not kwargs.get('type'):
             post_type = os.path.splitext(filename)[1].lstrip('.')
         else:
             post_type = kwargs['type']
-        subclass = mapping[post_type]
-        instance = super(Post, subclass).__new__(subclass)
+        subclass = mapping.get(post_type, None)
+        try:
+            instance = super(BasePost, subclass).__new__(subclass)
+        except TypeError:
+            instance = None
         return instance
 
     def __init__(self, filename, **kwargs):
@@ -35,6 +41,12 @@ class Post():
             setattr(self, key, kwargs[key])
         if not getattr(self, 'timestamp', None):
             self.timestamp = make_timestamp()
+
+    def __str__(self):
+        '''
+        return string representation
+        '''
+        return self.to_html()
 
     def validate(self):
         '''
@@ -52,15 +64,20 @@ class Post():
         template = read(self.classname + '.html')
         return template.format(post=self)
 
-class Netmeme(Post):
+class Post(BasePost):
+    '''
+    encapsulation of kybyz post
+    '''
+
+class Netmeme(BasePost):
     '''
     encapsulation of kybyz Internet meme (netmeme is my abbreviation)
     '''
 
-class Kybyz(Post):
+class Kybyz(BasePost):
     '''
     encapsulation of a "kybyz": a "thumbs-up" or other icon with optional text
     '''
 
 if __name__ == '__main__':
-    Post('exampe.kybyz1/testmeme.json').validate()
+    BasePost('example.kybyz1/testmeme.json').validate()

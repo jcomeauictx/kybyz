@@ -5,6 +5,7 @@ Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 import sys, os, time, threading, logging  # pylint: disable=multiple-imports
 from ircbot import IRCBot
 from kbutils import read
+from post import BasePost
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
@@ -52,7 +53,7 @@ def serve(env=None, start_response=None):
                     env, start_response)
     return None
 
-def loadposts(to_html=False):
+def loadposts(to_html=True):
     '''
     fetch and return all posts from KYBYZ_HOME or, if empty, from EXAMPLE
 
@@ -62,11 +63,10 @@ def loadposts(to_html=False):
         directory = KYBYZ_HOME
     else:
         directory = EXAMPLE
-    posts = [read(os.path.join(directory, post))
-             for post in os.listdir(directory)]
-    if to_html:
-        logging.warning('loadposts: to_html not yet implemented')
-    return posts
+    post = BasePost if to_html else read
+    posts = [post(os.path.join(directory, filename))
+             for filename in os.listdir(directory)]
+    return list(filter(None, posts))
 
 def background():
     '''
