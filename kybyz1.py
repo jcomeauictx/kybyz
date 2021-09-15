@@ -2,12 +2,10 @@
 '''
 Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
-import sys, os, time, threading, logging  # pylint: disable=multiple-imports
+import sys, os, time, threading  # pylint: disable=multiple-imports
 from ircbot import IRCBot
-from kbutils import read
+from kbutils import read, logging
 from post import BasePost
-
-logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
 COMMAND = sys.argv[0]
 ARGS = sys.argv[1:]

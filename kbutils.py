@@ -2,7 +2,10 @@
 '''
 Kybyz utilities
 '''
+import logging
 from datetime import datetime, timezone
+
+logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
 def read(filename):
     '''

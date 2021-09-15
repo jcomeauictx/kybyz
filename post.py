@@ -4,15 +4,17 @@ kybyz1 post
 '''
 import os
 from canonical_json import literal_eval
-from kbutils import read, make_timestamp
+from kbutils import read, make_timestamp, logging
 
 class BasePost():
     '''
     base class for kybyz posts
     '''
+    classname = 'basepost'
+
     def __new__(cls, filename, **kwargs):
         mapping = {subclass.classname: subclass
-                   for subclass in cls.__subclasses__}
+                   for subclass in cls.__subclasses__()}
         if not kwargs:
             try:
                 kwargs = literal_eval(read(filename).decode().strip())
@@ -33,7 +35,6 @@ class BasePost():
         '''
         initialize instantiation from **dict
         '''
-        self.classname = self.__class__.__name__
         self.filename = filename
         if not kwargs:
             kwargs = literal_eval(read(filename).decode().strip())
@@ -61,23 +62,27 @@ class BasePost():
         '''
         output contents as HTML
         '''
-        template = read(self.classname + '.html')
+        template = read(self.classname + '.html').decode()
         return template.format(post=self)
 
 class Post(BasePost):
     '''
     encapsulation of kybyz post
     '''
+    classname = 'post'
 
 class Netmeme(BasePost):
     '''
     encapsulation of kybyz Internet meme (netmeme is my abbreviation)
     '''
+    classname = 'netmeme'
 
 class Kybyz(BasePost):
     '''
     encapsulation of a "kybyz": a "thumbs-up" or other icon with optional text
     '''
+    classname = 'kybyz'
 
 if __name__ == '__main__':
+    logging.debug('testing post')
     BasePost('example.kybyz1/testmeme.json').validate()
