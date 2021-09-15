@@ -31,13 +31,13 @@ def serve(env=None, start_response=None):
     '''
     handle web requests
     '''
-    page = None
+    page = b'(Something went wrong)'
     env = env or {}
     requested = env.get('REQUEST_URI', None).lstrip(os.sep)
-    logging.debug('requested: %s', requested)
+    logging.debug('requested: "%s"', requested)
     status = '200 OK'
     headers = [('Content-type', 'text/html')]
-    if requested and start_response:
+    if requested is not None and start_response:
         if requested == '':
             page = read('timeline.html').decode()
             posts = ['<div>kybyz1 active %s seconds</div>' % CACHED['uptime']]
@@ -64,7 +64,7 @@ def guess_mimetype(filename, contents):
     extension = os.path.splitext(filename)[1]
     mimetypes = {
         '.jpg': 'image/jpeg',
-        '.css': 'stylesheet/css',
+        '.css': 'text/css',
     }
     return mimetypes.get(extension, 'text/html')
 
