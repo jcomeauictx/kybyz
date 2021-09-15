@@ -3,6 +3,7 @@
 Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
 import sys, os, time, threading  # pylint: disable=multiple-imports
+from urllib.request import urlopen
 from ircbot import IRCBot
 from kbutils import read, logging
 from post import BasePost
@@ -33,7 +34,7 @@ def serve(env=None, start_response=None):
     '''
     page = b'(Something went wrong)'
     env = env or {}
-    requested = env.get('REQUEST_URI', None).lstrip(os.sep)
+    requested = env.get('REQUEST_URI', None).lstrip('/')
     logging.debug('requested: "%s"', requested)
     status = '200 OK'
     headers = [('Content-type', 'text/html')]
@@ -46,6 +47,10 @@ def serve(env=None, start_response=None):
         elif os.path.exists(requested):
             page = read(requested)
             headers = [('Content-type', guess_mimetype(requested, page))]
+        elif requested.startswith('ipfs/'):
+            with urlopen('https://ipfs.io/' + requested) as request:
+                page = request.read()
+                headers = [('Content-type', guess_mimetype(requested, page))]
         else:
             logging.warning('%s not found', requested)
             status = '404 Not Found'
