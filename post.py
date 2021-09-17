@@ -2,8 +2,7 @@
 '''
 kybyz post
 '''
-import os
-from canonical_json import literal_eval
+import os, json  # pylint: disable=multiple-imports
 from kbutils import read, make_timestamp, logging
 
 class BasePost():
@@ -17,7 +16,7 @@ class BasePost():
                    for subclass in cls.__subclasses__()}
         if not kwargs:
             try:
-                kwargs = literal_eval(read(filename).decode().strip())
+                kwargs = json.loads(read(filename))
             except TypeError:
                 kwargs = {}
         if not kwargs.get('type'):
@@ -37,7 +36,7 @@ class BasePost():
         '''
         self.filename = filename
         if not kwargs:
-            kwargs = literal_eval(read(filename).decode().strip())
+            kwargs = json.loads(read(filename))
         for key in kwargs:
             setattr(self, key, kwargs[key])
         if not getattr(self, 'timestamp', None):
