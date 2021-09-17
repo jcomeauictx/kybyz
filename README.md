@@ -24,7 +24,7 @@ example, you can embed the hash of the post in a BCH transaction along with
 the hash of the previous block. This proves the post is no older than the
 previous block, and no newer than the transaction timestamp.
 
-# prerequisites
+## prerequisites
 
 * python3
 * python3-ecdsa
