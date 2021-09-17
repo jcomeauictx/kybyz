@@ -1,4 +1,5 @@
-# kybyz---a peer to peer collaboration and social media platform
+# kybyz
+a peer to peer collaboration and social media platform
 
 ## proof of authorship
 
