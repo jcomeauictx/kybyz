@@ -5,7 +5,6 @@ kybyz version 0.1, since original has foundered
 this will be built on ipfs, using canonical json objects
 '''
 import sys, json, logging  # pylint: disable=multiple-imports
-from ast import literal_eval
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
@@ -21,7 +20,7 @@ def canonicalize(obj):
     '''
     if isinstance(obj, str):
         logging.debug('object passed as string: %s', obj)
-        obj = literal_eval(obj)
+        obj = json.loads(obj)
     logging.debug('object being canonicalized: %s', obj)
     result = json.dumps(
         obj,
