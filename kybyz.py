@@ -4,6 +4,7 @@ Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
 import sys, os, time, threading  # pylint: disable=multiple-imports
 from urllib.request import urlopen
+from collections import namedtuple
 from gnupg import GPG
 from ircbot import IRCBot
 from kbutils import read, logging
@@ -25,6 +26,7 @@ def init():
     initialize application
     '''
     os.makedirs(CACHE, 0o700, exist_ok=True)
+    CACHED.update(registration()._asdict())
     CACHED['uptime'] = 0
     kybyz = threading.Thread(target=background, name='kybyz')
     kybyz.daemon = True
@@ -79,15 +81,24 @@ def registration():
             email = os.path.split(symlink)[1]
         except OSError:
             logging.exception('Bad registration')
-        if email:
-            gpg = GPG()
-            # pylint: disable=no-member
-            verified = gpg.verify(gpg.sign('').data)
-            if not verified.username.endswith('<' + email + '>'):
-                raise ValueError('%s no match for %s' %
-                                 (email, verified.username))
-            gpgkey = verified.key_id
-    return username, email, gpgkey
+        gpgkey = verify_key(email)
+    return namedtuple('registration', ('username', 'email', 'gpgkey'))(
+                      username, email, gpgkey)
+
+def verify_key(email):
+    '''
+    fetch user's GPG key and make sure it matches given email address
+    '''
+    gpgkey = None
+    if email:
+        gpg = GPG()
+        # pylint: disable=no-member
+        verified = gpg.verify(gpg.sign('').data)
+        if not verified.username.endswith('<' + email + '>'):
+            raise ValueError('%s no match for GPG certificate %s' %
+                             (email, verified.username))
+        gpgkey = verified.key_id
+    return gpgkey
 
 def register(username=None, email=None):
     '''
@@ -103,6 +114,7 @@ def register(username=None, email=None):
             raise ValueError('Previously registered as %s %s' % current[:2])
         logging.warning('Already registered as %s %s', *current[:2])
     else:
+        verify_key(email)
         os.makedirs(os.path.join(CACHE, email))
         os.symlink(os.path.join(CACHE, email), os.path.join(CACHE, username))
         os.symlink(os.path.join(CACHE, username), KYBYZ_HOME)
