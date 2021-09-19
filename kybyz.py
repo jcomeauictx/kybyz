@@ -4,6 +4,7 @@ Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
 import sys, os, time, threading  # pylint: disable=multiple-imports
 from urllib.request import urlopen
+from gnupg import GPG
 from ircbot import IRCBot
 from kbutils import read, logging
 from post import BasePost
@@ -62,45 +63,50 @@ def serve(env=None, start_response=None):
                     env, start_response)
     return None
 
+def registration():
+    '''
+    get and return information on user, if any
+
+    assume only one key for user's email address, for now.
+    we should probably pick the one with the latest expiration date.
+    '''
+    username = email = gpgkey = None
+    if os.path.exists(KYBYZ_HOME):
+        try:
+            symlink = os.readlink(KYBYZ_HOME)
+            username = os.path.split(symlink)[1]
+            symlink = os.readlink(symlink)
+            email = os.path.split(symlink)[1]
+        except OSError:
+            logging.exception('Bad registration')
+        if email:
+            gpg = GPG()
+            # pylint: disable=no-member
+            verified = gpg.verify(gpg.sign('').data)
+            if not verified.username.endswith('<' + email + '>'):
+                raise ValueError('%s no match for %s' %
+                                 (email, verified.username))
+            gpgkey = verified.key_id
+    return username, email, gpgkey
+
 def register(username=None, email=None):
     '''
     register kybyz account
     '''
-    check_username = check_email = None
+    current = registration()  # see what we already have, if anything
     if username is None or email is None:
         logging.error('Usage: %s %s USERNAME EMAIL_ADDRESS',
                       COMMAND, ARGS[0])
         raise ValueError('Must specify desired username and email address')
-    try:
-        check_username = os.readlink(KYBYZ_HOME)
-        check_email = os.readlink(check_username)
-        if (os.path.split(check_username)[1] != username or
-                os.path.split(check_email)[1] != email):
-            raise ValueError('Previously registered as %s' %
-                             os.path.split(check_username)[1])
-        logging.warning('Already registered as %s', username)
-    except FileNotFoundError:
-        logging.debug('Not already registered (no such directory)')
+    if any(current):
+        if (username, email) != current[:2]:
+            raise ValueError('Previously registered as %s %s' % current[:2])
+        logging.warning('Already registered as %s %s', *current[:2])
+    else:
         os.makedirs(os.path.join(CACHE, email))
         os.symlink(os.path.join(CACHE, email), os.path.join(CACHE, username))
         os.symlink(os.path.join(CACHE, username), KYBYZ_HOME)
-    except OSError as not_a_link:  # one of the two was not a symlink
-        if check_username is not None:
-            # see if it's the same username already registered
-            if os.path.split(check_username)[1] == username:
-                os.rename(check_username, os.path.join(CACHE, email))
-                os.symlink(os.path.join(CACHE, email), check_username)
-                os.symlink(check_username, KYBYZ_HOME)
-            else:
-                raise ValueError(
-                    'Already registered as %s' %
-                    os.path.split(check_username)[1]) from not_a_link
-        else:
-            logging.debug('Not already registered (directory not a link)')
-            os.rename(KYBYZ_HOME, os.path.join(CACHE, email))
-            os.symlink(os.path.join(CACHE, email),
-                       os.path.join(CACHE, username))
-            os.symlink(os.path.join(CACHE, username), KYBYZ_HOME)
+        logging.info('Now registered as %s %s', username, email)
 
 def guess_mimetype(filename, contents):
     '''
@@ -146,7 +152,7 @@ def background():
 
 if __name__ == '__main__':
     if ARGS and ARGS[0] in COMMANDS:
-        eval(ARGS[0])(*ARGS[1:])  # pylint: disable=eval-used
+        print(eval(ARGS[0])(*ARGS[1:]))  # pylint: disable=eval-used
     else:
         logging.error('Must specify one of: %s', COMMANDS)
 elif COMMAND == 'uwsgi':
