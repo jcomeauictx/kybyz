@@ -127,8 +127,10 @@ def post(post_type, *args, **kwargs):
     post_types = [subclass.classname for subclass in BasePost.__subclasses__()]
     if not post_type in post_types:
         raise ValueError('Unknown post type %s' % post_type)
+    kwargs.update({'type': post_type})
     for arg in args:
-        kwargs.update(dict(arg.split('=', 1)))
+        logging.debug('parsing %s', arg)
+        kwargs.update(dict((arg.split('=', 1),)))
     return BasePost(None, **kwargs)
 
 def guess_mimetype(filename, contents):
