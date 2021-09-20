@@ -19,7 +19,7 @@ class BasePost():
                 kwargs = json.loads(read(filename))
             except TypeError:
                 kwargs = {}
-        if not kwargs.get('type'):
+        if filename and not kwargs.get('type'):
             post_type = os.path.splitext(filename)[1].lstrip('.')
         else:
             post_type = kwargs['type']
