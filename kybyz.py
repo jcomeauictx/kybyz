@@ -120,6 +120,17 @@ def register(username=None, email=None):
         os.symlink(os.path.join(CACHE, username), KYBYZ_HOME)
         logging.info('Now registered as %s %s', username, email)
 
+def post(post_type, *args, **kwargs):
+    '''
+    make a new post from the command line or from another subroutine
+    '''
+    post_types = [subclass.classname for subclass in BasePost.__subclasses__()]
+    if not post_type in post_types:
+        raise ValueError('Unknown post type %s' % post_type)
+    for arg in args:
+        kwargs.update(dict(arg.split('=', 1)))
+    return BasePost(None, **kwargs)
+
 def guess_mimetype(filename, contents):
     '''
     guess and return mimetype based on name and/or contents
@@ -142,8 +153,8 @@ def loadposts(to_html=True):
         directory = KYBYZ_HOME
     else:
         directory = EXAMPLE
-    post = BasePost if to_html else read
-    posts = [post(os.path.join(directory, filename))
+    get_post = BasePost if to_html else read
+    posts = [get_post(os.path.join(directory, filename))
              for filename in os.listdir(directory)]
     return list(filter(None, posts))
 
