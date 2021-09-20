@@ -11,7 +11,7 @@ class BasePost():
     '''
     classname = 'basepost'
 
-    def __new__(cls, filename, **kwargs):
+    def __new__(cls, filename=None, **kwargs):
         mapping = {subclass.classname: subclass
                    for subclass in cls.__subclasses__()}
         if not kwargs:
@@ -30,7 +30,7 @@ class BasePost():
             instance = None
         return instance
 
-    def __init__(self, filename, **kwargs):
+    def __init__(self, filename=None, **kwargs):
         '''
         initialize instantiation from **dict
         '''
