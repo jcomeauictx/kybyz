@@ -18,7 +18,6 @@ CACHE = os.path.join(HOME, '.kybyz')
 CACHED = {'uptime': None}
 KYBYZ_HOME = os.path.join(CACHE, 'home')
 EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
-KNOWN = ['post', 'netmeme', 'kybyz']  # known post types
 COMMANDS = ['post', 'register']
 
 def init():
@@ -172,8 +171,8 @@ def background():
     while True:
         time.sleep(delay)  # releases the GIL for `serve`
         CACHED['uptime'] += delay
-        logging.debug('uptime: %s seconds, threads: %s',
-                      CACHED['uptime'], threading.enumerate())
+        logging.debug('CACHED: %s, threads: %s',
+                      CACHED, threading.enumerate())
 
 if __name__ == '__main__':
     if ARGS and ARGS[0] in COMMANDS:
