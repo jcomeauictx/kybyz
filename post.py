@@ -64,6 +64,11 @@ class BasePost():
         template = read(self.classname + '.html').decode()
         return template.format(post=self)
 
+    def to_json(self):
+        '''
+        output contents as JSON
+        '''
+
 class Post(BasePost):
     '''
     encapsulation of kybyz post
