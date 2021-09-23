@@ -193,7 +193,7 @@ if __name__ == '__main__':
         logging.error('Must specify one of: %s', COMMANDS)
 elif COMMAND == 'uwsgi':
     import uwsgi  # pylint: disable=import-error
-    logging.debug('uwsgi: %s', uwsgi.opt)
+    logging.debug('uwsgi: %s', uwsgi.sockets)
     import webbrowser
     init()
     webbrowser.open('http://localhost/')
