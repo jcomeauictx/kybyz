@@ -18,7 +18,7 @@ CACHE = os.path.join(HOME, '.kybyz')
 CACHED = {'uptime': None}
 KYBYZ_HOME = os.path.join(CACHE, 'home')
 EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
-COMMANDS = ['post', 'register']
+COMMANDS = ['post', 'register', 'privmsg']
 
 def init():
     '''
@@ -132,6 +132,19 @@ def post(post_type, *args, **kwargs):
         kwargs.update(dict((arg.split('=', 1),)))
     return BasePost(None, **kwargs)
 
+def privmsg(recipient, email, message):
+    '''
+    sign, encrypt, and send a private message to recipient
+
+    `recipient` is the 'nick' (nickname) of the user to whom you wish to send
+    the message. `email` is not necessarily an email address, but it used to
+    find the GPG key of the recipient.
+    '''
+    gpg = GPG()
+    signed = gpg.sign(message)
+    encrypted = gpg.encrypt(signed.data, [email])  # pylint: disable=no-member
+    CACHED['ircbot'].privmsg(recipient, encrypted.data)
+
 def guess_mimetype(filename, contents):
     '''
     guess and return mimetype based on name and/or contents
@@ -165,9 +178,8 @@ def background():
 
     communicate with other kybyz servers
     '''
-    delay = 10  # seconds
-    ircbot = IRCBot()
-    logging.info('ircbot: %s', ircbot)
+    delay = 600  # seconds
+    CACHED['ircbot'] = IRCBot()
     while True:
         time.sleep(delay)  # releases the GIL for `serve`
         CACHED['uptime'] += delay
