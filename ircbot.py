@@ -62,12 +62,15 @@ class IRCBot():
 
         set ircbot.terminate to True in order to shut it down
         '''
+        logging.debug('ircbot monitoring incoming traffic')
         while not self.terminate:
             received = self.client.recv(2048).decode()
-            logging.info(received)
+            logging.info('received: %s', received)
             if received.split()[0] == 'PING':
-                self.client.send(received.replace('I', 'O', 1).encode())
-        logging.warning('IRC monitor terminated from launching thread')
+                pong = received.replace('I', 'O', 1)
+                logging.info('sending: %s', pong)
+                self.client.send(pong.encode())
+        logging.warning('ircbot terminated from launching thread')
 
 def test():
     '''
