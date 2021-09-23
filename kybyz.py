@@ -3,6 +3,7 @@
 Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
 import sys, os, time, threading  # pylint: disable=multiple-imports
+from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from collections import namedtuple
 from gnupg import GPG
@@ -193,8 +194,8 @@ if __name__ == '__main__':
         logging.error('Must specify one of: %s', COMMANDS)
 elif COMMAND == 'uwsgi':
     import uwsgi  # pylint: disable=import-error
-    logging.debug('uwsgi: %s', uwsgi.workers())
     import webbrowser
+    PORT = fromfd(uwsgi.sockets[0], AF_INET, SOCK_STREAM).getsockname()[1]
     init()
-    webbrowser.open('http://localhost/')
+    webbrowser.open('http://localhost:%s' % PORT)
     logging.warning('main process exiting, leaving daemon thread running')
