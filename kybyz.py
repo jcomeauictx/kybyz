@@ -192,5 +192,9 @@ if __name__ == '__main__':
     else:
         logging.error('Must specify one of: %s', COMMANDS)
 elif COMMAND == 'uwsgi':
+    import uwsgi  # pylint: disable=import-error
+    logging.debug('uwsgi: %s', uwsgi.opt)
+    import webbrowser
     init()
+    webbrowser.open('http://localhost/')
     logging.warning('main process exiting, leaving daemon thread running')
