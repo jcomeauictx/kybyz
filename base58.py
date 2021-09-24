@@ -11,7 +11,8 @@ as a basis.
 
 Copyright (C) 2021 jc@unternet.net
 '''
-import logging
+import sys, logging  # pylint: disable=multiple-imports
+from binascii import unhexlify
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.WARN)
 
@@ -58,13 +59,20 @@ def decode(bytestring):
 b58encode, b58decode = encode, decode  # compatibility
 
 if __name__ == '__main__':
-    for DECODED, ENCODED in TEST_VECTORS:
-        logging.debug('checking encoding of %r', DECODED)
-        check = encode(DECODED)
-        if check != ENCODED:
-            logging.error('%r does not match %r', check, ENCODED)
-    for DECODED, ENCODED in TEST_VECTORS:
-        logging.debug('checking decoding of %r', ENCODED)
-        check = decode(ENCODED)
-        if check != DECODED:
-            logging.error('%r does not match %r', check, DECODED)
+    if len(sys.argv) == 1:
+        for DECODED, ENCODED in TEST_VECTORS:
+            logging.debug('checking encoding of %r', DECODED)
+            check = encode(DECODED)
+            if check != ENCODED:
+                logging.error('%r does not match %r', check, ENCODED)
+        for DECODED, ENCODED in TEST_VECTORS:
+            logging.debug('checking decoding of %r', ENCODED)
+            check = decode(ENCODED)
+            if check != DECODED:
+                logging.error('%r does not match %r', check, DECODED)
+    elif sys.argv[1] == 'encode':
+        print(encode(unhexlify(''.join(sys.argv[2:]))))
+    elif sys.argv[1] == 'decode':
+        print(decode(' '.join(sys.argv[2:]).encode()))
+    else:
+        raise ValueError('Only accepted args: "encode" or "decode"')
