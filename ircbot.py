@@ -10,6 +10,7 @@ logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 IRCSERVER = 'irc.lfnet.org'
 PORT = 6667
 CHANNEL = '#kybyz'
+FIFO = 'ircbot.fifo'
 
 class IRCBot():
     '''
@@ -29,6 +30,7 @@ class IRCBot():
         self.realname = realname or pwd.getpwuid(os.geteuid()).pw_gecos
         self.connection = self.connect(server, port,
                                        self.nickname, self.realname)
+        self.fifo = os.mkfifo(FIFO, 0o660)
         self.terminate = False
         daemon = threading.Thread(target=self.monitor, name='ircbot_daemon')
         daemon.daemon = True
