@@ -209,12 +209,22 @@ def uwsgi_init():
     init()
     logging.debug('opening browser window to localhost port %s', port)
     webbrowser.open('http://localhost:%s' % port)
-    command = ''
-    logging.info('Ready to accept commands. `QUIT` to terminate input loop')
-    while command.lower() != 'quit':
-        command = input('kbz> ')
-        args = command.split()
+    time.sleep(10)  # give page a chance to load before starting repl
+    repl = threading.Thread(target=commandloop, name='repl')
+    repl.daemon = True
+    repl.start()
+    logging.debug('uwsgi initialization complete')
+
+def commandloop():
+    '''
+    simple repl (read-evaluate-process-loop) for command-line testing
+    '''
+    args = ['help']  # not a valid command, but doesn't matter
+    logging.info('Ready to accept commands; `quit` to terminate input loop')
+    while args[0:1] != ['quit']:
         process(args)
+        args = input('kbz> ').split()
+    logging.warning('input loop terminated')
 
 if __name__ == '__main__':
     process(args=ARGS)
