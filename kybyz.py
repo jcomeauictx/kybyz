@@ -8,7 +8,7 @@ from urllib.request import urlopen
 from collections import namedtuple
 from gnupg import GPG
 from ircbot import IRCBot
-from kbutils import read, logging
+from kbutils import read, logging, b58encode
 from post import BasePost
 
 COMMAND = sys.argv[0]
@@ -144,12 +144,13 @@ def message(recipient, email, *words):
     '''
     gpg = GPG()
     text = ' '.join(words)
-    logging.debug('message before encrypting: %s', words)
+    logging.debug('message before encrypting: %s', text)
     signed = gpg.sign(text)
-    encrypted = gpg.encrypt(signed.data, [email])  # pylint: disable=no-member
-    CACHED['ircbot'].privmsg(
-        recipient,
-        encrypted.data.decode().replace('\n', ''))
+    encrypted = gpg.encrypt(
+        signed.data,  # pylint: disable=no-member
+        [email],
+        armor=False)
+    CACHED['ircbot'].privmsg(recipient, b58encode(encrypted.data).decode())
 
 def guess_mimetype(filename, contents):
     '''
