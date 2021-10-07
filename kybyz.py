@@ -25,6 +25,7 @@ def init():
     '''
     initialize application
     '''
+    logging.debug('beginning kybyz initialization')
     os.makedirs(CACHE, 0o700, exist_ok=True)
     CACHED.update(registration()._asdict())
     CACHED['uptime'] = 0
@@ -187,15 +188,35 @@ def background():
         logging.debug('CACHED: %s, threads: %s',
                       CACHED, threading.enumerate())
 
-if __name__ == '__main__':
-    if ARGS and ARGS[0] in COMMANDS:
-        print(eval(ARGS[0])(*ARGS[1:]))  # pylint: disable=eval-used
+def process(args):
+    '''
+    process a kybyz command
+    '''
+    if args and args[0] in COMMANDS:
+        print(eval(args[0])(*args[1:]))  # pylint: disable=eval-used
     else:
         logging.error('Must specify one of: %s', COMMANDS)
-elif COMMAND == 'uwsgi':
-    import uwsgi  # pylint: disable=import-error
+
+def uwsgi_init():
+    '''
+    initialize uwsgi application
+    '''
+    # pylint: disable=import-error, import-outside-toplevel
+    logging.debug('beginning kybyz uwsgi initialization')
+    import uwsgi
     import webbrowser
-    PORT = fromfd(uwsgi.sockets[0], AF_INET, SOCK_STREAM).getsockname()[1]
+    port = fromfd(uwsgi.sockets[0], AF_INET, SOCK_STREAM).getsockname()[1]
     init()
-    webbrowser.open('http://localhost:%s' % PORT)
-    logging.warning('main process exiting, leaving daemon thread running')
+    logging.debug('opening browser window to localhost port %s', port)
+    webbrowser.open('http://localhost:%s' % port)
+    command = ''
+    logging.info('Ready to accept commands. `QUIT` to terminate input loop')
+    while command.lower() != 'quit':
+        command = input('kbz> ')
+        args = command.split()
+        process(args)
+
+if __name__ == '__main__':
+    process(args=ARGS)
+elif COMMAND == 'uwsgi':
+    uwsgi_init()
