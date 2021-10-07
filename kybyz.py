@@ -194,8 +194,10 @@ def process(args):
     '''
     if args and args[0] in COMMANDS:
         print(eval(args[0])(*args[1:]))  # pylint: disable=eval-used
+    elif args:
+        logging.error('must specify one of: %s', COMMANDS)
     else:
-        logging.error('Must specify one of: %s', COMMANDS)
+        logging.info('no command received to process')
 
 def uwsgi_init():
     '''
@@ -209,7 +211,6 @@ def uwsgi_init():
     init()
     logging.debug('opening browser window to localhost port %s', port)
     webbrowser.open('http://localhost:%s' % port)
-    time.sleep(10)  # give page a chance to load before starting repl
     repl = threading.Thread(target=commandloop, name='repl')
     repl.daemon = True
     repl.start()
@@ -219,10 +220,14 @@ def commandloop():
     '''
     simple repl (read-evaluate-process-loop) for command-line testing
     '''
-    args = ['help']  # not a valid command, but doesn't matter
+    time.sleep(10)  # give page a chance to load before starting repl
+    args = []
     logging.info('Ready to accept commands; `quit` to terminate input loop')
     while args[0:1] != ['quit']:
-        process(args)
+        try:
+            print(process(args))
+        except (RuntimeError, KeyError, ValueError) as problem:
+            logging.exception(problem)
         args = input('kbz> ').split()
     logging.warning('input loop terminated')
 
