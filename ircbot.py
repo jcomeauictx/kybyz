@@ -48,7 +48,7 @@ class IRCBot():
         logging.info('received: \n%s\n', self.client.recv(2048).decode())
         return connection
 
-    def privmsg(self, message, target=CHANNEL):
+    def privmsg(self, target=CHANNEL, message='Hello, world!'):
         '''
         simulates typing a message in ircII with no preceding command
         '''
