@@ -48,9 +48,12 @@ class IRCBot():
         logging.info('received: \n%s\n', self.client.recv(2048).decode())
         return connection
 
-    def privmsg(self, target=CHANNEL, message='Hello, world!'):
+    def privmsg(self, target, message):
         '''
         simulates typing a message in ircII with no preceding command
+
+        target should be a channel name preceded by '#', or nick
+        message should not have any embedded CRLFs
         '''
         self.client.send(('PRIVMSG %s %s\r\n' % (target, message)).encode())
 

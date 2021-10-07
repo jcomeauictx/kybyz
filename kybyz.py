@@ -143,9 +143,13 @@ def message(recipient, email, *words):
     find the GPG key of the recipient.
     '''
     gpg = GPG()
-    signed = gpg.sign(' '.join(words))
+    text = ' '.join(words)
+    logging.debug('message before encrypting: %s', words)
+    signed = gpg.sign(text)
     encrypted = gpg.encrypt(signed.data, [email])  # pylint: disable=no-member
-    CACHED['ircbot'].privmsg(recipient, encrypted.data.decode())
+    CACHED['ircbot'].privmsg(
+        recipient,
+        encrypted.data.decode().replace('\n', ''))
 
 def guess_mimetype(filename, contents):
     '''
