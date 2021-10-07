@@ -7,7 +7,7 @@ from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from collections import namedtuple
 from gnupg import GPG
-from ircbot import IRCBot, FIFO
+from ircbot import IRCBot
 from kbutils import read, logging
 from post import BasePost
 
@@ -144,11 +144,7 @@ def privmsg(recipient, email, message):
     gpg = GPG()
     signed = gpg.sign(message)
     encrypted = gpg.encrypt(signed.data, [email])  # pylint: disable=no-member
-    if CACHED.get('ircbot', None):
-        CACHED['ircbot'].privmsg(recipient, encrypted.data)
-    else:
-        with open(FIFO, 'wb') as output:
-            output.write('%s %s' % (recipient, encrypted.data))
+    CACHED['ircbot'].privmsg(recipient, encrypted.data)
 
 def guess_mimetype(filename, contents):
     '''

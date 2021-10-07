@@ -4,14 +4,12 @@ IRC communications for server discovery
 '''
 # pylint: disable=multiple-imports
 import socket, pwd, os, threading, logging, time
-from select import select
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
 IRCSERVER = 'irc.lfnet.org'
 PORT = 6667
 CHANNEL = '#kybyz'
-FIFO = 'ircbot.fifo'
 
 class IRCBot():
     '''
@@ -29,10 +27,8 @@ class IRCBot():
         self.server = server
         self.nickname = nickname or pwd.getpwuid(os.geteuid()).pw_name
         self.realname = realname or pwd.getpwuid(os.geteuid()).pw_gecos
-        self.connect(server, port, self.nickname, self.realname)
-        if not os.path.exists(FIFO):
-            self.fifo = os.mkfifo(FIFO, 0o660)
-            self.listener = open(self.fifo)
+        self.connection = self.connect(server, port,
+                                       self.nickname, self.realname)
         self.terminate = False
         daemon = threading.Thread(target=self.monitor, name='ircbot_daemon')
         daemon.daemon = True
@@ -43,20 +39,18 @@ class IRCBot():
         connect to the server and identify ourselves
         '''
         names = (nickname, realname)
-        self.client.connect((server, port))
+        connection = self.client.connect((server, port))
         self.client.send(('USER %s 0 * :%s\r\n' % names).encode())
         logging.info('received: \n%s\n', self.client.recv(2048).decode())
         self.client.send(('NICK %s\r\n' % nickname).encode())
         logging.info('received: \n%s\n', self.client.recv(2048).decode())
         self.client.send(('JOIN %s\r\n' % CHANNEL).encode())
         logging.info('received: \n%s\n', self.client.recv(2048).decode())
+        return connection
 
     def privmsg(self, message, target=CHANNEL):
         '''
         simulates typing a message in ircII with no preceding command
-
-        send to specific user by using. e.g. target='jcomeau' instead of
-        a channel name.
         '''
         self.client.send(('PRIVMSG %s %s\r\n' % (target, message)).encode())
 
@@ -70,18 +64,12 @@ class IRCBot():
         '''
         logging.debug('ircbot monitoring incoming traffic')
         while not self.terminate:
-            found = select([self.client, self.listener], [], [])
-            if self.client in found[0]:
-                received = self.client.recv(2048).decode()
-                logging.info('received: %s', received)
-                if received.split()[0] == 'PING':
-                    pong = received.replace('I', 'O', 1)
-                    logging.info('sending: %s', pong)
-                    self.client.send(pong.encode())
-            if self.listener in found[0]:
-                received = self.client.recv(2048).decode()
-                logging.info('received: %s', received)
-        # this following message is never actually seen
+            received = self.client.recv(2048).decode()
+            logging.info('received: %s', received)
+            if received.split()[0] == 'PING':
+                pong = received.replace('I', 'O', 1)
+                logging.info('sending: %s', pong)
+                self.client.send(pong.encode())
         logging.warning('ircbot terminated from launching thread')
 
 def test():
