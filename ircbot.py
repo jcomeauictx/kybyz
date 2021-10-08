@@ -4,6 +4,7 @@ IRC communications for server discovery
 '''
 # pylint: disable=multiple-imports
 import socket, pwd, os, threading, logging, time
+from kbcommon import CACHED
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
@@ -69,10 +70,13 @@ class IRCBot():
         while not self.terminate:
             received = self.client.recv(2048).decode()
             logging.info('received: %s', received)
-            if received.split()[0] == 'PING':
+            words = received.split()
+            if words[0] == 'PING':
                 pong = received.replace('I', 'O', 1)
                 logging.info('sending: %s', pong)
                 self.client.send(pong.encode())
+            elif words[1:3] == ['PRIVMSG', CACHED.get('username', None)]:
+                logging.info('private message received from %s', words[0])
         logging.warning('ircbot terminated from launching thread')
 
 def test():

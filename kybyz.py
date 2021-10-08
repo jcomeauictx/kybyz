@@ -9,6 +9,7 @@ from collections import namedtuple
 from gnupg import GPG
 from ircbot import IRCBot
 from kbutils import read, logging, b58encode
+from kbcommon import CACHED
 from post import BasePost
 
 COMMAND = sys.argv[0]
@@ -16,7 +17,6 @@ ARGS = sys.argv[1:]
 logging.info('COMMAND: %s, ARGS: %s', COMMAND, ARGS)
 HOME = os.path.expanduser('~')
 CACHE = os.path.join(HOME, '.kybyz')
-CACHED = {'uptime': None}
 KYBYZ_HOME = os.path.join(CACHE, 'home')
 EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
 COMMANDS = ['post', 'register', 'message']
@@ -231,7 +231,7 @@ def commandloop():
     while args[0:1] != ['quit']:
         try:
             print(process(args))
-        except (RuntimeError, KeyError, ValueError) as problem:
+        except (RuntimeError, KeyError, ValueError, TypeError) as problem:
             logging.exception(problem)
         args = input('kbz> ').split()
     logging.warning('input loop terminated')
