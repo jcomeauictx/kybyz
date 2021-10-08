@@ -8,7 +8,7 @@ from urllib.request import urlopen
 from collections import namedtuple
 from gnupg import GPG
 from ircbot import IRCBot
-from kbutils import read, logging, b58encode
+from kbutils import read, logging, b58encode, verify_key
 from kbcommon import CACHED
 from post import BasePost
 
@@ -85,21 +85,6 @@ def registration():
         gpgkey = verify_key(email)
     return namedtuple('registration', ('username', 'email', 'gpgkey'))(
                       username, email, gpgkey)
-
-def verify_key(email):
-    '''
-    fetch user's GPG key and make sure it matches given email address
-    '''
-    gpgkey = None
-    if email:
-        gpg = GPG()
-        # pylint: disable=no-member
-        verified = gpg.verify(gpg.sign('').data)
-        if not verified.username.endswith('<' + email + '>'):
-            raise ValueError('%s no match for GPG certificate %s' %
-                             (email, verified.username))
-        gpgkey = verified.key_id
-    return gpgkey
 
 def register(username=None, email=None):
     '''

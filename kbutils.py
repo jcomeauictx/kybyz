@@ -5,6 +5,7 @@ Kybyz utilities
 import logging
 from datetime import datetime, timezone
 from hashlib import sha256
+from gnupg import GPG
 from base58 import b58encode
 from canonical_json import canonicalize
 
@@ -36,3 +37,18 @@ def kbhash(message):
     canonical = canonicalize(message).encode()
     hashed = sha256(canonical).digest()
     return b58encode(prefix + hashed)
+
+def verify_key(email):
+    '''
+    fetch user's GPG key and make sure it matches given email address
+    '''
+    gpgkey = None
+    if email:
+        gpg = GPG()
+        # pylint: disable=no-member
+        verified = gpg.verify(gpg.sign('').data)
+        if not verified.username.endswith('<' + email + '>'):
+            raise ValueError('%s no match for GPG certificate %s' %
+                             (email, verified.username))
+        gpgkey = verified.key_id
+    return gpgkey
