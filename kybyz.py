@@ -186,7 +186,7 @@ def background():
     communicate with other kybyz servers
     '''
     delay = 600  # seconds
-    CACHED['ircbot'] = IRCBot()
+    CACHED['ircbot'] = IRCBot(nickname=CACHED.get('username', None))
     while True:
         time.sleep(delay)  # releases the GIL for `serve`
         CACHED['uptime'] += delay
