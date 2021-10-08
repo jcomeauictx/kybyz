@@ -6,9 +6,9 @@ import sys, os, time, threading  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from collections import namedtuple
-from gnupg import GPG
 from ircbot import IRCBot
-from kbutils import read, logging, b58encode, verify_key
+from kbutils import read, logging, verify_key
+from kbutils import message  # pylint: disable=unused-import
 from kbcommon import CACHED
 from post import BasePost
 
@@ -118,24 +118,6 @@ def post(post_type, *args, **kwargs):
         logging.debug('parsing %s', arg)
         kwargs.update(dict((arg.split('=', 1),)))
     return BasePost(None, **kwargs)
-
-def message(recipient, email, *words):
-    '''
-    sign, encrypt, and send a private message to recipient
-
-    `recipient` is the 'nick' (nickname) of the user to whom you wish to send
-    the message. `email` is not necessarily an email address, but it used to
-    find the GPG key of the recipient.
-    '''
-    gpg = GPG()
-    text = ' '.join(words)
-    logging.debug('message before encrypting: %s', text)
-    signed = gpg.sign(text)
-    encrypted = gpg.encrypt(
-        signed.data,  # pylint: disable=no-member
-        [email],
-        armor=False)
-    CACHED['ircbot'].privmsg(recipient, b58encode(encrypted.data).decode())
 
 def guess_mimetype(filename, contents):
     '''
