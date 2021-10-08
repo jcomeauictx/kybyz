@@ -8,7 +8,7 @@ from urllib.request import urlopen
 from collections import namedtuple
 from ircbot import IRCBot
 from kbutils import read, logging, verify_key
-from kbutils import message  # pylint: disable=unused-import
+from kbutils import send  # pylint: disable=unused-import
 from kbcommon import CACHED
 from post import BasePost
 
@@ -19,7 +19,7 @@ HOME = os.path.expanduser('~')
 CACHE = os.path.join(HOME, '.kybyz')
 KYBYZ_HOME = os.path.join(CACHE, 'home')
 EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
-COMMANDS = ['post', 'register', 'message']
+COMMANDS = ['post', 'register', 'send']
 
 def init():
     '''
