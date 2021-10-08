@@ -56,7 +56,7 @@ def verify_key(email):
 
 def send(recipient, email, *words):
     '''
-    sign, encrypt, and send a private message to recipient
+    encrypt, sign, and send a private message to recipient
 
     `recipient` is the 'nick' (nickname) of the user to whom you wish to send
     the message. `email` is not necessarily an email address, but is used to
@@ -65,11 +65,12 @@ def send(recipient, email, *words):
     gpg = GPG()
     text = ' '.join(words)
     logging.debug('message before encrypting: %s', text)
-    signed = gpg.sign(text)
     encrypted = gpg.encrypt(
-        signed.data,  # pylint: disable=no-member
+        text,  # pylint: disable=no-member
         [email],
+        sign=True,
         armor=False)
+    logging.debug('encrypted: %r...', encrypted.data[:64])
     CACHED['ircbot'].privmsg(recipient, b58encode(encrypted.data).decode())
 
 def decrypt(message):
@@ -77,8 +78,9 @@ def decrypt(message):
     decrypt a message sent to me, and verify sender email
     '''
     gpg = GPG()
-    logging.debug('decrypting %s...', message[:64])
+    logging.debug('decoding %s...', message[:64])
     decoded = b58decode(message)
+    logging.debug('decrypting %r...', decoded[:64])
     decrypted = gpg.decrypt(decoded)
-    verified = gpg.verify(decrypted.data)
+    verified = decrypted.trust_text
     return decrypted.data, verified
