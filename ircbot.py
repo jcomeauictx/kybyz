@@ -43,11 +43,13 @@ class IRCBot():
         names = (nickname, realname)
         connection = self.client.connect((server, port))
         self.client.send(('USER %s 0 * :%s\r\n' % names).encode())
-        logging.info('received: \n%s\n', self.client.recv(2048).decode())
+        logging.info('received: \n%r\n', self.client.recv(2048).decode())
         self.client.send(('NICK %s\r\n' % nickname).encode())
-        logging.info('received: \n%s\n', self.client.recv(2048).decode())
+        logging.info('received: \n%r\n', self.client.recv(2048).decode())
         self.client.send(('JOIN %s\r\n' % CHANNEL).encode())
-        logging.info('received: \n%s\n', self.client.recv(2048).decode())
+        received = self.client.recv(2048).decode().split()
+        CACHED['irc_id'] = received[0]
+        logging.info('received: \n%r\n', received)
         return connection
 
     def privmsg(self, target, message):
@@ -70,7 +72,7 @@ class IRCBot():
         logging.debug('ircbot monitoring incoming traffic')
         while not self.terminate:
             received = self.client.recv(2048).decode()
-            logging.info('received: %s', received)
+            logging.info('received: %r', received)
             words = received.split()
             if words[0] == 'PING':
                 pong = received.replace('I', 'O', 1)
