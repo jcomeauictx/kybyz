@@ -12,6 +12,9 @@ logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 IRCSERVER = 'irc.lfnet.org'
 PORT = 6667
 CHANNEL = '#kybyz'
+BUFFERSIZE = 16 * 1024  # make it big enough to get full banner from IRC server
+CACHED['irc_in'] = CACHED.get('irc_in', [])
+CACHED['irc_out'] = CACHED.get('irc_out', [])
 
 class IRCBot():
     '''
@@ -43,11 +46,11 @@ class IRCBot():
         names = (nickname, realname)
         connection = self.client.connect((server, port))
         self.client.send(('USER %s 0 * :%s\r\n' % names).encode())
-        logging.info('received: \n%r\n', self.client.recv(2048).decode())
+        logging.info('received: \n%r\n', self.client.recv(BUFFERSIZE).decode())
         self.client.send(('NICK %s\r\n' % nickname).encode())
-        logging.info('received: \n%r\n', self.client.recv(2048).decode())
+        logging.info('received: \n%r\n', self.client.recv(BUFFERSIZE).decode())
         self.client.send(('JOIN %s\r\n' % CHANNEL).encode())
-        received = self.client.recv(2048).decode().split()
+        received = self.client.recv(BUFFERSIZE).decode().split()
         CACHED['irc_id'] = received[0]
         logging.info('received: \n%r\n', received)
         return connection
@@ -71,16 +74,25 @@ class IRCBot():
         '''
         logging.debug('ircbot monitoring incoming traffic')
         while not self.terminate:
-            received = self.client.recv(2048).decode()
+            received = self.client.recv(BUFFERSIZE).decode()
             logging.info('received: %r', received)
             words = received.split()
             if words[0] == 'PING':
                 pong = received.replace('I', 'O', 1)
                 logging.info('sending: %s', pong)
                 self.client.send(pong.encode())
-            elif words[1:3] == ['PRIVMSG', CACHED.get('username', None)]:
-                logging.info('private message received from %s:', words[0])
-                logging.info(decrypt(words[3].lstrip(':').encode()))
+            elif words[1] == 'PRIVMSG':
+                if words[2] == CACHED.get('username', None):
+                    logging.info('private message received from %s:', words[0])
+                    try:
+                        logging.info(decrypt(words[3].lstrip(':').encode()))
+                    except ValueError:
+                        CACHED['irc_in'].append(received)
+                elif words[2] == CHANNEL:
+                    logging.info('public message received from %s:', words[0])
+                    logging.info(' '.join(words[3:]))
+            # probably won't be using this but just for reference
+            # self.client.send(CACHED['irc_out'].pop(0).encode())
         logging.warning('ircbot terminated from launching thread')
 
 def test():
