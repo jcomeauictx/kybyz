@@ -99,7 +99,7 @@ class IRCBot():
                 # assume we received a batch of PRIVMSGs
                 messages = received.split(CRLF)
                 logging.debug('received batch of %d messages', len(messages))
-                message = ' '.join([l.split(':')[-1] for l in messages])
+                message = ''.join([l.split(':')[-1] for l in messages])
                 logging.debug('complete message: "%s"', message)
                 text, okay = decrypt(CACHED['irc_in'] + message.encode())
                 logging.debug('message: %s, okay: %s', message, okay)
