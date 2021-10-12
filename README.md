@@ -11,7 +11,9 @@ Install and test on a <https://digitalocean.com> Debian-11 droplet:
 6. mkdir ~tester/.ssh
 7. cp ~/.ssh/authorized\_keys ~tester/.ssh/
 8. chown -R tester.tester ~tester/.ssh
+
 That's all as root; you should now login as a regular user
+
 1. login as tester
 2. gpg --pinentry-mode loopback --quick-gen-key "myusername \<myemail@example.com\>"
 2. pip install gnupg
@@ -21,6 +23,7 @@ That's all as root; you should now login as a regular user
 6. cd kybyz
 7. make
 8. at the kbz> prompt, type: register myusername myemail@example.com
+
 It currently fails at this point. I upgraded my gnupg package to the latest and am troubleshooting the problems.
 
 
