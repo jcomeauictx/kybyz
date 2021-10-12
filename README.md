@@ -4,7 +4,7 @@ a peer to peer collaboration and social media platform
 ## quickstart
 Install and test on a <https://digitalocean.com> Debian-11 droplet:
 1. login as root
-2. apt install firefox-esr python3 python3-pip pylint3 gpg xauth
+2. apt install firefox-esr python3 python3-pip pylint3 gpg xauth make
 3. apt install uwsgi uwsgi-plugin-python3
 4. adduser tester
 5. usermod -a -G sudo tester
