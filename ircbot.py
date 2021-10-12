@@ -15,6 +15,7 @@ CHANNEL = '#kybyz'
 BUFFERSIZE = 16 * 1024  # make it big enough to get full banner from IRC server
 CACHED['irc_in'] = CACHED.get('irc_in', [])
 CACHED['irc_out'] = CACHED.get('irc_out', [])
+CRLF = '\r\n'
 
 class IRCBot():
     '''
@@ -93,17 +94,14 @@ class IRCBot():
                 logging.info('sending: %s', pong)
                 self.client.send(pong.encode())
             elif words[1] == 'PRIVMSG':
-                if words[2] == CACHED.get('username', None):
-                    logging.info('private message received from %s:', words[0])
-                    try:
-                        logging.info(decrypt(words[3].lstrip(':').encode()))
-                    except ValueError:
-                        CACHED['irc_in'].append(received)
-                elif words[2] == CHANNEL:
-                    logging.info('public message received from %s:', words[0])
-                    logging.info(' '.join(words[3:]))
-            # probably won't be using this but just for reference
-            # self.client.send(CACHED['irc_out'].pop(0).encode())
+                logging.info('%s message received from %s:',
+                             'public' if words[2] == CHANNEL else 'private',
+                             words[0])
+                # assume we received a batch of PRIVMSGs
+                messages = received.split(CRLF)
+                logging.debug('received batch of %d messages', len(messages))
+                message = ' '.join([l.split(':')[-1] for l in messages])
+                logging.info('message contents: %s', decrypt(message.encode()))
         logging.warning('ircbot terminated from launching thread')
 
 def test():
