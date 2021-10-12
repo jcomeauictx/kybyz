@@ -64,14 +64,12 @@ class IRCBot():
         message should not have any embedded CRLFs, colons (":"), or non-ASCII
         characters.
         '''
-        testmsg = ' '.join(
-            [CACHED['irc_id'], 'PRIVMSG', target, ':' + message]
-        ).encode()
+        testmsg = ' '.join([CACHED['irc_id'], 'PRIVMSG', target, ':' + message])
         if len(testmsg) <= 510:
             self.client.send(('PRIVMSG %s %s\r\n' % (target, message)).encode())
         else:
             pieces = testmsg[:510].split(':')
-            chunklength = pieces[-1]
+            chunklength = len(pieces[-1])
             for chunk in [message[i:i+chunklength]
                           for i in range(0, len(message), chunklength)]:
                 self.client.send(
