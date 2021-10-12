@@ -13,8 +13,7 @@ IRCSERVER = 'irc.lfnet.org'
 PORT = 6667
 CHANNEL = '#kybyz'
 BUFFERSIZE = 16 * 1024  # make it big enough to get full banner from IRC server
-CACHED['irc_in'] = CACHED.get('irc_in', [])
-CACHED['irc_out'] = CACHED.get('irc_out', [])
+CACHED['irc_in'] = CACHED.get('irc_in', b'')
 CRLF = '\r\n'
 
 class IRCBot():
@@ -101,7 +100,15 @@ class IRCBot():
                 messages = received.split(CRLF)
                 logging.debug('received batch of %d messages', len(messages))
                 message = ' '.join([l.split(':')[-1] for l in messages])
-                logging.info('message contents: %s', decrypt(message.encode()))
+                logging.debug('complete message: "%s"', message)
+                text, okay = decrypt(CACHED['irc_in'] + message.encode())
+                logging.debug('message: %s, okay: %s', message, okay)
+                if text:
+                    CACHED['irc_in'] = b''
+                else:
+                    CACHED['irc_in'] += message.encode()
+                    logging.debug("CACHED['irc_in'] now %s",
+                                  CACHED['irc_in'])
         logging.warning('ircbot terminated from launching thread')
 
 def test():
