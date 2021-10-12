@@ -2,15 +2,25 @@
 '''
 Kybyz utilities
 '''
-import logging
+import os, logging  # pylint: disable=multiple-imports
 from datetime import datetime, timezone
 from hashlib import sha256
 from gnupg import GPG
 from base58 import b58encode, b58decode
 from canonical_json import canonicalize
-from kbcommon import CACHED
+from kbcommon import CACHED, HOME
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
+
+GNUPG = os.getenv('GPG_HOME', os.path.join(HOME, '.gnupg'))
+KEYRING = os.getenv('GPG_KEYRING', os.path.join(GNUPG, 'pubring.kbx'))
+SECRETS = os.getenv('GPG_SECRING', os.path.join(GNUPG, 'trustdb.gpg'))
+
+GPG_OPTIONS = {
+    'homedir': GNUPG,
+    'keyring': KEYRING,
+    'secring': SECRETS,
+}
 
 def read(filename):
     '''
@@ -45,7 +55,7 @@ def verify_key(email):
     '''
     gpgkey = None
     if email:
-        gpg = GPG()
+        gpg = GPG(**GPG_OPTIONS)
         # pylint: disable=no-member
         verified = gpg.verify(gpg.sign('').data)
         if not verified.username.endswith('<' + email + '>'):
@@ -62,7 +72,7 @@ def send(recipient, email, *words):
     the message. `email` is not necessarily an email address, but is used to
     find the GPG key of the recipient.
     '''
-    gpg = GPG()
+    gpg = GPG(**GPG_OPTIONS)
     text = ' '.join(words)
     logging.debug('message before encrypting: %s', text)
     encrypted = gpg.encrypt(
@@ -79,7 +89,7 @@ def decrypt(message):
     '''
     decrypt a message sent to me, and verify sender email
     '''
-    gpg = GPG()
+    gpg = GPG(**GPG_OPTIONS)
     logging.debug('decoding %s...', message[:64])
     decoded = b58decode(message)
     logging.debug('decrypting %r...', decoded[:64])

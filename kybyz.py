@@ -9,15 +9,12 @@ from collections import namedtuple
 from ircbot import IRCBot
 from kbutils import read, logging, verify_key
 from kbutils import send  # pylint: disable=unused-import
-from kbcommon import CACHED
+from kbcommon import CACHE, CACHED, KYBYZ_HOME
 from post import BasePost
 
 COMMAND = sys.argv[0]
 ARGS = sys.argv[1:]
 logging.info('COMMAND: %s, ARGS: %s', COMMAND, ARGS)
-HOME = os.path.expanduser('~')
-CACHE = os.path.join(HOME, '.kybyz')
-KYBYZ_HOME = os.path.join(CACHE, 'home')
 EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
 COMMANDS = ['post', 'register', 'send']
 
