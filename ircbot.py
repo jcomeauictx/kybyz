@@ -60,9 +60,22 @@ class IRCBot():
         simulates typing a message in ircII with no preceding command
 
         target should be a channel name preceded by '#', or nick
-        message should not have any embedded CRLFs
+
+        message should not have any embedded CRLFs, colons (":"), or non-ASCII
+        characters.
         '''
-        self.client.send(('PRIVMSG %s %s\r\n' % (target, message)).encode())
+        testmsg = ' '.join(
+            [CACHED['irc_id'], 'PRIVMSG', target, ':' + message]
+        ).encode()
+        if len(testmsg) <= 510:
+            self.client.send(('PRIVMSG %s %s\r\n' % (target, message)).encode())
+        else:
+            pieces = testmsg[:510].split(':')
+            chunklength = pieces[-1]
+            for chunk in [message[i:i+chunklength]
+                          for i in range(0, len(message), chunklength)]:
+                self.client.send(
+                    ('PRIVMSG %s %s\r\n' % (target, chunk)).encode())
 
     def monitor(self):
         '''
