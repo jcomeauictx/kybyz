@@ -72,6 +72,7 @@ class IRCBot():
             chunklength = len(pieces[-1])
             for chunk in [message[i:i+chunklength]
                           for i in range(0, len(message), chunklength)]:
+                logging.debug('sending chunk %s', chunk)
                 self.client.send(
                     ('PRIVMSG %s %s\r\n' % (target, chunk)).encode())
 
@@ -102,7 +103,7 @@ class IRCBot():
                 message = ''.join([l.split(':')[-1] for l in messages])
                 logging.debug('complete message: "%s"', message)
                 text, okay = decrypt(CACHED['irc_in'] + message.encode())
-                logging.debug('message: %s, okay: %s', message, okay)
+                logging.debug('text: %s, okay: %s', text, okay)
                 if text:
                     CACHED['irc_in'] = b''
                 else:

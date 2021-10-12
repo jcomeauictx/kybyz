@@ -71,7 +71,9 @@ def send(recipient, email, *words):
         sign=True,
         armor=False)
     logging.debug('encrypted: %r...', encrypted.data[:64])
-    CACHED['ircbot'].privmsg(recipient, b58encode(encrypted.data).decode())
+    encoded = b58encode(encrypted.data).decode()
+    logging.debug('encoded: %s', encoded)
+    CACHED['ircbot'].privmsg(recipient, encoded)
 
 def decrypt(message):
     '''
