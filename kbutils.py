@@ -60,7 +60,7 @@ class GPG():
         '''
         run = subprocess.run(['gpg', '--verify'], input=signed,
                              capture_output=True, check=True)
-        output = run.stderr.split(b'\n')
+        output = run.stderr.decode().split('\n')
         run.timestamp = re.compile(r'^gpg: Signature made (.*)$').match(
             output[0]).groups()[0]
         run.key_id = re.compile(
@@ -121,7 +121,7 @@ def send(recipient, email, *words):
     find the GPG key of the recipient.
     '''
     gpg = GPG()
-    text = ' '.join(words)
+    text = ' '.join(words).encode()
     logging.debug('message before encrypting: %s', text)
     encrypted = gpg.encrypt(
         text,  # pylint: disable=no-member
