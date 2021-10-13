@@ -2,12 +2,12 @@
 '''
 Kybyz utilities
 '''
-import os, logging, re, subprocess  # pylint: disable=multiple-imports
+import logging, re, subprocess  # pylint: disable=multiple-imports
 from datetime import datetime, timezone
 from hashlib import sha256
 from base58 import b58encode, b58decode
 from canonical_json import canonicalize
-from kbcommon import CACHED, HOME
+from kbcommon import CACHED
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
@@ -17,17 +17,19 @@ class GPG():
 
     limited to the few calls that kybyz makes
     '''
-    def sign(data):
+    # pylint: disable=no-self-use
+    def sign(self, data):
         '''
         gpg sign given data
 
         unlike python-gnupg, return as binary data
         '''
-        run = subprocess.run(['gpg', '--sign'], input=data, capture_output=True)
+        run = subprocess.run(['gpg', '--sign'], input=data,
+                             capture_output=True, check=True)
         run.data = run.stdout
         return run
 
-    def encrypt(data, recipients, sign=True, armor=True):
+    def encrypt(self, data, recipients, sign=True, armor=True):
         '''
         gpg encrypt data for recipients
         '''
@@ -38,32 +40,33 @@ class GPG():
             command.append('--sign')
         if armor:
             command.append('--armor')
-        run = subprocess.run(command, input=data, capture_output=True)
+        run = subprocess.run(command, input=data,
+                             capture_output=True, check=True)
         run.data = run.stdout
         return run
 
-    def decrypt(data):
+    def decrypt(self, data):
         '''
         gpg decrypt data
         '''
         run = subprocess.run(
-            ['gpg', '--decrypt'], input=data, capture_output=True)
+            ['gpg', '--decrypt'], input=data, capture_output=True, check=True)
         run.data = run.stdout
         return run
 
-    def verify(signed):
+    def verify(self, signed):
         '''
         verify signature on given signed data
         '''
-        run = subprocess.run(['gpg' '--verify'], input=signed.data,
-                             capture_output=True)
+        run = subprocess.run(['gpg', '--verify'], input=signed,
+                             capture_output=True, check=True)
         output = run.stderr.split(b'\n')
         run.timestamp = re.compile(r'^gpg: Signature made (.*)$').match(
             output[0]).groups()[0]
         run.key_id = re.compile(
             r'^gpg: \s*using RSA key ([0-9A-F]{40}$)').match(
             output[1]).groups()[0]
-        run.username, run.trustname = re.compile(
+        run.username, run.trust_text = re.compile(
             r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
             output[2]).groups()
         return run
@@ -139,5 +142,5 @@ def decrypt(message):
     decoded = b58decode(message)
     logging.debug('decrypting %r...', decoded[:64])
     decrypted = gpg.decrypt(decoded)
-    verified = decrypted.trust_text
+    verified = decrypted.trust_text  # pylint: disable=no-member
     return decrypted.data, verified
