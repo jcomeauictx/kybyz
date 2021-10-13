@@ -52,6 +52,11 @@ class GPG():
         run = subprocess.run(
             ['gpg', '--decrypt'], input=data, capture_output=True, check=True)
         run.data = run.stdout
+        logging.debug('decrypt stderr: %s', run.stderr)
+        output = run.stderr.decode().split('\n')
+        run.username, run.trust_text = re.compile(
+            r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
+            output[-1]).groups()
         return run
 
     def verify(self, signed):
