@@ -2,25 +2,71 @@
 '''
 Kybyz utilities
 '''
-import os, logging  # pylint: disable=multiple-imports
+import os, logging, re, subprocess  # pylint: disable=multiple-imports
 from datetime import datetime, timezone
 from hashlib import sha256
-from gnupg import GPG
 from base58 import b58encode, b58decode
 from canonical_json import canonicalize
 from kbcommon import CACHED, HOME
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
-GNUPG = os.getenv('GPG_HOME', os.path.join(HOME, '.gnupg'))
-KEYRING = os.getenv('GPG_KEYRING', os.path.join(GNUPG, 'pubring.kbx'))
-SECRETS = os.getenv('GPG_SECRING', os.path.join(GNUPG, 'trustdb.gpg'))
+class GPG():
+    '''
+    drop-in replacement for python3-gnupg class
 
-GPG_OPTIONS = {
-    'homedir': GNUPG,
-    'keyring': KEYRING,
-    'secring': SECRETS,
-}
+    limited to the few calls that kybyz makes
+    '''
+    def sign(data):
+        '''
+        gpg sign given data
+
+        unlike python-gnupg, return as binary data
+        '''
+        run = subprocess.run(['gpg', '--sign'], input=data, capture_output=True)
+        run.data = run.stdout
+        return run
+
+    def encrypt(data, recipients, sign=True, armor=True):
+        '''
+        gpg encrypt data for recipients
+        '''
+        command = ['gpg', '--encrypt']
+        for recipient in recipients:
+            command.extend(['-r', recipient])
+        if sign:
+            command.append('--sign')
+        if armor:
+            command.append('--armor')
+        run = subprocess.run(command, input=data, capture_output=True)
+        run.data = run.stdout
+        return run
+
+    def decrypt(data):
+        '''
+        gpg decrypt data
+        '''
+        run = subprocess.run(
+            ['gpg', '--decrypt'], input=data, capture_output=True)
+        run.data = run.stdout
+        return run
+
+    def verify(signed):
+        '''
+        verify signature on given signed data
+        '''
+        run = subprocess.run(['gpg' '--verify'], input=signed.data,
+                             capture_output=True)
+        output = run.stderr.split(b'\n')
+        run.timestamp = re.compile(r'^gpg: Signature made (.*)$').match(
+            output[0]).groups()[0]
+        run.key_id = re.compile(
+            r'^gpg: \s*using RSA key ([0-9A-F]{40}$)').match(
+            output[1]).groups()[0]
+        run.username, run.trustname = re.compile(
+            r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
+            output[2]).groups()
+        return run
 
 def read(filename):
     '''
@@ -54,14 +100,13 @@ def verify_key(email):
     fetch user's GPG key and make sure it matches given email address
     '''
     gpgkey = None
-    if email:
-        gpg = GPG(**GPG_OPTIONS)
-        # pylint: disable=no-member
-        verified = gpg.verify(gpg.sign('').data)
-        if not verified.username.endswith('<' + email + '>'):
-            raise ValueError('%s no match for GPG certificate %s' %
-                             (email, verified.username))
-        gpgkey = verified.key_id
+    gpg = GPG()
+    # pylint: disable=no-member
+    verified = gpg.verify(gpg.sign('').data)
+    if not verified.username.endswith('<' + email + '>'):
+        raise ValueError('%s no match for GPG certificate %s' %
+                         (email, verified.username))
+    gpgkey = verified.key_id
     return gpgkey
 
 def send(recipient, email, *words):
@@ -72,7 +117,7 @@ def send(recipient, email, *words):
     the message. `email` is not necessarily an email address, but is used to
     find the GPG key of the recipient.
     '''
-    gpg = GPG(**GPG_OPTIONS)
+    gpg = GPG()
     text = ' '.join(words)
     logging.debug('message before encrypting: %s', text)
     encrypted = gpg.encrypt(
@@ -89,7 +134,7 @@ def decrypt(message):
     '''
     decrypt a message sent to me, and verify sender email
     '''
-    gpg = GPG(**GPG_OPTIONS)
+    gpg = GPG()
     logging.debug('decoding %s...', message[:64])
     decoded = b58decode(message)
     logging.debug('decrypting %r...', decoded[:64])
