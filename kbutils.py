@@ -141,6 +141,10 @@ def decrypt(message):
     logging.debug('decoding %s...', message[:64])
     decoded = b58decode(message)
     logging.debug('decrypting %r...', decoded[:64])
-    decrypted = gpg.decrypt(decoded)
-    verified = decrypted.trust_text  # pylint: disable=no-member
+    try:
+        decrypted = gpg.decrypt(decoded)
+        verified = decrypted.trust_text  # pylint: disable=no-member
+    except subprocess.CalledProcessError:
+        decrypted = type('', (), {'data': b''})
+        verified = False
     return decrypted.data, verified
