@@ -4,28 +4,33 @@ a peer to peer collaboration and social media platform
 ## quickstart
 Install and test on a <https://digitalocean.com> Debian-11 droplet:
 1. login as root
-2. apt install firefox-esr python3 python3-pip pylint3 gpg xauth make
-3. apt install uwsgi uwsgi-plugin-python3
-4. adduser tester
-5. usermod -a -G sudo tester
-6. mkdir ~tester/.ssh
-7. cp ~/.ssh/authorized\_keys ~tester/.ssh/
-8. chown -R tester.tester ~tester/.ssh
+2. `apt install firefox-esr python3 python3-pip pylint3 gpg xauth make`
+3. `apt install uwsgi uwsgi-plugin-python3`
+4. `adduser tester`
+5. `usermod -a -G sudo tester`
+6. `mkdir ~tester/.ssh`
+7. `cp ~/.ssh/authorized\_keys ~tester/.ssh/`
+8. `chown -R tester.tester ~tester/.ssh`
 
 That's all as root; you should now login as a regular user
 
-1. login as tester
-2. gpg --pinentry-mode loopback --quick-gen-key "myusername \<myemail@example.com\>"
-2. pip install gnupg
-3. mkdir -p src
-4. cd src
-5. git clone https://github.com/jcomeauictx/kybyz
-6. cd kybyz
-7. make
-8. at the kbz> prompt, type: register myusername myemail@example.com
+1. login as tester; use `ssh -X` to tunnel Xwindows to your local box
+2. `gpg --pinentry-mode loopback --quick-gen-key "myusername <myemail@example.com>"`
+3. `mkdir -p src`
+4. `cd src`
+5. `git clone https://github.com/jcomeauictx/kybyz`
+6. `cd kybyz`
+7. `make`
+8. at the `kbz>` prompt, type: `register myusername myemail@example.com`
+9. if successful, ^C (control-c)
 
-It currently fails at this point. I upgraded my gnupg package to the latest and am troubleshooting the problems.
+Now that you are registered, you'll need to restart in order to send your new
+username (nick) to the IRC server.
 
+1. `make`
+2. wait for the `kbz>` prompt
+3. `send myusername myemail@example.com this is a private message`
+4. watch the log messages and make sure it was sent and received correctly.
 
 ## proof of authorship
 
@@ -53,5 +58,4 @@ previous block, and no newer than the transaction timestamp.
 ## prerequisites
 
 * python3
-* python3-ecdsa
-* python3-gnupg
+* gpg
