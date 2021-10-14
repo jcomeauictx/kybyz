@@ -24,18 +24,21 @@ That's all as root; you should now login as a regular user
 4. `cd src`
 5. `git clone https://github.com/jcomeauictx/kybyz`
 6. `cd kybyz`
+7. `./kybyz.py register myusername myemail@example.com`
 7. `make`; Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear.
-8. at the `kbz>` prompt, type: `register myusername myemail@example.com`
-9. if successful, ^C (control-c)
-
-Now that you are registered, you'll need to restart in order to send your new
-username (nick) to the IRC server.
-
-1. `make`
-2. Wait for the `kbz>` prompt
-3. `send myusername myemail@example.com this is a private message`
-4. Watch the log messages and make sure it was sent and received correctly.
-5. Send to another user. First you'll need to import their public GPG key.
+8. Wait for the `kbz>` prompt
+9. `send myusername myemail@example.com this is a private message`
+10. Watch the log messages and make sure it was sent and received correctly.
+11. Send to another user. First you'll need to import their public GPG key.
+12. Login to Facebook and visit <https://www.facebook.com/jcomeauictx/about_contact_and_basic_info>. Copy my PGP key.
+13. ^C out of kybyz on the droplet, and at the command line: `cat > /tmp/jc.key`.
+14. Paste the key by clicking the middle mouse button (or both left and right if there is no middle).
+15. ^D to get back to the command line.
+16. `gpg --import /tmp/jc.key`
+17. `gpg --sign-key jc@unternet.net`
+18. `make`
+19. At the `kbz>` prompt: `send jcomeauictx jc@unternet.net hey this is Joe`
+I won't actually be able to read your message unless I have imported *your* key.
 
 ## proof of authorship
 
