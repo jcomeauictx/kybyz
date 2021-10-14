@@ -13,7 +13,6 @@ IRCSERVER = 'irc.lfnet.org'
 PORT = 6667
 CHANNEL = '#kybyz'
 BUFFERSIZE = 16 * 1024  # make it big enough to get full banner from IRC server
-CACHED['irc_in'] = CACHED.get('irc_in', b'')
 CRLF = '\r\n'
 
 class IRCBot():
@@ -29,6 +28,7 @@ class IRCBot():
         initialize the client
         '''
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.stream = self.client.makefile()
         self.server = server
         self.nickname = nickname or pwd.getpwuid(os.geteuid()).pw_name
         self.realname = realname or pwd.getpwuid(os.geteuid()).pw_gecos
@@ -46,13 +46,13 @@ class IRCBot():
         names = (nickname, realname)
         connection = self.client.connect((server, port))
         self.client.send(('USER %s 0 * :%s\r\n' % names).encode())
-        logging.info('received: \n%r\n', self.client.recv(BUFFERSIZE).decode())
         self.client.send(('NICK %s\r\n' % nickname).encode())
-        logging.info('received: \n%r\n', self.client.recv(BUFFERSIZE).decode())
         self.client.send(('JOIN %s\r\n' % CHANNEL).encode())
-        received = self.client.recv(BUFFERSIZE).decode()
-        logging.info('received: \n%r\n', received)
-        CACHED['irc_id'] = received.split()[0]
+        line = ''
+        while ' JOIN :' + CHANNEL not in line:
+            line = self.stream.readline()
+            logging.info('received: %s', line)
+        CACHED['irc_id'] = line.split()[0]
         logging.info("CACHED['irc_id'] = %s", CACHED['irc_id'])
         return connection
 
@@ -88,7 +88,7 @@ class IRCBot():
         '''
         logging.debug('ircbot monitoring incoming traffic')
         while not self.terminate:
-            received = self.client.recv(BUFFERSIZE).decode()
+            received = self.stream.readline()
             logging.info('received: %r', received)
             words = received.split()
             if words[0] == 'PING':
@@ -96,22 +96,19 @@ class IRCBot():
                 logging.info('sending: %s', pong)
                 self.client.send(pong.encode())
             elif words[1] == 'PRIVMSG':
-                logging.info('%s message received from %s:',
-                             'public' if words[2] == CHANNEL else 'private',
-                             words[0])
-                # assume we received a batch of PRIVMSGs
-                messages = list(filter(None, received.split(CRLF)))
-                logging.debug('received batch of %d messages', len(messages))
-                message = ''.join([l.split(':')[-1] for l in messages])
-                logging.debug('complete message: "%s"', message)
-                text, okay = decrypt(CACHED['irc_in'] + message.encode())
+                sender = words[0]
+                privacy = 'public' if words[2] == CHANNEL else 'private'
+                logging.info('%s message received from %s:', privacy, sender)
+                CACHED[sender] += received.split(':')[-1].rstrip()
+                # try decoding what we have so far
+                text, okay = decrypt(CACHED[sender].encode())
                 logging.debug('text: %s, okay: %s', text, okay)
                 if text:
-                    CACHED['irc_in'] = b''
+                    CACHED[sender] = ''
+                    logging.info('%s message from %s: %s',
+                                 privacy, sender, text)
                 else:
-                    CACHED['irc_in'] += message.encode()
-                    logging.debug("CACHED['irc_in'] now %s",
-                                  CACHED['irc_in'])
+                    logging.debug("CACHED[%s] now %s", sender, CACHED[sender])
         logging.warning('ircbot terminated from launching thread')
 
 def test():
