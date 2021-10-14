@@ -50,9 +50,10 @@ class IRCBot():
         self.client.send(('NICK %s\r\n' % nickname).encode())
         logging.info('received: \n%r\n', self.client.recv(BUFFERSIZE).decode())
         self.client.send(('JOIN %s\r\n' % CHANNEL).encode())
-        received = self.client.recv(BUFFERSIZE).decode().split()
-        CACHED['irc_id'] = received[0]
+        received = self.client.recv(BUFFERSIZE).decode()
         logging.info('received: \n%r\n', received)
+        CACHED['irc_id'] = received.split()[0]
+        logging.info("CACHED['irc_id'] = %s", CACHED['irc_id'])
         return connection
 
     def privmsg(self, target, message):
@@ -65,6 +66,7 @@ class IRCBot():
         characters.
         '''
         testmsg = ' '.join([CACHED['irc_id'], 'PRIVMSG', target, ':' + message])
+        logging.debug('testmsg: %s', testmsg)
         if len(testmsg) <= 510:
             self.client.send(('PRIVMSG %s %s\r\n' % (target, message)).encode())
         else:
@@ -98,7 +100,7 @@ class IRCBot():
                              'public' if words[2] == CHANNEL else 'private',
                              words[0])
                 # assume we received a batch of PRIVMSGs
-                messages = received.split(CRLF)
+                messages = list(filter(None, received.split(CRLF)))
                 logging.debug('received batch of %d messages', len(messages))
                 message = ''.join([l.split(':')[-1] for l in messages])
                 logging.debug('complete message: "%s"', message)

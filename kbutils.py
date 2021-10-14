@@ -53,7 +53,7 @@ class GPG():
             ['gpg', '--decrypt'], input=data, capture_output=True, check=True)
         run.data = run.stdout
         logging.debug('decrypt stderr: %s', run.stderr)
-        output = run.stderr.decode().split('\n')
+        output = list(filter(None, run.stderr.decode().split('\n')))
         logging.debug('looking for username and trust_text in %s', output[-1])
         run.username, run.trust_text = re.compile(
             r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
