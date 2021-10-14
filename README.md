@@ -43,7 +43,8 @@ That's all as root; you should now login as a regular user
 18. `make`
 19. At the `kbz>` prompt: `send jcomeauictx jc@unternet.net hey this is Joe`
 
-I won't actually be able to read your message unless I have imported *your* key.
+I'll be able to read your message, but won't be able to verify who it's from
+unless I have imported *your* key.
 
 ## proof of authorship
 
