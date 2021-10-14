@@ -50,14 +50,17 @@ class GPG():
         gpg decrypt data
         '''
         run = subprocess.run(
-            ['gpg', '--decrypt'], input=data, capture_output=True, check=True)
+            ['gpg', '--decrypt'], input=data, capture_output=True, check=False)
         run.data = run.stdout
         logging.debug('decrypt stderr: %s', run.stderr)
         output = list(filter(None, run.stderr.decode().split('\n')))
         logging.debug('looking for username and trust_text in %s', output[-1])
-        run.username, run.trust_text = re.compile(
-            r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
-            output[-1]).groups()
+        try:
+            run.username, run.trust_text = re.compile(
+                r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
+                output[-1]).groups()
+        except AttributeError:
+            run.username = run.trust_text = None
         return run
 
     def verify(self, signed):
