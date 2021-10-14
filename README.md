@@ -24,7 +24,7 @@ That's all as root; you should now login as a regular user
 4. `cd src`
 5. `git clone https://github.com/jcomeauictx/kybyz`
 6. `cd kybyz`
-7. `make`
+7. `make`; Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear.
 8. at the `kbz>` prompt, type: `register myusername myemail@example.com`
 9. if successful, ^C (control-c)
 
