@@ -4,7 +4,7 @@ SOURCES ?= $(wildcard *.py)
 PYTHON ?= python3
 PYLINT ?= pylint3
 # set KB_DELAY to smaller number for more frequent progress logging
-KB_DELAY = 60
+KB_DELAY = 600
 export
 all: doctests lint uwsgi
 %.doctest: %.py
