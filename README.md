@@ -7,18 +7,19 @@ Install and test on a <https://digitalocean.com> Debian-11 droplet, the cheapest
 one, currently $6/month.
 
 1. Login as root
-2. `apt install firefox-esr python3 python3-pip pylint3 gpg xauth make`
-3. `apt install uwsgi uwsgi-plugin-python3`
-4. `adduser tester`
-5. `usermod -a -G sudo tester`
-6. `mkdir ~tester/.ssh`
-7. `cp ~/.ssh/authorized\_keys ~tester/.ssh/`
-8. `chown -R tester.tester ~tester/.ssh`
+2. `apt update`
+3. `apt upgrade`
+4. `apt install firefox-esr python3 pylint3 gpg git xauth make uwsgi-plugin-python3`
+6. `adduser tester`
+7. `usermod -a -G sudo tester`
+8. `mkdir ~tester/.ssh`
+9. `cp ~/.ssh/authorized_keys ~tester/.ssh/`
+10. `chown -R tester.tester ~tester/.ssh`
 
 That's all as root; you should now login as a regular user
 
 1. Login as tester; use `ssh -X` to tunnel Xwindows to your local box
-2. `gpg --pinentry-mode loopback --quick-gen-key "myusername <myemail@example.com>"`
+2. `gpg --pinentry-mode loopback --quick-gen-key "myusername <myemail@example.com>"`; **just hit the enter key at the `Passphrase:` prompt**
 3. `mkdir -p src`
 4. `cd src`
 5. `git clone https://github.com/jcomeauictx/kybyz`
