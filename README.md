@@ -6,6 +6,10 @@ a peer to peer collaboration and social media platform
 Install and test on a <https://digitalocean.com> Debian-11 droplet, the cheapest
 one, currently $6/month.
 
+**NOTE**: in the following instructions, replace `myusername` and 
+`myemail@example.com` with your own, hopefully unique, username and your real
+email address.
+
 1. Login as root
 2. `apt update`
 3. `apt upgrade`
