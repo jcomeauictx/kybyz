@@ -14,6 +14,7 @@ PORT = 6667
 CHANNEL = '#kybyz'
 BUFFERSIZE = 16 * 1024  # make it big enough to get full banner from IRC server
 CRLF = '\r\n'
+TIMEOUT = int(os.getenv('KB_DELAY') or 600)
 
 class IRCBot():
     '''
@@ -101,6 +102,7 @@ class IRCBot():
                 logging.info('%s message received from %s:', privacy, sender)
                 CACHED[sender] += received.split(':')[-1].rstrip()
                 # try decoding what we have so far
+                logging.debug('attempting to decode %s', CACHED[sender])
                 text, okay = decrypt(CACHED[sender].encode())
                 logging.debug('text: %s, okay: %s', text, okay)
                 if text:
@@ -117,7 +119,7 @@ def test(nickname=None, realname=None):
     '''
     try:
         ircbot = IRCBot(nickname=nickname, realname=realname)
-        time.sleep(600)
+        time.sleep(TIMEOUT)
     except KeyboardInterrupt:
         logging.warning('Telling monitor to terminate')
         ircbot.terminate = True

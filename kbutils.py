@@ -11,6 +11,33 @@ from kbcommon import CACHED
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
+def run_process(command, **kwargs):
+    '''
+    implementation of subprocess.run for older Python3
+
+    https://pymotw.com/3/subprocess/
+    '''
+    text_input = kwargs.get('input', None)
+    capture_output = kwargs.get('capture_output', False)
+    logging.debug('capture_output %s ignored', capture_output)
+    timeout = kwargs.get('timeout', None)
+    check = kwargs.get('check', None)
+    if timeout or check:
+        raise NotImplementedError('"timeout" and "check" not supported')
+    process = subprocess.Popen(
+        command,
+        stdin=kwargs.get('stdin', subprocess.PIPE),
+        stdout=kwargs.get('stdout', subprocess.PIPE),
+        stderr=kwargs.get('stderr', subprocess.PIPE),
+        **{k: kwargs[k] for k in kwargs if k not in
+           ['input', 'capture_output', 'timeout', 'check']}
+    )
+    stdout, stderr = process.communicate(text_input)
+    return type('', (), {
+        'stdout': stdout,
+        'stderr': stderr,
+    })
+
 class GPG():
     '''
     drop-in replacement for python3-gnupg class
@@ -18,6 +45,13 @@ class GPG():
     limited to the few calls that kybyz makes
     '''
     # pylint: disable=no-self-use
+    def __init__(self):
+        '''
+        add subprocess.run replacement if it doesn't exist
+        '''
+        if not hasattr(subprocess, 'run'):
+            subprocess.run = run_process
+
     def sign(self, data):
         '''
         gpg sign given data
@@ -25,7 +59,7 @@ class GPG():
         unlike python-gnupg, return as binary data
         '''
         run = subprocess.run(['gpg', '--sign'], input=data,
-                             capture_output=True, check=True)
+                             capture_output=True, check=False)
         run.data = run.stdout
         return run
 
@@ -41,7 +75,7 @@ class GPG():
         if armor:
             command.append('--armor')
         run = subprocess.run(command, input=data,
-                             capture_output=True, check=True)
+                             capture_output=True, check=False)
         run.data = run.stdout
         return run
 
@@ -68,16 +102,20 @@ class GPG():
         verify signature on given signed data
         '''
         run = subprocess.run(['gpg', '--verify'], input=signed,
-                             capture_output=True, check=True)
+                             capture_output=True, check=False)
         output = run.stderr.decode().split('\n')
-        run.timestamp = re.compile(r'^gpg: Signature made (.*)$').match(
-            output[0]).groups()[0]
-        run.key_id = re.compile(
-            r'^gpg: \s*using RSA key ([0-9A-F]{40}$)').match(
-            output[1]).groups()[0]
-        run.username, run.trust_text = re.compile(
-            r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
-            output[2]).groups()
+        try:
+            run.timestamp = re.compile(r'^gpg: Signature made (.*)$').match(
+                output[0]).groups()[0]
+            run.key_id = re.compile(
+                r'^gpg: \s*using RSA key ([0-9A-F]{40}$)').match(
+                output[1]).groups()[0]
+            run.username, run.trust_text = re.compile(
+                r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
+                output[2]).groups()
+        except (AttributeError, IndexError) as problem:
+            logging.exception('did not find needed data in %s', vars(run))
+            raise problem
         return run
 
 def read(filename):
