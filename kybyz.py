@@ -104,6 +104,8 @@ def register(username=None, email=None):
         logging.info('Now registered as %s %s', username, email)
         if CACHED.get('ircbot', None):
             CACHED['ircbot'].nick(username)
+            CACHED['ircbot'].leave()  # rejoin to freshen CACHED['irc_id']
+            CACHED['ircbot'].join()
         else:
             logging.info('registering outside of running application')
 

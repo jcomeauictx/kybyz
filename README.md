@@ -29,7 +29,7 @@ That's all as root; you should now login as a regular user
 5. `git clone https://github.com/jcomeauictx/kybyz`
 6. `cd kybyz`
 7. `./kybyz.py register myusername myemail@example.com`
-7. `make`; Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear.
+7. `make`; Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear. **If pylint fails**, you can still test the app using `make PYLINT=echo`
 8. Wait for the `kbz>` prompt
 9. `send myusername myemail@example.com this is a private message`
 10. Watch the log messages and make sure it was sent and received correctly.

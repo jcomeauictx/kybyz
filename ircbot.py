@@ -52,7 +52,13 @@ class IRCBot():
         '''
         join a new channel
         '''
-        self.client.send(('JOIN %s\r\n' % CHANNEL).encode())
+        self.client.send(('JOIN %s\r\n' % channel).encode())
+
+    def leave(self, channel=CHANNEL):
+        '''
+        join a new channel
+        '''
+        self.client.send(('PART %s\r\n' % channel).encode())
 
     def user(self, nickname, realname):
         '''
@@ -60,23 +66,15 @@ class IRCBot():
         '''
         names = (nickname, realname)
         self.client.send(('USER %s 0 * :%s\r\n' % names).encode())
-        
 
     def connect(self, server, port, nickname, realname):
         '''
         connect to the server and identify ourselves
         '''
-        names = (nickname, realname)
         connection = self.client.connect((server, port))
         self.user(nickname, realname)
         self.nick(nickname)
         self.join(CHANNEL)
-        line = ''
-        while ' JOIN :' + CHANNEL not in line:
-            line = self.stream.readline()
-            logging.info('received: %s', line)
-        CACHED['irc_id'] = line.split()[0]
-        logging.info("CACHED['irc_id'] = %s", CACHED['irc_id'])
         return connection
 
     def privmsg(self, target, message):
@@ -115,9 +113,12 @@ class IRCBot():
             logging.info('received: %r', received)
             words = received.split()
             if words[0] == 'PING':
-                pong = received.replace('I', 'O', 1)
+                pong = received.replace('I', 'O', 1).rstrip() + CRLF
                 logging.info('sending: %s', pong)
                 self.client.send(pong.encode())
+            elif words[1] == 'JOIN':
+                CACHED['irc_id'] = words[0]
+                logging.info("CACHED['irc_id'] = %s", CACHED['irc_id'])
             elif words[1] == 'PRIVMSG':
                 sender = words[0]
                 privacy = 'public' if words[2] == CHANNEL else 'private'
