@@ -3,7 +3,7 @@
 IRC communications for server discovery
 '''
 # pylint: disable=multiple-imports
-import socket, pwd, os, threading, logging, time
+import sys, os, socket, pwd, threading, logging, time
 from kbcommon import CACHED
 from kbutils import decrypt
 
@@ -111,16 +111,17 @@ class IRCBot():
                     logging.debug("CACHED[%s] now %s", sender, CACHED[sender])
         logging.warning('ircbot terminated from launching thread')
 
-def test():
+def test(nickname=None, realname=None):
     '''
     run a bot from the command line, for testing
     '''
     try:
-        ircbot = IRCBot()
+        ircbot = IRCBot(nickname=nickname, realname=realname)
         time.sleep(600)
     except KeyboardInterrupt:
         logging.warning('Telling monitor to terminate')
         ircbot.terminate = True
 
 if __name__ == '__main__':
-    test()
+    sys.argv.extend(['', ''])  # in case no args given
+    test(nickname=sys.argv[1], realname=sys.argv[2])
