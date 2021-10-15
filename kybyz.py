@@ -102,6 +102,10 @@ def register(username=None, email=None):
         os.symlink(os.path.join(CACHE, email), os.path.join(CACHE, username))
         os.symlink(os.path.join(CACHE, username), KYBYZ_HOME)
         logging.info('Now registered as %s %s', username, email)
+        if CACHED.get('ircbot', None):
+            CACHED['ircbot'].nick(username)
+        else:
+            logging.info('registering outside of running application')
 
 def post(post_type, *args, **kwargs):
     '''

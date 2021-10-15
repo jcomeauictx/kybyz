@@ -32,6 +32,8 @@ class IRCBot():
         self.stream = self.client.makefile()
         self.server = server
         self.nickname = nickname or pwd.getpwuid(os.geteuid()).pw_name
+        # NOTE: when we implement true p2p networking, realname should include
+        # connection port
         self.realname = realname or pwd.getpwuid(os.geteuid()).pw_gecos
         self.connection = self.connect(server, port,
                                        self.nickname, self.realname)
@@ -40,15 +42,35 @@ class IRCBot():
         daemon.daemon = True
         daemon.start()
 
+    def nick(self, nickname):
+        '''
+        set new nickname
+        '''
+        self.client.send(('NICK %s\r\n' % nickname).encode())
+
+    def join(self, channel=CHANNEL):
+        '''
+        join a new channel
+        '''
+        self.client.send(('JOIN %s\r\n' % CHANNEL).encode())
+
+    def user(self, nickname, realname):
+        '''
+        tell server the names (the tuple (nickname, realname)) to use
+        '''
+        names = (nickname, realname)
+        self.client.send(('USER %s 0 * :%s\r\n' % names).encode())
+        
+
     def connect(self, server, port, nickname, realname):
         '''
         connect to the server and identify ourselves
         '''
         names = (nickname, realname)
         connection = self.client.connect((server, port))
-        self.client.send(('USER %s 0 * :%s\r\n' % names).encode())
-        self.client.send(('NICK %s\r\n' % nickname).encode())
-        self.client.send(('JOIN %s\r\n' % CHANNEL).encode())
+        self.user(nickname, realname)
+        self.nick(nickname)
+        self.join(CHANNEL)
         line = ''
         while ' JOIN :' + CHANNEL not in line:
             line = self.stream.readline()

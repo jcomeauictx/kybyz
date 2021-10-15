@@ -12,7 +12,7 @@ all: doctests lint uwsgi
 	$(PYTHON) -m doctest $<
 doctests: $(SOURCES:.py=.doctest)
 %.lint: %.py $(PYLINT)
-	$(PYLINT) $< || echo '***FAILED***, QUIT NOW'
+	$(PYLINT) $<
 lint: $(SOURCES:.py=.lint)
 uwsgi: kybyz.ini
 	uwsgi $<
