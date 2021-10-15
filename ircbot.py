@@ -114,7 +114,7 @@ class IRCBot():
             words = received.split()
             if words[0] == 'PING':
                 pong = received.replace('I', 'O', 1).rstrip() + CRLF
-                logging.info('sending: %s', pong)
+                logging.info('sending: %r', pong)
                 self.client.send(pong.encode())
             elif words[1] == 'JOIN':
                 CACHED['irc_id'] = words[0]
