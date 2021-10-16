@@ -22,8 +22,8 @@ def run_process(command, **kwargs):
     logging.debug('capture_output %s ignored', capture_output)
     timeout = kwargs.get('timeout', None)
     check = kwargs.get('check', None)
-    if timeout or check:
-        raise NotImplementedError('"timeout" and "check" not supported')
+    if timeout:
+        raise NotImplementedError('"timeout" not supported')
     process = subprocess.Popen(
         command,
         stdin=kwargs.get('stdin', subprocess.PIPE),
@@ -33,6 +33,10 @@ def run_process(command, **kwargs):
            ['input', 'capture_output', 'timeout', 'check']}
     )
     stdout, stderr = process.communicate(text_input)
+    if check and process.returncode:
+        raise subprocess.CalledProcessError(process.returncode, command,
+                                             output=stdout,
+                                             stderr=stderr)
     return type('', (), {
         'stdout': stdout,
         'stderr': stderr,
@@ -59,7 +63,7 @@ class GPG():
         unlike python-gnupg, return as binary data
         '''
         run = subprocess.run(['gpg', '--sign'], input=data,
-                             capture_output=True, check=False)
+                             capture_output=True, check=True)
         run.data = run.stdout
         return run
 
@@ -75,7 +79,7 @@ class GPG():
         if armor:
             command.append('--armor')
         run = subprocess.run(command, input=data,
-                             capture_output=True, check=False)
+                             capture_output=True, check=True)
         run.data = run.stdout
         return run
 
@@ -84,7 +88,7 @@ class GPG():
         gpg decrypt data
         '''
         run = subprocess.run(
-            ['gpg', '--decrypt'], input=data, capture_output=True, check=False)
+            ['gpg', '--decrypt'], input=data, capture_output=True, check=True)
         run.data = run.stdout
         logging.debug('decrypt stderr: %s', run.stderr)
         output = list(filter(None, run.stderr.decode().split('\n')))
@@ -104,17 +108,24 @@ class GPG():
         run = subprocess.run(['gpg', '--verify'], input=signed,
                              capture_output=True, check=False)
         output = run.stderr.decode().split('\n')
+        combined = ' '.join(output)
         try:
-            run.timestamp = re.compile(r'^gpg: Signature made (.*)$').match(
+            run.timestamp = re.compile(
+                r'^gpg: Signature made (.*?)(?: using .*)?$').match(
                 output[0]).groups()[0]
+            logging.debug('run.timestamp: %s', run.timestamp)
             run.key_id = re.compile(
-                r'^gpg: \s*using RSA key ([0-9A-F]{40}$)').match(
-                output[1]).groups()[0]
-            run.username, run.trust_text = re.compile(
-                r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
-                output[2]).groups()
+                r' using RSA key (?:ID )?([0-9A-F]{8,40})\s').search(
+                combined).groups()[0]
+            logging.debug('run.key_id: %s', run.key_id)
+            pattern = re.compile(
+                r' Good signature from "([^"]+)"(?: \[([^]]+)\])?')
+            logging.debug('pattern: %s', pattern)
+            run.username, run.trust_text = pattern.search(combined).groups()
+            logging.debug('run.username: %s, run.trust_text: %s',
+                          run.username, run.trust_text)
         except (AttributeError, IndexError) as problem:
-            logging.exception('did not find needed data in %s', vars(run))
+            logging.exception('did not find needed data in %r', combined)
             raise problem
         return run
 
@@ -185,14 +196,20 @@ def decrypt(message):
     decrypt a message sent to me, and verify sender email
     '''
     gpg = GPG()
+    decoded = b''
     logging.debug('decoding %s...', message[:64])
-    decoded = b58decode(message)
+    try:
+        decoded = b58decode(message)
+    except ValueError:
+        logging.warning('%r... not base58 encoded', message[:32])
+        decoded = message
     logging.debug('decrypting %r...', decoded[:64])
     try:
         decrypted = gpg.decrypt(decoded)
         verified = decrypted.trust_text  # pylint: disable=no-member
-    except subprocess.CalledProcessError:
-        decrypted = type('', (), {'data': b''})
+    except subprocess.CalledProcessError as problem:
+        logging.exception(problem)
+        decrypted = type('', (), {'data': decoded})
         verified = False
     return decrypted.data, verified
 
