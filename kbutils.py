@@ -196,21 +196,21 @@ def decrypt(message):
     decrypt a message sent to me, and verify sender email
     '''
     gpg = GPG()
-    decoded = b''
+    verified = decoded = b''
     logging.debug('decoding %s...', message[:64])
     try:
         decoded = b58decode(message)
+        logging.debug('decrypting %r...', decoded[:64])
+        decrypted = gpg.decrypt(decoded)
+        # pylint: disable=no-member
+        verified = 'trust level ' + decrypted.trust_text
     except ValueError:
         logging.warning('%r... not base58 encoded', message[:32])
-        decoded = message
-    logging.debug('decrypting %r...', decoded[:64])
-    try:
-        decrypted = gpg.decrypt(decoded)
-        verified = decrypted.trust_text  # pylint: disable=no-member
+        decrypted = type('', (), {'data': message})
+        verified = 'unencoded'
     except subprocess.CalledProcessError as problem:
         logging.exception(problem)
-        decrypted = type('', (), {'data': decoded})
-        verified = False
+        decrypted = type('', (), {'data': b''})
     return decrypted.data, verified
 
 def check_username(identifier):

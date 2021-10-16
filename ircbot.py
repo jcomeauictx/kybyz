@@ -134,14 +134,14 @@ class IRCBot():
                 CACHED[sender] += received.split(':')[-1].rstrip()
                 # try decoding what we have so far
                 logging.debug('attempting to decode %s', CACHED[sender])
-                text, okay = decrypt(CACHED[sender].encode())
-                logging.debug('text: %s, okay: %s', text, okay)
+                text, trustlevel = decrypt(CACHED[sender].encode())
+                logging.debug('text: %s, trustlevel: %s', text, trustlevel)
                 if text:
                     CACHED[sender] = ''
-                    logging.info('%s message from %s: %s',
-                                 privacy, sender, text)
+                    logging.info('%s %s message from %s: %s',
+                                 trustlevel, privacy, sender, text)
                 else:
-                    logging.debug("CACHED[%s] now %s", sender, CACHED[sender])
+                    logging.debug("CACHED[%s] now %r", sender, CACHED[sender])
         logging.warning('ircbot terminated from launching thread')
 
 def test(nickname=None, realname=None):
