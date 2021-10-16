@@ -56,7 +56,7 @@ def decode(bytestring):
     decoded += b'\0' * (len(bytestring) - len(cleaned))
     return bytes(decoded)[::-1]
 
-b58encode, b58decode = encode, decode  # compatibility
+b58encode, b58decode = encode, decode  # pylint: disable=invalid-name
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:

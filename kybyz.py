@@ -182,13 +182,17 @@ def uwsgi_init():
     logging.debug('beginning kybyz uwsgi initialization')
     import uwsgi
     import webbrowser
+    port = None
     try:
         port = fromfd(uwsgi.sockets[0], AF_INET, SOCK_STREAM).getsockname()[1]
-        init()
+    except AttributeError:
+        logging.exception('cannot determine port')
+    init()
+    if port is not None:
         logging.debug('opening browser window to localhost port %s', port)
         webbrowser.open('http://localhost:%s' % port)
-    except AttributeError:
-        logging.exception('cannot determine port or open browser to kybyz page')
+    else:
+        logging.exception('cannot open browser to kybyz page on port %s', port)
     repl = threading.Thread(target=commandloop, name='repl')
     repl.daemon = True
     repl.start()

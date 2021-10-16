@@ -21,7 +21,7 @@ $(HOME)/bin:
 $(PYLINT): $(HOME)/bin
 	which $@ || sudo apt-get install $@
 	# for Debian Bullseye, no more pylint3
-	which pylint  # fails if no pylint either
+	which $@ || which pylint # fails if no pylint either
 	which $@ || ln -sf $$(which pylint) $(HOME)/bin/$@
 	# progressively worse (more global) locations
 	which $@ || sudo ln -sf $$(which pylint) /usr/local/bin/$@
