@@ -2,4 +2,5 @@
 *.pyc
 *.ico
 *.ini
+__pycache__
 dynamicFiltering.html
