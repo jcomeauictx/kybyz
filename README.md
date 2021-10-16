@@ -69,6 +69,9 @@ current gpg setup. In that case:
    ```
  * `gpg --gen-key`, and follow the prompts.
 
+If you're helping alpha test, each day before running the script you should
+`git pull`. This brings in any code changes since the previous attempt.
+
 ## proof of authorship
 
 On a platform such as Facebook, proof of authorship is "automatic" in the sense
