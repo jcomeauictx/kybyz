@@ -73,6 +73,6 @@ if __name__ == '__main__':
     elif sys.argv[1] == 'encode':
         print(encode(unhexlify(''.join(sys.argv[2:]))))
     elif sys.argv[1] == 'decode':
-        print(decode(' '.join(sys.argv[2:]).encode()))
+        sys.stdout.buffer.write(decode(' '.join(sys.argv[2:]).encode()))
     else:
         raise ValueError('Only accepted args: "encode" or "decode"')
