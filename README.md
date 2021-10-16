@@ -46,6 +46,29 @@ That's all as root; you should now login as a regular user
 I'll be able to read your message, but won't be able to verify who it's from
 unless I have imported *your* key.
 
+## troubleshooting
+
+Testing while chrooting to different debootstrapped systems reveals some
+problems. I already mentioned pylint: if the version is too old, it will
+complain about many non-problems in the code. For that, just set 
+PYLINT=echo preceding the `make` command.
+
+If the version of gpg is too old, it will create empty
+`$HOME/.gnupg/secring.gpg` and `$HOME/.gnupg/pubring.gpg` files and break your
+current gpg setup. In that case:
+
+ * Remove those two files
+ * `mkdir -m 0700 $HOME/.gnupg_v1`
+ * Make sure /usr/local/bin precedes /usr/bin in your PATH;
+   You can fix this in your `$HOME/.bash_profile` or `.bash_login` files.
+ * Create, with mode 755, a file `/usr/local/bin/gpg` with the following
+   contents:
+   ```bash
+   #!/bin/bash
+   /usr/bin/gpg --homedir $HOME/.gnupg_v1 "$@"
+   ```
+ * `gpg --gen-key`, and follow the prompts.
+
 ## proof of authorship
 
 On a platform such as Facebook, proof of authorship is "automatic" in the sense
