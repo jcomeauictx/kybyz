@@ -71,8 +71,16 @@ if __name__ == '__main__':
             if check != DECODED:
                 logging.error('%r does not match %r', check, DECODED)
     elif sys.argv[1] == 'encode':
-        print(encode(unhexlify(''.join(sys.argv[2:]))))
+        if sys.argv[2:]:
+            INBYTES= unhexlify(''.join(sys.argv[2:]))
+        else:
+            INBYTES = sys.stdin.buffer.read()
+        print(encode(INBYTES))
     elif sys.argv[1] == 'decode':
-        sys.stdout.buffer.write(decode(' '.join(sys.argv[2:]).encode()))
+        if sys.argv[2:]:
+            INBYTES = ''.join(sys.argv[2:]).encode()
+        else:
+            INBYTES = sys.stdin.buffer.read()
+        sys.stdout.buffer.write(decode(INBYTES))
     else:
         raise ValueError('Only accepted args: "encode" or "decode"')
