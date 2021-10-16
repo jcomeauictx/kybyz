@@ -60,7 +60,7 @@ current gpg setup. In that case:
  * Remove those two files
  * `mkdir -m 0700 $HOME/.gnupg_v1`
  * Make sure /usr/local/bin precedes /usr/bin in your PATH;
-   You can fix this in your `$HOME/.bash_profile` or `.bash_login` files.
+   You can fix this in your `$HOME/.bashrc` or `.bash_aliases` files.
  * Create, with mode 755, a file `/usr/local/bin/gpg` with the following
    contents:
    ```bash
