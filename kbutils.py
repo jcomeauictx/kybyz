@@ -195,3 +195,19 @@ def decrypt(message):
         decrypted = type('', (), {'data': b''})
         verified = False
     return decrypted.data, verified
+
+def check_username(identifier):
+    '''
+    identifier is :bleah!bleah@bleah.com' and CACHED['username'] == 'bleah'
+
+    >>> CACHED['username'] = 'bleah'
+    >>> check_username(':bleah!bleah@bleah.com')
+    True
+    >>> check_username(':blah!bleah@bleah.com')
+    False
+    '''
+    start = identifier.index(':') + 1
+    end = identifier.index('!')
+    logging.debug('identifier: %s, start: %s, end: %s, check: %s',
+                  identifier, start, end, identifier[start:end])
+    return CACHED.get('username', None) == identifier[start:end]

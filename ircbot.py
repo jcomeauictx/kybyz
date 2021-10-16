@@ -5,7 +5,7 @@ IRC communications for server discovery
 # pylint: disable=multiple-imports
 import sys, os, socket, pwd, threading, logging, time
 from kbcommon import CACHED
-from kbutils import decrypt
+from kbutils import decrypt, check_username
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
@@ -20,7 +20,7 @@ class IRCBot():
     '''
     Implements IRC client
 
-    see https://www.techbeamers.com/create-python-irc-bot/`
+    see https://www.techbeamers.com/create-python-irc-bot/
     also https://datatracker.ietf.org/doc/html/rfc2812
     '''
     def __init__(self, server=IRCSERVER, port=PORT,
@@ -29,6 +29,14 @@ class IRCBot():
         initialize the client
         '''
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # enable keepalives at the socket (SOL_SOCKET) level
+        self.client.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+        # after 1 second of TCP inactivity, trigger keepalive pings
+        self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 1)
+        # send a keepalive ping every 60 seconds
+        self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 60)
+        # quit after 5 consecutive failures
+        self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
         self.stream = self.client.makefile()
         self.server = server
         self.nickname = nickname or pwd.getpwuid(os.geteuid()).pw_name
@@ -116,7 +124,7 @@ class IRCBot():
                 pong = received.replace('I', 'O', 1).rstrip() + CRLF
                 logging.info('sending: %r', pong)
                 self.client.send(pong.encode())
-            elif words[1] == 'JOIN':
+            elif words[1] == 'JOIN' and check_username(words[0]):
                 CACHED['irc_id'] = words[0]
                 logging.info("CACHED['irc_id'] = %s", CACHED['irc_id'])
             elif words[1] == 'PRIVMSG':
