@@ -72,15 +72,18 @@ if __name__ == '__main__':
                 logging.error('%r does not match %r', check, DECODED)
     elif sys.argv[1] == 'encode':
         if sys.argv[2:]:
+            # assume hexlified binary data
             INBYTES= unhexlify(''.join(sys.argv[2:]))
         else:
+            # assume raw binary data
             INBYTES = sys.stdin.buffer.read()
-        print(encode(INBYTES))
+        sys.stdout.buffer.write(encode(INBYTES))
     elif sys.argv[1] == 'decode':
+        # assume base58-encoded data from either commandline or stdin
         if sys.argv[2:]:
             INBYTES = ''.join(sys.argv[2:]).encode()
         else:
-            INBYTES = sys.stdin.buffer.read()
+            INBYTES = sys.stdin.buffer.read().rstrip()
         sys.stdout.buffer.write(decode(INBYTES))
     else:
         raise ValueError('Only accepted args: "encode" or "decode"')
