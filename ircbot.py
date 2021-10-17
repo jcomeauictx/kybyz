@@ -119,7 +119,8 @@ class IRCBot():
         while not self.terminate:
             received = self.stream.readline()
             logging.info('received: %r', received)
-            words = received.split()
+            # make sure all words[n] references are accounted for
+            words = received.split() + [None, None, None]
             if words[0] == 'PING':
                 pong = received.replace('I', 'O', 1).rstrip() + CRLF
                 logging.info('sending: %r', pong)

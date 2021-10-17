@@ -78,7 +78,7 @@ class GPG():
         if armor:
             command.append('--armor')
         run = subprocess.run(command, input=data,
-                             capture_output=True, check=True)
+                             capture_output=True, check=False)
         run.data = run.stdout
         return run
 
@@ -202,7 +202,7 @@ def decrypt(message):
         logging.debug('decrypting %r...', decoded[:64])
         decrypted = gpg.decrypt(decoded)
         # pylint: disable=no-member
-        verified = 'trust level ' + decrypted.trust_text
+        verified = 'trust level %s' % decrypted.trust_text
     except ValueError:
         logging.warning('%r... not base58 encoded', message[:32])
         decrypted = type('', (), {'data': message})
