@@ -43,9 +43,12 @@ def serve(env=None, start_response=None):
     if requested is not None and start_response:
         if requested == '':
             page = read('timeline.html').decode()
-            posts = ['<div>kybyz active %s seconds</div>' % CACHED['uptime']]
-            posts.extend(['<div>%s</div>' % post for post in loadposts()])
-            page = page.format(posts=''.join(posts)).encode()
+            messages = ['<div>kybyz active %s seconds</div>' % CACHED['uptime']]
+            posts = ['<div>%s</div>' % post for post in loadposts()]
+            page = page.format(
+                posts=''.join(posts),
+                messages=''.join(messages)
+            ).encode()
         elif os.path.exists(requested):
             page = read(requested)
             headers = [('Content-type', guess_mimetype(requested, page))]
