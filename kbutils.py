@@ -191,7 +191,7 @@ def send(recipient, email, *words):
     if text and not encoded:
         if os.getenv('KB_SEND_PLAINTEXT_OK'):
             logging.warning('encryption failed, sending plaintext')
-            encoded = text
+            encoded = text.decode()
         else:
             logging.warning('encryption failed, run with '
                             'KB_SEND_PLAINTEXT_OK=1 to send anyway')

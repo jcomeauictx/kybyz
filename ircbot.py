@@ -91,15 +91,17 @@ class IRCBot():
 
         target should be a channel name preceded by '#', or nick
 
-        message should not have any embedded CRLFs, colons (":"), or non-ASCII
-        characters.
+        message should not have any embedded CRLFs, or non-ASCII characters.
         '''
-        testmsg = ' '.join([CACHED['irc_id'], 'PRIVMSG', target, ':' + message])
-        logging.debug('testmsg: %s', testmsg)
+        sep = '\xa0'  # separates prefix from message
+        logging.debug('message: %r', message)
+        testmsg = ' '.join([CACHED['irc_id'], 'PRIVMSG', target, sep + message])
+        logging.debug('testmsg: %s', testmsg.replace(sep, ':'))
         if len(testmsg) <= 510:
-            self.client.send(('PRIVMSG %s %s\r\n' % (target, message)).encode())
+            self.client.send(('PRIVMSG %s :%s\r\n' % (target, message)
+                ).encode())
         else:
-            pieces = testmsg[:510].split(':')
+            pieces = testmsg[:510].split(sep)
             chunklength = len(pieces[-1])
             for chunk in [message[i:i+chunklength]
                           for i in range(0, len(message), chunklength)]:
@@ -120,7 +122,7 @@ class IRCBot():
             received = self.stream.readline()
             logging.info('received: %r', received)
             # make sure all words[n] references are accounted for
-            words = received.split() + [None, None, None]
+            words = received.split() + ['', '', '']
             if words[0] == 'PING':
                 pong = received.replace('I', 'O', 1).rstrip() + CRLF
                 logging.info('sending: %r', pong)
@@ -132,7 +134,8 @@ class IRCBot():
                 sender = words[0]
                 privacy = 'public' if words[2] == CHANNEL else 'private'
                 logging.info('%s message received from %s:', privacy, sender)
-                CACHED[sender] += received.split(':')[-1].rstrip()
+                # chop preceding ':' from ':this is a private message'
+                CACHED[sender] += ' '.join(words[3:])[1:].rstrip()
                 # try decoding what we have so far
                 logging.debug('attempting to decode %s', CACHED[sender])
                 text, trustlevel = decrypt(CACHED[sender].encode())
