@@ -35,8 +35,7 @@ def run_process(command, **kwargs):
     stdout, stderr = process.communicate(text_input)
     if check and process.returncode:
         raise subprocess.CalledProcessError(process.returncode, command,
-                                             output=stdout,
-                                             stderr=stderr)
+                                            output=(stdout, stderr))
     return type('', (), {
         'stdout': stdout,
         'stderr': stderr,
@@ -88,7 +87,7 @@ class GPG():
         gpg decrypt data
         '''
         run = subprocess.run(
-            ['gpg', '--decrypt'], input=data, capture_output=True, check=True)
+            ['gpg', '--decrypt'], input=data, capture_output=True, check=False)
         run.data = run.stdout
         logging.debug('decrypt stderr: %s', run.stderr)
         output = list(filter(None, run.stderr.decode().split('\n')))
@@ -96,7 +95,7 @@ class GPG():
         try:
             run.username, run.trust_text = re.compile(
                 r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
-                output[-1]).groups()
+                    output[-1]).groups()
         except AttributeError:
             run.username = run.trust_text = None
         return run
@@ -112,11 +111,11 @@ class GPG():
         try:
             run.timestamp = re.compile(
                 r'^gpg: Signature made (.*?)(?: using .*)?$').match(
-                output[0]).groups()[0]
+                    output[0]).groups()[0]
             logging.debug('run.timestamp: %s', run.timestamp)
             run.key_id = re.compile(
                 r' using RSA key (?:ID )?([0-9A-F]{8,40})\s').search(
-                combined).groups()[0]
+                    combined).groups()[0]
             logging.debug('run.key_id: %s', run.key_id)
             pattern = re.compile(
                 r' Good signature from "([^"]+)"(?: \[([^]]+)\])?')

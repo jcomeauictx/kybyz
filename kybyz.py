@@ -81,7 +81,7 @@ def registration():
             logging.exception('Bad registration')
         gpgkey = verify_key(email)
     return namedtuple('registration', ('username', 'email', 'gpgkey'))(
-                      username, email, gpgkey)
+        username, email, gpgkey)
 
 def register(username=None, email=None):
     '''
@@ -178,7 +178,7 @@ def uwsgi_init():
     '''
     initialize uwsgi application
     '''
-    # pylint: disable=import-error, import-outside-toplevel
+    # pylint: disable=import-error, bad-option-value, import-outside-toplevel
     logging.debug('beginning kybyz uwsgi initialization')
     import uwsgi
     import webbrowser

@@ -73,7 +73,7 @@ if __name__ == '__main__':
     elif sys.argv[1] == 'encode':
         if sys.argv[2:]:
             # assume hexlified binary data
-            INBYTES= unhexlify(''.join(sys.argv[2:]))
+            INBYTES = unhexlify(''.join(sys.argv[2:]))
         else:
             # assume raw binary data
             INBYTES = sys.stdin.buffer.read()
