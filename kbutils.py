@@ -2,7 +2,7 @@
 '''
 Kybyz utilities
 '''
-import logging, re, subprocess  # pylint: disable=multiple-imports
+import os, logging, re, subprocess  # pylint: disable=multiple-imports
 from datetime import datetime, timezone
 from hashlib import sha256
 from base58 import b58encode, b58decode
@@ -188,6 +188,15 @@ def send(recipient, email, *words):
     logging.debug('encrypted: %r...', encrypted.data[:64])
     encoded = b58encode(encrypted.data).decode()
     logging.debug('encoded: %s', encoded)
+    if text and not encoded:
+        if os.getenv('KB_SEND_PLAINTEXT_OK'):
+            logging.warning('encryption failed, sending plaintext')
+            encoded = text
+        else:
+            logging.warning('encryption failed, run with '
+                            'KB_SEND_PLAINTEXT_OK=1 to send anyway')
+            logging.warning('setting message to "(encryption failed)"')
+            encoded = '(encryption failed)'
     CACHED['ircbot'].privmsg(recipient, encoded)
 
 def decrypt(message):
