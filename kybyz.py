@@ -17,6 +17,7 @@ ARGS = sys.argv[1:]
 logging.info('COMMAND: %s, ARGS: %s', COMMAND, ARGS)
 EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
 COMMANDS = ['post', 'register', 'send']
+NAVIGATION = ['&nbsp']
 
 def init():
     '''
@@ -47,7 +48,8 @@ def serve(env=None, start_response=None):
             posts = ['<div>%s</div>' % post for post in loadposts()]
             page = page.format(
                 posts=''.join(posts),
-                messages=''.join(messages)
+                messages=''.join(messages),
+                navigation=''.join(NAVIGATION)
             ).encode()
         elif os.path.exists(requested):
             page = read(requested)

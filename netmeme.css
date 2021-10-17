@@ -5,8 +5,8 @@
 
 .netmeme {
   margin: auto;
-  width: 450px;
-  height: 450px;
+  width: 100%;
+  aspect-ratio: 1;
   background-size: cover; 
   text-align: center;
   position: relative;

@@ -1,6 +1,10 @@
-column {
+.column {
 	float: left;
 	width: 33.3%;
+}
+
+#kbz-navigation, #kbz-messages {
+	padding: 1em;
 }
 
 /* https://css-tricks.com/snippets/css/clear-fix/ */
