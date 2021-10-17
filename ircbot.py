@@ -99,7 +99,7 @@ class IRCBot():
         logging.debug('testmsg: %s', testmsg.replace(sep, ':'))
         if len(testmsg) <= 510:
             self.client.send(('PRIVMSG %s :%s\r\n' % (target, message)
-                ).encode())
+                             ).encode())
         else:
             pieces = testmsg[:510].split(sep)
             chunklength = len(pieces[-1])
