@@ -214,7 +214,7 @@ def uwsgi_init():
     if host is not None:  # if host is not None, port must also be set
         logging.debug('opening browser window to localhost port %s', port)
         webbrowser.open('http://%s' % host)
-        #logging.getLogger('').addHandler(message_handler)
+        logging.getLogger('').addHandler(message_handler)
     else:
         logging.exception('cannot open browser and/or logger on port %s', port)
     repl = threading.Thread(target=commandloop, name='repl')

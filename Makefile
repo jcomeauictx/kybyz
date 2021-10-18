@@ -15,7 +15,7 @@ doctests: $(HOME)/log $(SOURCES:.py=.doctest)
 	$(PYLINT) $<
 lint: $(SOURCES:.py=.lint)
 uwsgi: kybyz.ini $(HOME)/log
-	uwsgi $<
+	strace -f -v -t -s4096 -o $(HOME)/log/kybyz_strace.log uwsgi $<
 $(HOME)/bin $(HOME)/log:
 	mkdir -p $@
 $(PYLINT): $(HOME)/bin
