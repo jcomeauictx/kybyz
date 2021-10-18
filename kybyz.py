@@ -2,7 +2,7 @@
 '''
 Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
-import sys, os, time, threading  # pylint: disable=multiple-imports
+import sys, os, time, threading, cgi  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from collections import namedtuple
@@ -62,8 +62,12 @@ def serve(env=None, start_response=None):
                 page = request.read()
                 headers = [('Content-type', guess_mimetype(requested, page))]
         elif requested.startswith('log/'):
-            MESSAGES.append('new log message')
-            page = b'<div>logged</div>'
+            args = dict(cgi.FieldStorage(fp=env.get('wsgi.input'), environ=env))
+            if args.get('extra'):
+                MESSAGES.append('log: ' + repr(args.get('message')))
+                page = b'<div>logged</div>'
+            else:
+                page = b'</div>not logged</div>'
         else:
             logging.warning('%s not found', requested)
             status = '404 Not Found'
