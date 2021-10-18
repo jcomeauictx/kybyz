@@ -9,7 +9,7 @@ from collections import namedtuple
 from ircbot import IRCBot
 from kbutils import read, verify_key
 from kbutils import send  # pylint: disable=unused-import
-from kbcommon import CACHE, CACHED, KYBYZ_HOME, logging
+from kbcommon import CACHE, CACHED, KYBYZ_HOME, logging, MESSAGE_QUEUE
 from post import BasePost
 
 COMMAND = sys.argv[0]
@@ -18,7 +18,6 @@ logging.info('COMMAND: %s, ARGS: %s', COMMAND, ARGS)
 EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
 COMMANDS = ['post', 'register', 'send']
 NAVIGATION = ['&nbsp']
-MESSAGES = ['&nbsp']
 
 def init():
     '''
@@ -36,6 +35,8 @@ def serve(env=None, start_response=None):
     '''
     handle web requests
     '''
+    args = dict(cgi.FieldStorage(fp=env.get('wsgi.input'), environ=env))
+    logging.debug('args: %s', args)
     page = b'(Something went wrong)'
     env = env or {}
     requested = env.get('REQUEST_URI', None).lstrip('/')
@@ -45,10 +46,10 @@ def serve(env=None, start_response=None):
     if requested is not None and start_response:
         if requested == '':
             page = read('timeline.html').decode()
-            MESSAGES[0] = 'kybyz active %s seconds' % CACHED['uptime']
+            uptime = 'kybyz active %s seconds' % CACHED['uptime']
             posts = ['<div>%s</div>' % post for post in loadposts()]
-            messages = ['<div>%s</div>' % message
-                        for message in reversed(MESSAGES)]
+            messages = ['<div>%s</div>' % message for message in
+                        [uptime] + list(reversed(MESSAGE_QUEUE))]
             page = page.format(
                 posts=''.join(posts),
                 messages=''.join(messages),
@@ -61,18 +62,6 @@ def serve(env=None, start_response=None):
             with urlopen('https://ipfs.io/' + requested) as request:
                 page = request.read()
                 headers = [('Content-type', guess_mimetype(requested, page))]
-        elif requested.startswith('log/'):
-            args = dict(cgi.FieldStorage(fp=env.get('wsgi.input'), environ=env))
-            logging.debug('args: %s', args)
-            try:
-                # force AttributeError here if `extra` unset
-                logging.log(logging.NOTSET, args.get('extra').value)
-                MESSAGES.append('[%s] %s' % (
-                    args.get('levelname').value,
-                    args.get('message').value))
-                page = b'<div>logged</div>'
-            except AttributeError:
-                page = b'</div>not logged</div>'
         else:
             logging.warning('%s not found', requested)
             status = '404 Not Found'
@@ -202,21 +191,18 @@ def uwsgi_init():
     logging.debug('beginning kybyz uwsgi initialization')
     import uwsgi
     import webbrowser
-    port = host = message_handler = None
+    port = host = None
     try:
         port = fromfd(uwsgi.sockets[0], AF_INET, SOCK_STREAM).getsockname()[1]
         host = 'localhost:%s' % port
-        message_handler = logging.handlers.HTTPHandler(host, '/log/')
-        logging.debug('message_handler: %s', message_handler)
     except AttributeError:
         logging.exception('cannot determine port')
     init()
     if host is not None:  # if host is not None, port must also be set
         logging.debug('opening browser window to localhost port %s', port)
         webbrowser.open('http://%s' % host)
-        logging.getLogger('').addHandler(message_handler)
     else:
-        logging.exception('cannot open browser and/or logger on port %s', port)
+        logging.exception('cannot open browser on port %s', port)
     repl = threading.Thread(target=commandloop, name='repl')
     repl.daemon = True
     repl.start()
