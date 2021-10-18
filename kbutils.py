@@ -174,20 +174,27 @@ def send(recipient, email, *words):
     `recipient` is the 'nick' (nickname) of the user to whom you wish to send
     the message. `email` is not necessarily an email address, but is used to
     find the GPG key of the recipient.
+
+    use `-` instead of email to send plain text
     '''
-    gpg = GPG()
     text = ' '.join(words).encode()
-    logging.debug('message before encrypting: %s', text)
-    encrypted = gpg.encrypt(
-        text,  # pylint: disable=no-member
-        [email],
-        sign=True,
-        armor=False)
-    logging.debug('encrypted: %r...', encrypted.data[:64])
-    encoded = b58encode(encrypted.data).decode()
-    logging.debug('encoded: %s', encoded)
+    encoded = None
+    if email != '-':
+        gpg = GPG()
+        logging.debug('message before encrypting: %s', text)
+        encrypted = gpg.encrypt(
+            text,  # pylint: disable=no-member
+            [email],
+            sign=True,
+            armor=False)
+        logging.debug('encrypted: %r...', encrypted.data[:64])
+        encoded = b58encode(encrypted.data).decode()
+        logging.debug('encoded: %s', encoded)
     if text and not encoded:
-        if os.getenv('KB_SEND_PLAINTEXT_OK'):
+        if email == '-':
+            logging.warning('encryption bypassed, sending plaintext')
+            encoded = text.decode()
+        elif os.getenv('KB_SEND_PLAINTEXT_OK'):
             logging.warning('encryption failed, sending plaintext')
             encoded = text.decode()
         else:
