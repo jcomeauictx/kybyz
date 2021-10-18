@@ -63,6 +63,7 @@ def serve(env=None, start_response=None):
                 headers = [('Content-type', guess_mimetype(requested, page))]
         elif requested.startswith('log/'):
             MESSAGES.append('new log message')
+            page = b'<div>logged</div>'
         else:
             logging.warning('%s not found', requested)
             status = '404 Not Found'
@@ -197,13 +198,14 @@ def uwsgi_init():
         port = fromfd(uwsgi.sockets[0], AF_INET, SOCK_STREAM).getsockname()[1]
         host = 'localhost:%s' % port
         message_handler = logging.handlers.HTTPHandler(host, '/log/')
+        logging.debug('message_handler: %s', message_handler)
     except AttributeError:
         logging.exception('cannot determine port')
     init()
     if host is not None:  # if host is not None, port must also be set
         logging.debug('opening browser window to localhost port %s', port)
         webbrowser.open('http://%s' % host)
-        logging.getLogger('').addHandler(message_handler)
+        #logging.getLogger('').addHandler(message_handler)
     else:
         logging.exception('cannot open browser and/or logger on port %s', port)
     repl = threading.Thread(target=commandloop, name='repl')
