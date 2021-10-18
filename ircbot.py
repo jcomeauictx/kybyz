@@ -140,8 +140,8 @@ class IRCBot():
                 logging.debug('text: %s, trustlevel: %s', text, trustlevel)
                 if text:
                     CACHED[sender] = ''
-                    logging.info('%s %s message from %s: %s',
-                                 trustlevel, privacy, sender, text, **TO_PAGE)
+                    logging.info('%s %s message from %s: %s', trustlevel,
+                                 privacy, sender, text.decode(), **TO_PAGE)
                 else:
                     logging.debug("CACHED[%s] now %r", sender, CACHED[sender])
         logging.warning('ircbot terminated from launching thread')
