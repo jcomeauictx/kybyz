@@ -28,6 +28,11 @@ class DequeHandler(logging.NullHandler):
     simple handler to append log record to queue
     '''
     def handle(self, record):
-        MESSAGE_QUEUE.append(':'.join([record.levelname, str(vars(record))]))
+        if hasattr(record, 'to_page'):
+            MESSAGE_QUEUE.append(':'.join([
+                record.name,
+                record.levelname,
+                record.msg % record.args
+            ]))
 
 logging.getLogger('').addHandler(DequeHandler())
