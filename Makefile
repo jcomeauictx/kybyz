@@ -10,13 +10,13 @@ export
 all: doctests lint uwsgi
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
-doctests: $(SOURCES:.py=.doctest)
+doctests: $(HOME)/log $(SOURCES:.py=.doctest)
 %.lint: %.py $(PYLINT)
 	$(PYLINT) $<
 lint: $(SOURCES:.py=.lint)
-uwsgi: kybyz.ini
+uwsgi: kybyz.ini $(HOME)/log
 	uwsgi $<
-$(HOME)/bin:
+$(HOME)/bin $(HOME)/log:
 	mkdir -p $@
 $(PYLINT): $(HOME)/bin
 	which $@ || sudo apt-get install $@

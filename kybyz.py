@@ -18,6 +18,7 @@ logging.info('COMMAND: %s, ARGS: %s', COMMAND, ARGS)
 EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
 COMMANDS = ['post', 'register', 'send']
 NAVIGATION = ['&nbsp']
+MESSAGES = ['&nbsp']
 
 def init():
     '''
@@ -44,8 +45,10 @@ def serve(env=None, start_response=None):
     if requested is not None and start_response:
         if requested == '':
             page = read('timeline.html').decode()
-            messages = ['<div>kybyz active %s seconds</div>' % CACHED['uptime']]
+            MESSAGES[0] = ['<div>kybyz active %s seconds</div>' %
+                           CACHED['uptime']]
             posts = ['<div>%s</div>' % post for post in loadposts()]
+            messages = ['<p>%s</p>' for message in reversed(MESSAGES)]
             page = page.format(
                 posts=''.join(posts),
                 messages=''.join(messages),
@@ -58,6 +61,8 @@ def serve(env=None, start_response=None):
             with urlopen('https://ipfs.io/' + requested) as request:
                 page = request.read()
                 headers = [('Content-type', guess_mimetype(requested, page))]
+        elif requested.startswith('log/'):
+            MESSAGES.append('new log message')
         else:
             logging.warning('%s not found', requested)
             status = '404 Not Found'
@@ -187,17 +192,20 @@ def uwsgi_init():
     logging.debug('beginning kybyz uwsgi initialization')
     import uwsgi
     import webbrowser
-    port = None
+    port = host = message_handler = None
     try:
         port = fromfd(uwsgi.sockets[0], AF_INET, SOCK_STREAM).getsockname()[1]
+        host = 'localhost:%s' % port
+        message_handler = logging.handlers.HTTPHandler(host, '/log/')
     except AttributeError:
         logging.exception('cannot determine port')
     init()
-    if port is not None:
+    if host is not None:  # if host is not None, port must also be set
         logging.debug('opening browser window to localhost port %s', port)
-        webbrowser.open('http://localhost:%s' % port)
+        webbrowser.open('http://%s' % host)
+        logging.getLogger('').addHandler(message_handler)
     else:
-        logging.exception('cannot open browser to kybyz page on port %s', port)
+        logging.exception('cannot open browser and/or logger on port %s', port)
     repl = threading.Thread(target=commandloop, name='repl')
     repl.daemon = True
     repl.start()
