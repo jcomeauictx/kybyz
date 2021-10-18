@@ -230,12 +230,20 @@ def check_username(identifier):
 
     >>> CACHED['username'] = 'bleah'
     >>> check_username(':bleah!bleah@bleah.com')
-    True
+    ('bleah', True)
     >>> check_username(':blah!bleah@bleah.com')
-    False
+    ('blah', False)
+    >>> check_username(':irc.lfnet.org')
+    (None, None)
     '''
-    start = identifier.index(':') + 1
-    end = identifier.index('!')
-    logging.debug('identifier: %s, start: %s, end: %s, check: %s',
-                  identifier, start, end, identifier[start:end])
-    return CACHED.get('username', None) == identifier[start:end]
+    try:
+        start = identifier.index(':') + 1
+        end = identifier.index('!')
+        nickname = identifier[start:end]
+        logging.debug('identifier: %s, start: %s, end: %s, check: %s',
+                      identifier, start, end, nickname)
+        matched = CACHED.get('username', None) == nickname
+    except ValueError:
+        logging.exception('cannot find nickname in %s', identifier)
+        nickname = matched = None
+    return nickname, matched

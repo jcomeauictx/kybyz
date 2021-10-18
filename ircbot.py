@@ -121,15 +121,16 @@ class IRCBot():
             logging.info('received: %r', received)
             # make sure all words[n] references are accounted for
             words = received.split() + ['', '', '']
+            nickname, matched = check_username(words[0])
             if words[0] == 'PING':
                 pong = received.replace('I', 'O', 1).rstrip() + CRLF
                 logging.info('sending: %r', pong)
                 self.client.send(pong.encode())
-            elif words[1] == 'JOIN' and check_username(words[0]):
+            elif words[1] == 'JOIN' and matched:
                 CACHED['irc_id'] = words[0]
                 logging.info("CACHED['irc_id'] = %s", CACHED['irc_id'])
             elif words[1] == 'PRIVMSG':
-                sender = words[0]
+                sender = nickname
                 privacy = 'public' if words[2] == CHANNEL else 'private'
                 logging.info('%s message received from %s:', privacy, sender)
                 # chop preceding ':' from ':this is a private message'
