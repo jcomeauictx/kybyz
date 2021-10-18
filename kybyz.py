@@ -63,12 +63,15 @@ def serve(env=None, start_response=None):
                 headers = [('Content-type', guess_mimetype(requested, page))]
         elif requested.startswith('log/'):
             args = dict(cgi.FieldStorage(fp=env.get('wsgi.input'), environ=env))
-            if args.get('extra'):
-                logging.debug('args: %s', args)
-                MESSAGES.append('log: %s %s' % (
-                    args.get('levelname').value, args.get('message').value))
+            logging.debug('args: %s', args)
+            try:
+                # force AttributeError here if `extra` unset
+                logging.log(logging.NOTSET, args.get('extra').value)
+                MESSAGES.append('[%s] %s' % (
+                    args.get('levelname').value,
+                    args.get('message').value))
                 page = b'<div>logged</div>'
-            else:
+            except AttributeError:
                 page = b'</div>not logged</div>'
         else:
             logging.warning('%s not found', requested)
