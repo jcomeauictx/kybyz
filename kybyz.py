@@ -64,7 +64,9 @@ def serve(env=None, start_response=None):
         elif requested.startswith('log/'):
             args = dict(cgi.FieldStorage(fp=env.get('wsgi.input'), environ=env))
             if args.get('extra'):
-                MESSAGES.append('log: ' + repr(args.get('message')))
+                logging.debug('args: %s', args)
+                MESSAGES.append('log: %s %s' % (
+                    args.get('levelname').value, args.get('message').value))
                 page = b'<div>logged</div>'
             else:
                 page = b'</div>not logged</div>'
