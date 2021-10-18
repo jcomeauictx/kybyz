@@ -7,9 +7,9 @@ from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from collections import namedtuple
 from ircbot import IRCBot
-from kbutils import read, logging, verify_key
+from kbutils import read, verify_key
 from kbutils import send  # pylint: disable=unused-import
-from kbcommon import CACHE, CACHED, KYBYZ_HOME
+from kbcommon import CACHE, CACHED, KYBYZ_HOME, logging
 from post import BasePost
 
 COMMAND = sys.argv[0]

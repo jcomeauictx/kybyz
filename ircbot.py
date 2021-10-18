@@ -3,11 +3,9 @@
 IRC communications for server discovery
 '''
 # pylint: disable=multiple-imports
-import sys, os, socket, pwd, threading, logging, time
-from kbcommon import CACHED
+import sys, os, socket, pwd, threading, time
+from kbcommon import CACHED, logging
 from kbutils import decrypt, check_username
-
-logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
 IRCSERVER = 'irc.lfnet.org'
 PORT = 6667

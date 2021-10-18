@@ -2,14 +2,12 @@
 '''
 Kybyz utilities
 '''
-import os, logging, re, subprocess  # pylint: disable=multiple-imports
+import os, re, subprocess  # pylint: disable=multiple-imports
 from datetime import datetime, timezone
 from hashlib import sha256
 from base58 import b58encode, b58decode
 from canonical_json import canonicalize
-from kbcommon import CACHED
-
-logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
+from kbcommon import CACHED, logging
 
 def run_process(command, **kwargs):
     '''

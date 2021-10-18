@@ -3,7 +3,8 @@
 kybyz post
 '''
 import os, json  # pylint: disable=multiple-imports
-from kbutils import read, make_timestamp, logging
+from kbutils import read, make_timestamp
+from kbcommon import logging
 
 class BasePost():
     '''
