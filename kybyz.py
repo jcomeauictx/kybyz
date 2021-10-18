@@ -9,7 +9,7 @@ from collections import namedtuple
 from ircbot import IRCBot
 from kbutils import read, verify_key
 from kbutils import send  # pylint: disable=unused-import
-from kbcommon import CACHE, CACHED, KYBYZ_HOME, logging, MESSAGE_QUEUE
+from kbcommon import CACHE, CACHED, KYBYZ_HOME, logging, MESSAGE_QUEUE, TO_PAGE
 from post import BasePost
 
 COMMAND = sys.argv[0]
@@ -46,10 +46,9 @@ def serve(env=None, start_response=None):
     if requested is not None and start_response:
         if requested == '':
             page = read('timeline.html').decode()
-            uptime = 'kybyz active %s seconds' % CACHED['uptime']
             posts = ['<div>%s</div>' % post for post in loadposts()]
             messages = ['<div>%s</div>' % message for message in
-                        [uptime] + list(reversed(MESSAGE_QUEUE))]
+                        reversed(MESSAGE_QUEUE)]
             page = page.format(
                 posts=''.join(posts),
                 messages=''.join(messages),
@@ -167,6 +166,7 @@ def background():
     delay = int(os.getenv('KB_DELAY') or 600)  # seconds
     CACHED['ircbot'] = IRCBot(nickname=CACHED.get('username', None))
     while True:
+        logging.info('kybyz active %s seconds', CACHED['uptime'], **TO_PAGE)
         time.sleep(delay)  # releases the GIL for `serve`
         CACHED['uptime'] += delay
         logging.debug('CACHED: %s, threads: %s',

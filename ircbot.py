@@ -4,7 +4,7 @@ IRC communications for server discovery
 '''
 # pylint: disable=multiple-imports
 import sys, os, socket, pwd, threading, time
-from kbcommon import CACHED, logging
+from kbcommon import CACHED, logging, TO_PAGE
 from kbutils import decrypt, check_username
 
 IRCSERVER = 'irc.lfnet.org'
@@ -141,8 +141,7 @@ class IRCBot():
                 if text:
                     CACHED[sender] = ''
                     logging.info('%s %s message from %s: %s',
-                                 trustlevel, privacy, sender, text,
-                                 extra={'to_page': True})
+                                 trustlevel, privacy, sender, text, **TO_PAGE)
                 else:
                     logging.debug("CACHED[%s] now %r", sender, CACHED[sender])
         logging.warning('ircbot terminated from launching thread')
