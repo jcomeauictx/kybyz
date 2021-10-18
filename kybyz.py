@@ -45,10 +45,10 @@ def serve(env=None, start_response=None):
     if requested is not None and start_response:
         if requested == '':
             page = read('timeline.html').decode()
-            MESSAGES[0] = ['<div>kybyz active %s seconds</div>' %
+            MESSAGES[0] = ['kybyz active %s seconds' %
                            CACHED['uptime']]
             posts = ['<div>%s</div>' % post for post in loadposts()]
-            messages = ['<p>%s</p>' for message in reversed(MESSAGES)]
+            messages = ['<p>%s</p>' % message for message in reversed(MESSAGES)]
             page = page.format(
                 posts=''.join(posts),
                 messages=''.join(messages),
