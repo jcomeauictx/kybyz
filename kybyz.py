@@ -6,6 +6,7 @@ import sys, os, time, threading, cgi  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from collections import namedtuple
+from hashlib import md5
 from ircbot import IRCBot
 from kbutils import read, verify_key
 from kbutils import send  # pylint: disable=unused-import
@@ -35,8 +36,10 @@ def serve(env=None, start_response=None):
     '''
     handle web requests
     '''
-    args = dict(cgi.FieldStorage(fp=env.get('wsgi.input'), environ=env))
+    fields = cgi.FieldStorage(fp=env.get('wsgi.input'), environ=env)
+    args = {k: fields[k].value for k in fields}
     logging.debug('args: %s', args)
+    #sections = ['posts', 'messages']
     page = b'(Something went wrong)'
     env = env or {}
     requested = env.get('REQUEST_URI', None).lstrip('/')
@@ -46,13 +49,18 @@ def serve(env=None, start_response=None):
     if requested is not None and start_response:
         if requested == '':
             page = read('timeline.html').decode()
-            posts = ['<div>%s</div>' % post for post in loadposts()]
-            messages = ['<div>%s</div>' % message for message in
-                        reversed(MESSAGE_QUEUE)]
+            posts = ''.join(['<div>%s</div>' % post for post in loadposts()])
+            messages = ''.join(['<div>%s</div>' % message for message in
+                                reversed(MESSAGE_QUEUE)])
+            navigation = ''.join(NAVIGATION)
+            posts_hash = md5(posts.encode()).hexdigest()
+            messages_hash = md5(messages.encode()).hexdigest()
             page = page.format(
-                posts=''.join(posts),
-                messages=''.join(messages),
-                navigation=''.join(NAVIGATION)
+                posts=posts,
+                messages=messages,
+                navigation=navigation,
+                posts_hash=posts_hash,
+                messages_hash=messages_hash,
             ).encode()
         elif os.path.exists(requested):
             page = read(requested)
