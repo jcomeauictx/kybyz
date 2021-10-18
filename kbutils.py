@@ -191,11 +191,9 @@ def send(recipient, email, *words):
         encoded = b58encode(encrypted.data).decode()
         logging.debug('encoded: %s', encoded)
     if text and not encoded:
-        if email == '-':
-            logging.warning('encryption bypassed, sending plaintext')
-            encoded = text.decode()
-        elif os.getenv('KB_SEND_PLAINTEXT_OK'):
-            logging.warning('encryption failed, sending plaintext')
+        if email == '-' or os.getenv('KB_SEND_PLAINTEXT_OK'):
+            logging.warning('encryption %s, sending plaintext',
+                            'bypassed' if email == '-' else 'failed')
             encoded = text.decode()
         else:
             logging.warning('encryption failed, run with '
