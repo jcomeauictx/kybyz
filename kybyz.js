@@ -24,12 +24,13 @@ com.kybyz.app.updateCheck = function(elementId) {
     contentHash = oldContent.getAttribute("data-version");
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4 && xhr.status == 200) {
-            console.log("result of updateCheck XHR: " + xhr.response);
+            console.log("result of updateCheck XHR:", xhr.response);
             /* new content */
-            oldContent.replaceChildren(...xhr.response.body.childNodes);
+            oldContent.parentNode.replaceChild(
+                oldContent, xhr.response.body.firstChild);
         } else {
-            console.log("xhr.readyState: " + xhr.readyState +
-                        ", xhr.status: " + xhr.status);
+            console.log("xhr.readyState:", xhr.readyState,
+                        ", xhr.status: ", xhr.status);
         }
     };
     xhr.responseType = "document";

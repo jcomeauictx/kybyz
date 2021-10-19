@@ -18,7 +18,17 @@ ARGS = sys.argv[1:]
 logging.info('COMMAND: %s, ARGS: %s', COMMAND, ARGS)
 EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
 COMMANDS = ['post', 'register', 'send']
-NAVIGATION = ['&nbsp']
+NAVIGATION = '<div class="column" id="kbz-navigation">{navigation}</div>'
+POSTS = '''<div class="column" id="kbz-posts" data-version="{posts_hash}">
+  {posts}
+</div>'''
+MESSAGES = '''<div class="column" id="kbz-messages"
+  data-version="{messages_hash}">
+    {messages}
+  <div id="kbz-js-warning">
+    webpage:ERROR:javascript disabled or incompatible
+  </div>
+</div>'''
 
 def init():
     '''
@@ -51,9 +61,11 @@ def serve(env=None, start_response=None):
     messages = ''.join(['<div>%s</div>' % message for message in
                         reversed(MESSAGE_QUEUE)])
     messages_hash = md5(messages.encode()).hexdigest()
+    messages = MESSAGES.format(messages=messages, messages_hash=messages_hash)
     posts = ''.join(['<div>%s</div>' % post for post in loadposts()])
     posts_hash = md5(posts.encode()).hexdigest()
-    navigation = ''.join(NAVIGATION)
+    posts = POSTS.format(posts=posts, posts_hash=posts_hash)
+    navigation = NAVIGATION.format(navigation=''.join(['&nbsp;']))
 
     # make helper functions for dispatcher
     def update():
