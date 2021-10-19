@@ -21,6 +21,7 @@ class IRCBot():
     see https://www.techbeamers.com/create-python-irc-bot/
     also https://datatracker.ietf.org/doc/html/rfc2812
     '''
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, server=IRCSERVER, port=PORT,
                  nickname=None, realname=None):
         '''
@@ -37,6 +38,7 @@ class IRCBot():
         self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
         self.stream = self.client.makefile()
         self.server = server
+        self.port = port
         self.nickname = nickname or pwd.getpwuid(os.geteuid()).pw_name
         # NOTE: when we implement true p2p networking, realname should include
         # connection port
@@ -96,16 +98,32 @@ class IRCBot():
         testmsg = ' '.join([CACHED['irc_id'], 'PRIVMSG', target, sep + message])
         logging.debug('testmsg: %s', testmsg.replace(sep, ':'))
         if len(testmsg) <= 510:
-            self.client.send(('PRIVMSG %s :%s\r\n' % (target, message)
-                             ).encode())
+            self.sendchunk(('PRIVMSG %s :%s\r\n' % (target, message)).encode())
         else:
             pieces = testmsg[:510].split(sep)
             chunklength = len(pieces[-1])
             for chunk in [message[i:i+chunklength]
                           for i in range(0, len(message), chunklength)]:
                 logging.debug('sending chunk %s', chunk)
-                self.client.send(
+                self.sendchunk(
                     ('PRIVMSG %s %s\r\n' % (target, chunk)).encode())
+
+    def sendchunk(self, chunk):
+        '''
+        send a chunk. it must already be UTF8 encoded
+        '''
+        sent, tries = False, 0
+        while not sent:
+            try:
+                self.client.send(chunk)
+                sent = True
+            except BrokenPipeError:
+                logging.debug('lost connection, rejoining IRC...')
+                self.connection = self.connect(
+                    self.server, self.port, self.nickname, self.realname)
+                tries += 1
+                if tries == 5:
+                    raise
 
     def monitor(self):
         '''
