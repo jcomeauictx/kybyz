@@ -1,7 +1,7 @@
 if (typeof(com) == "undefined") com = {};
 com.kybyz = {};
 com.kybyz.app = {};
-com.kybyz.app.UpdateInterval = 60000;  // milliseconds, start off slow
+com.kybyz.app.UpdateInterval = 1000;  // milliseconds, start off slow
 com.kybyz.app.getDataName = function(string) {
     const offset = string.indexOf("-");
     return string.substring(offset + 1);
@@ -46,7 +46,8 @@ window.addEventListener("load", function(event) {
     const cka = com.kybyz.app;
     const warning = document.getElementById("kbz-js-warning");
     const text = warning.childNodes[0];
-    let fixed = "INFO:found compatible javascript";
+    // NOTE: keep this following string identical to that in kybyz.py
+    let fixed = "INFO:found compatible javascript engine";
     const offset = text.data.indexOf("ERROR");
     fixed = text.data.substring(0, offset) + fixed;
     warning.replaceChild(document.createTextNode(fixed), text);

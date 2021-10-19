@@ -26,7 +26,7 @@ MESSAGES = '''<div class="column" id="kbz-messages"
   data-version="{messages_hash}">
     {messages}
   <div id="kbz-js-warning">
-    webpage:ERROR:javascript disabled or incompatible
+    webpage:{javascript}
   </div>
 </div>'''
 
@@ -38,6 +38,7 @@ def init():
     os.makedirs(CACHE, 0o700, exist_ok=True)
     CACHED.update(registration()._asdict())
     CACHED['uptime'] = 0
+    CACHED['javascript'] = 'ERROR:javascript disabled or incompatible'
     kybyz = threading.Thread(target=background, name='kybyz')
     kybyz.daemon = True
     kybyz.start()
@@ -61,7 +62,8 @@ def serve(env=None, start_response=None):
     messages = ''.join(['<div>%s</div>' % message for message in
                         reversed(MESSAGE_QUEUE)])
     messages_hash = md5(messages.encode()).hexdigest()
-    messages = MESSAGES.format(messages=messages, messages_hash=messages_hash)
+    messages = MESSAGES.format(messages=messages,
+        messages_hash=messages_hash, javascript=CACHED['javascript'])
     posts = ''.join(['<div>%s</div>' % post for post in loadposts()])
     posts_hash = md5(posts.encode()).hexdigest()
     posts = POSTS.format(posts=posts, posts_hash=posts_hash)
@@ -112,6 +114,8 @@ def serve(env=None, start_response=None):
             page = read(requested)
             headers = [('Content-type', guess_mimetype(requested, page))]
         elif requested.startswith('update/'):
+            # assume called by javascript, and thus that it's working
+            CACHED['javascript'] = 'INFO:found compatible javascript engine'
             status, page = update()
         elif requested.startswith('ipfs/'):
             with urlopen('https://ipfs.io/' + requested) as request:
