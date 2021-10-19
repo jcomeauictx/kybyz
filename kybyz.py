@@ -46,6 +46,27 @@ def serve(env=None, start_response=None):
     logging.debug('requested: "%s"', requested)
     status = '200 OK'
     headers = [('Content-type', 'text/html')]
+
+    # make helper functions for dispatcher
+    def update():
+        '''
+        process xhr request for update to posts or messages
+        '''
+        name, hashed = args.get('name', None), args.get('hash', None)
+        if name in ('messages', 'posts'):
+            # pylint: disable=eval-used
+            if hashed and hashed != eval(name + '_hash'):
+                page = eval(name)
+            elif hashed:
+                logging.debug('%s unchanged', args['name'])
+                page = b''
+            else:
+                logging.error('no hash passed to /update/')
+                page = b''
+        else:
+            status = '404 Not Found'
+            page = ('<div>no updates for %s</div>' % args['name']).encode()
+        return status, page
     if requested is not None and start_response:
         if requested == '':
             page = read('timeline.html').decode()
@@ -65,6 +86,8 @@ def serve(env=None, start_response=None):
         elif os.path.exists(requested):
             page = read(requested)
             headers = [('Content-type', guess_mimetype(requested, page))]
+        elif requested.startswith('update/'):
+            status, page = update()
         elif requested.startswith('ipfs/'):
             with urlopen('https://ipfs.io/' + requested) as request:
                 page = request.read()
