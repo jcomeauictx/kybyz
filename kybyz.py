@@ -65,22 +65,27 @@ def serve(env=None, start_response=None):
         if name in ('messages', 'posts'):
             # pylint: disable=eval-used
             # check outer variables
+            # must be done before eval or it will fail
             logging.debug('messages: %s...', messages[:128])
             logging.debug('messages_hash: %s', messages_hash)
             logging.debug('posts: %s...', posts[:128])
             logging.debug('posts_hash: %s', posts_hash)
             if hashed and hashed != eval(name + '_hash'):
-                page = eval(name)
+                update_page = eval(name)
             elif hashed:
                 logging.debug('%s unchanged', args['name'])
-                page = b''
+                update_page = b''
+                update_status = '304 Not Modified'
             else:
                 logging.error('no hash passed to /update/')
-                page = b''
+                update_page = b''
+                update_status = '406 Not Acceptable'
         else:
+            update_page = (
+                            '<div>no updates for %s</div>' % args['name']
+                          ).encode()
             update_status = '404 Not Found'
-            page = ('<div>no updates for %s</div>' % args['name']).encode()
-        return update_status, page
+        return update_status, update_page
     if requested is not None and start_response:
         if requested == '':
             page = template.format(

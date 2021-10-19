@@ -23,17 +23,13 @@ com.kybyz.app.updateCheck = function(elementId) {
     oldContent = document.getElementById(elementId);
     contentHash = oldContent.getAttribute("data-version");
     xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
+        if (xhr.readyState == 4 && xhr.status == 200) {
             console.log("result of updateCheck XHR: " + xhr.response);
-            if (xhr.response == contentHash) {
-                console.log("same content as last check");
-            } else {
-                /* new content */
-                oldContent.replaceChildren(
-                    ...xhr.response.body.childNodes);
-            }
+            /* new content */
+            oldContent.replaceChildren(...xhr.response.body.childNodes);
         } else {
-            console.log("xhr.readyState: " + xhr.readyState);
+            console.log("xhr.readyState: " + xhr.readyState +
+                        ", xhr.status: " + xhr.status);
         }
     };
     xhr.responseType = "document";
