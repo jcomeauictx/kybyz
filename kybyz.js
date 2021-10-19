@@ -27,7 +27,7 @@ com.kybyz.app.updateCheck = function(elementId) {
             console.log("result of updateCheck XHR:", xhr.response);
             /* new content */
             oldContent.parentNode.replaceChild(
-                oldContent, xhr.response.body.firstChild);
+                xhr.response.body.firstChild, oldContent);
         } else {
             console.log("xhr.readyState:", xhr.readyState,
                         ", xhr.status: ", xhr.status);
