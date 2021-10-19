@@ -126,13 +126,13 @@ def serve(env=None, start_response=None):
             status = '404 Not Found'
             page = b'<div>not yet implemented</div>'
         # NOTE: page must be a bytestring at this point!
-        logging.info('starting response with status %s and page %s...',
-                     status, page[:128])
+        logging.debug('starting response with status %s and page %s...',
+                      status, page[:128])
         start_response(status, headers)
-        return [page] if page else None
+        return [page]
     logging.warning('serve: failing with env=%s and start_response=%s',
                     env, start_response)
-    return None
+    return [b'']
 
 def registration():
     '''

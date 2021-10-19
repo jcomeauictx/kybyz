@@ -14,12 +14,13 @@ EXTENDED_LOG_FORMAT = '%(asctime)s:%(threadName)s:' + BASE_LOG_FORMAT
 LOG_TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 LOGFILE = os.path.join(os.path.join(HOME, 'log', 'kybyz.log'))
 LOGFILE_HANDLER = logging.FileHandler(LOGFILE)
+LOGFILE_HANDLER.setLevel(logging.DEBUG)
 LOGFILE_HANDLER.setFormatter(logging.Formatter(EXTENDED_LOG_FORMAT))
 MESSAGE_QUEUE = deque(maxlen=1024)
 TO_PAGE = {'extra': {'to_page': True}}
 
 logging.basicConfig(
-    level=logging.DEBUG if __debug__ else logging.INFO,
+    level=logging.INFO if __debug__ else logging.WARNING,
     format=BASE_LOG_FORMAT
 )
 logging.getLogger('').addHandler(LOGFILE_HANDLER)
