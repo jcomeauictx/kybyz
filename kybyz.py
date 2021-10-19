@@ -25,9 +25,7 @@ POSTS = '''<div class="column" id="kbz-posts" data-version="{posts_hash}">
 MESSAGES = '''<div class="column" id="kbz-messages"
   data-version="{messages_hash}">
     {messages}
-  <div id="kbz-js-warning">
-    webpage:{javascript}
-  </div>
+  <div id="kbz-js-warning">webpage:{javascript}</div>
 </div>'''
 
 def init():
@@ -62,8 +60,10 @@ def serve(env=None, start_response=None):
     messages = ''.join(['<div>%s</div>' % message for message in
                         reversed(MESSAGE_QUEUE)])
     messages_hash = md5(messages.encode()).hexdigest()
-    messages = MESSAGES.format(messages=messages,
-        messages_hash=messages_hash, javascript=CACHED['javascript'])
+    messages = MESSAGES.format(
+        messages=messages,
+        messages_hash=messages_hash,
+        javascript=CACHED['javascript'])
     posts = ''.join(['<div>%s</div>' % post for post in loadposts()])
     posts_hash = md5(posts.encode()).hexdigest()
     posts = POSTS.format(posts=posts, posts_hash=posts_hash)
@@ -80,7 +80,7 @@ def serve(env=None, start_response=None):
             # pylint: disable=eval-used
             # check outer variables
             # must be done before eval or it will fail
-            logging.debug('messages: %s...', messages[:128])
+            logging.debug('messages: ...%s', messages[-128:])
             logging.debug('messages_hash: %s', messages_hash)
             logging.debug('posts: %s...', posts[:128])
             logging.debug('posts_hash: %s', posts_hash)

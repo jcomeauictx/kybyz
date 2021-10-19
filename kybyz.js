@@ -48,7 +48,7 @@ window.addEventListener("load", function(event) {
     const text = warning.childNodes[0];
     // NOTE: keep this following string identical to that in kybyz.py
     let fixed = "INFO:found compatible javascript engine";
-    const offset = text.data.indexOf("ERROR");
+    const offset = text.data.indexOf(":") + 1;
     fixed = text.data.substring(0, offset) + fixed;
     warning.replaceChild(document.createTextNode(fixed), text);
     window.setInterval(cka.updatePage, cka.UpdateInterval);

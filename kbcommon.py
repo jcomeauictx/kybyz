@@ -13,17 +13,13 @@ BASE_LOG_FORMAT = '%(levelname)s:%(name)s:%(message)s'
 EXTENDED_LOG_FORMAT = '%(asctime)s:%(threadName)s:' + BASE_LOG_FORMAT
 LOG_TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 LOGFILE = os.path.join(os.path.join(HOME, 'log', 'kybyz.log'))
+LOGSTREAM_HANDLER = logging.StreamHandler()
+LOGSTREAM_HANDLER.setLevel(logging.INFO)
 LOGFILE_HANDLER = logging.FileHandler(LOGFILE)
 LOGFILE_HANDLER.setLevel(logging.DEBUG)
 LOGFILE_HANDLER.setFormatter(logging.Formatter(EXTENDED_LOG_FORMAT))
 MESSAGE_QUEUE = deque(maxlen=1024)
 TO_PAGE = {'extra': {'to_page': True}}
-
-logging.basicConfig(
-    level=logging.INFO if __debug__ else logging.WARNING,
-    format=BASE_LOG_FORMAT
-)
-logging.getLogger('').addHandler(LOGFILE_HANDLER)
 
 class DequeHandler(logging.NullHandler):
     '''
@@ -40,4 +36,11 @@ class DequeHandler(logging.NullHandler):
                 record.msg % record.args
             ]))
 
-logging.getLogger('').addHandler(DequeHandler())
+LOGQUEUE_HANDLER = DequeHandler()
+LOGQUEUE_HANDLER.setLevel(logging.INFO)
+
+logging.basicConfig(
+    level=logging.DEBUG if __debug__ else logging.INFO,
+    format=BASE_LOG_FORMAT,
+    handlers=[LOGSTREAM_HANDLER, LOGFILE_HANDLER, LOGQUEUE_HANDLER]
+)
