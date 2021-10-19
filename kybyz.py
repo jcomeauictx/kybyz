@@ -36,6 +36,7 @@ def serve(env=None, start_response=None):
     '''
     handle web requests
     '''
+    # pylint: disable=too-many-locals, too-many-statements
     fields = cgi.FieldStorage(fp=env.get('wsgi.input'), environ=env)
     args = {k: fields[k].value for k in fields}
     logging.debug('args: %s', args)
@@ -46,6 +47,13 @@ def serve(env=None, start_response=None):
     logging.debug('requested: "%s"', requested)
     status = '200 OK'
     headers = [('Content-type', 'text/html')]
+    template = read('timeline.html').decode()
+    messages = ''.join(['<div>%s</div>' % message for message in
+                        reversed(MESSAGE_QUEUE)])
+    messages_hash = md5(messages.encode()).hexdigest()
+    posts = ''.join(['<div>%s</div>' % post for post in loadposts()])
+    posts_hash = md5(posts.encode()).hexdigest()
+    navigation = ''.join(NAVIGATION)
 
     # make helper functions for dispatcher
     def update():
@@ -53,8 +61,14 @@ def serve(env=None, start_response=None):
         process xhr request for update to posts or messages
         '''
         name, hashed = args.get('name', None), args.get('hash', None)
+        update_status = status  # default from outer variable
         if name in ('messages', 'posts'):
             # pylint: disable=eval-used
+            # check outer variables
+            logging.debug('messages: %s...', messages[:128])
+            logging.debug('messages_hash: %s', messages_hash)
+            logging.debug('posts: %s...', posts[:128])
+            logging.debug('posts_hash: %s', posts_hash)
             if hashed and hashed != eval(name + '_hash'):
                 page = eval(name)
             elif hashed:
@@ -64,19 +78,12 @@ def serve(env=None, start_response=None):
                 logging.error('no hash passed to /update/')
                 page = b''
         else:
-            status = '404 Not Found'
+            update_status = '404 Not Found'
             page = ('<div>no updates for %s</div>' % args['name']).encode()
-        return status, page
+        return update_status, page
     if requested is not None and start_response:
         if requested == '':
-            page = read('timeline.html').decode()
-            posts = ''.join(['<div>%s</div>' % post for post in loadposts()])
-            messages = ''.join(['<div>%s</div>' % message for message in
-                                reversed(MESSAGE_QUEUE)])
-            navigation = ''.join(NAVIGATION)
-            posts_hash = md5(posts.encode()).hexdigest()
-            messages_hash = md5(messages.encode()).hexdigest()
-            page = page.format(
+            page = template.format(
                 posts=posts,
                 messages=messages,
                 navigation=navigation,
