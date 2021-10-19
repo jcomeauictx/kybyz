@@ -29,14 +29,19 @@ com.kybyz.app.updateCheck = function(elementId) {
                 console.log("same content as last check");
             } else {
                 /* new content */
-                oldContent.parentNode.replaceChild(
-                    xhr.response.documentElement, oldContent);
+                oldContent.replaceChildren(
+                    ...xhr.response.body.childNodes);
             }
         } else {
             console.log("xhr.readyState: " + xhr.readyState);
         }
     };
     xhr.responseType = "document";
+    /* NOTE: when you receive a "document" from the backend, even a simple
+     * <div>some text</div> gets turned into a full #document.
+     * xml.response.documentElement will be the html element, which contains
+     * the head, body, and finally the div.
+     */
     xhr.send("name=" + cka.getDataName(elementId) + "&hash=" + contentHash);
 };
 
