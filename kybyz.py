@@ -83,7 +83,7 @@ def serve(env=None, start_response=None):
             logging.debug('posts: %s...', posts[:128])
             logging.debug('posts_hash: %s', posts_hash)
             if hashed and hashed != eval(name + '_hash'):
-                update_page = eval(name)
+                update_page = eval(name).encode()
             elif hashed:
                 logging.debug('%s unchanged', args['name'])
                 update_page = b''
@@ -98,6 +98,7 @@ def serve(env=None, start_response=None):
                           ).encode()
             update_status = '404 Not Found'
         return update_status, update_page
+
     if requested is not None and start_response:
         if requested == '':
             page = template.format(
@@ -120,8 +121,11 @@ def serve(env=None, start_response=None):
             logging.warning('%s not found', requested)
             status = '404 Not Found'
             page = b'<div>not yet implemented</div>'
+        # NOTE: page must be a bytestring at this point!
+        logging.info('starting response with status %s and page %s...',
+                     status, page[:128])
         start_response(status, headers)
-        return [page]
+        return [page] if page else None
     logging.warning('serve: failing with env=%s and start_response=%s',
                     env, start_response)
     return None
