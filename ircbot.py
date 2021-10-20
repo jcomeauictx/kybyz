@@ -13,6 +13,8 @@ CHANNEL = '#kybyz'
 BUFFERSIZE = 16 * 1024  # make it big enough to get full banner from IRC server
 CRLF = '\r\n'
 TIMEOUT = int(os.getenv('KB_DELAY') or 600)
+MAXSIZE = 1024 * 1024
+MAXCACHE = MAXSIZE * 1024
 
 class IRCBot():
     '''
@@ -135,8 +137,9 @@ class IRCBot():
         '''
         logging.debug('ircbot monitoring incoming traffic')
         while not self.terminate:
-            received = self.stream.readline()
-            logging.info('received: %r', received)
+            received = self.stream.readline().rstrip()
+            logging.info('received: %r, length: %d', received, len(received))
+            end_message = len(received) < 510
             # make sure all words[n] references are accounted for
             words = received.split() + ['', '', '']
             nickname, matched = check_username(words[0])
@@ -157,12 +160,18 @@ class IRCBot():
                 logging.debug('attempting to decode %s', CACHED[sender])
                 text, trustlevel = decrypt(CACHED[sender].encode())
                 logging.debug('text: %s, trustlevel: %s', text, trustlevel)
-                if text:
-                    CACHED[sender] = ''
+                if text or end_message:
+                    text = text or CACHED[sender][:256].encode()
                     logging.info('%s %s message from %s: %s', trustlevel,
                                  privacy, sender, text.decode(), **TO_PAGE)
+                    CACHED[sender] = ''
+                elif len(CACHED[sender]) > MAXSIZE:
+                    logging.info(
+                        'clearing overflow CACHED[%s]: %r..., length %d',
+                        sender, CACHED[sender][:256], len(CACHED[sender]))
+                    CACHED[sender] = ''
                 else:
-                    logging.debug("CACHED[%s] now %r", sender, CACHED[sender])
+                    logging.debug('CACHED[%s] now %r', sender, CACHED[sender])
         logging.warning('ircbot terminated from launching thread')
 
 def test(nickname=None, realname=None):
@@ -175,6 +184,31 @@ def test(nickname=None, realname=None):
     except KeyboardInterrupt:
         logging.warning('Telling monitor to terminate')
         ircbot.terminate = True
+
+def clearcache(maxcache=MAXCACHE):
+    '''
+    delete entries if CACHED size is greater than MAXCACHE
+
+    >>> CACHED.update({':2': 'x' * 1024, ':1': 'y' * 64, ':3': 'z' * 2048})
+    >>> logging.debug('sum of lengths: %d', sum(map(len,
+    ...  [v for k, v in CACHED.items() if k.startswith(':')])))
+    >>> logging.info('doctest CACHED.keys(): %s', list(CACHED.keys()))
+    >>> clearcache(100)
+    >>> {k: v for k, v in CACHED.items() if k.startswith(':')}
+    {':1': 'yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy'}
+    >>> len(CACHED[':1'])
+    64
+    '''
+    logging.debug('CACHED.keys(): %s', list(CACHED.keys()))
+    while sum(map(len, [v for k, v in CACHED.items()
+                        if k.startswith(':')])) > maxcache:
+        next_biggest = max({k: v for k, v in CACHED.items()
+                            if k.startswith(':')},
+                           key=lambda k: len(CACHED[k]))
+        logging.debug('next_biggest: %s', next_biggest)
+        logging.warning('deleting CACHED[%s] of length %d', next_biggest,
+                        len(CACHED[next_biggest]))
+        del CACHED[next_biggest]
 
 if __name__ == '__main__':
     sys.argv.extend(['', ''])  # in case no args given

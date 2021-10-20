@@ -2,7 +2,7 @@
 '''
 common data structures needed by various parts of kybyz
 '''
-import os, logging, logging.handlers  # pylint: disable=multiple-imports
+import sys, os, logging, logging.handlers  # pylint: disable=multiple-imports
 from collections import defaultdict, deque
 
 CACHED = defaultdict(str, {'uptime': None})
@@ -14,7 +14,8 @@ EXTENDED_LOG_FORMAT = '%(asctime)s:%(threadName)s:' + BASE_LOG_FORMAT
 LOG_TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 LOGFILE = os.path.join(os.path.join(HOME, 'log', 'kybyz.log'))
 LOGSTREAM_HANDLER = logging.StreamHandler()
-LOGSTREAM_HANDLER.setLevel(logging.INFO)
+if not os.path.split(sys.argv[0])[1].endswith(('doctest', 'doctest.py')):
+    LOGSTREAM_HANDLER.setLevel(logging.INFO)
 LOGFILE_HANDLER = logging.FileHandler(LOGFILE)
 LOGFILE_HANDLER.setLevel(logging.DEBUG)
 LOGFILE_HANDLER.setFormatter(logging.Formatter(EXTENDED_LOG_FORMAT))
