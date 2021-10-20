@@ -162,8 +162,12 @@ class IRCBot():
                 logging.debug('text: %s, trustlevel: %s', text, trustlevel)
                 if text or end_message:
                     text = text or CACHED[sender][:256].encode()
-                    logging.info('%s %s message from %s: %s', trustlevel,
-                                 privacy, sender, text.decode(), **TO_PAGE)
+                    logging.info(
+                        '%s %s message from %s: %s', trustlevel,
+                        privacy,
+                        sender,
+                        text.decode().replace('<', '&lt;').replace('>', '&gt;'),
+                        **TO_PAGE)
                     CACHED[sender] = ''
                 elif len(CACHED[sender]) > MAXSIZE:
                     logging.info(
