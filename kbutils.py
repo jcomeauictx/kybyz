@@ -244,6 +244,7 @@ def check_username(identifier):
                       identifier, start, end, nickname)
         matched = CACHED.get('username', None) == nickname
     except ValueError:
-        logging.error('cannot find nickname in %s', identifier)
+        # ignore failure, because PINGs don't have username anyway
+        #logging.error('cannot find nickname in %s', identifier)
         nickname = matched = None
     return nickname, matched
