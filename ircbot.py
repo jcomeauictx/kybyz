@@ -172,6 +172,7 @@ class IRCBot():
                     CACHED[sender] = ''
                 else:
                     logging.debug('CACHED[%s] now %r', sender, CACHED[sender])
+            clearcache()
         logging.warning('ircbot terminated from launching thread')
 
 def test(nickname=None, realname=None):
