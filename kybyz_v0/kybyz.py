@@ -14,7 +14,7 @@ must first mate a local IP address with the name `kybyz` in /etc/hosts, e.g.:
 127.0.1.125 kybyz
 '''
 from __future__ import print_function
-import sys, os, logging, pwd, subprocess, site, cgi
+import sys, os, logging, pwd, subprocess, site, cgi, html
 site.main()
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 logging.debug('os.getuid(): %s', os.getuid())
@@ -223,7 +223,7 @@ def render(pagename):
         return read(pagename), 'text/html'
     elif not pagename.endswith(('.pdf', '.png', '.ico', '.jpg', '.jpeg')):
         logging.debug('rendering %s as plain text', pagename)
-        return ('<div class="post">%s</div>' % cgi.escape(
+        return ('<div class="post">%s</div>' % html.escape(
             read(pagename)), 'text/plain')
     else:
         logging.debug('rendering %s using its mimetype', pagename)
@@ -320,8 +320,8 @@ def specialsort(listing):
     (and/or any other method that makes sense as we progress
     note that symlinks will also be identified properly as files or dirs
     '''
-    subdirs = filter(os.path.isdir, listing)
-    files = filter(os.path.isfile, listing)
+    subdirs = list(filter(os.path.isdir, listing))
+    files = list(filter(os.path.isfile, listing))
     if set(listing) != set(subdirs + files):
         raise ValueError('%s != %s' % (listing, subdirs + files))
     return sorted(files) + sorted(subdirs)
@@ -332,7 +332,7 @@ def read(filename, maxread = MAXLENGTH, raw=False):
     '''
     decode = None
     try:
-        infile = open(filename)
+        infile = open(filename, 'rb')
         data = infile.read(MAXLENGTH)
         infile.close()
         try:
