@@ -226,9 +226,12 @@ def render(pagename):
         return ('<div class="post">%s</div>' % html.escape(
             read(pagename)).encode(), 'text/plain')
     else:
-        logging.debug('rendering %s using its mimetype', pagename)
-        return (read(pagename, raw=True),
-                MIMETYPES[os.path.splitext(pagename)[1][1:]])
+        # we don't want pdf and image files cluttering the page
+        logging.debug('skipping resource %s', pagename)
+        # using string '' will cause uwsgi
+        # ERROR: Unhandled object from iterator
+        # and the content will not show
+        return ('', 'text/html')
 
 def buildpage(directory=DATADIR):
     '''
