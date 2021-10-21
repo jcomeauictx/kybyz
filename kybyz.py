@@ -261,11 +261,13 @@ def uwsgi_init():
     except AttributeError:
         logging.exception('cannot determine port')
     init()
-    if host is not None:  # if host is not None, port must also be set
-        logging.debug('opening browser window to localhost port %s', port)
+    if host is not None and not os.getenv('WSL'):  # if host is not None, port must also be set
+        logging.debug('opening browser window to %s', host)
         webbrowser.open('http://%s' % host)
     else:
-        logging.exception('cannot open browser on port %s', port)
+        logging.exception('cannot open browser to %s', host)
+        logging.info("if you're running under WSL (Windows Subsystem for Linux), just open "
+                     "Windows browser to %s", host)
     repl = threading.Thread(target=commandloop, name='repl')
     repl.daemon = True
     repl.start()
