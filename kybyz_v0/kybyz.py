@@ -217,14 +217,14 @@ def render(pagename):
     if pagename.endswith('.md'):
         logging.debug('running markdown on %s', pagename)
         return postwrap(markdown(read(pagename),
-                        extensions=['fenced_code']).encode('utf8')), 'text/html'
+                        extensions=['fenced_code']).encode()), 'text/html'
     elif pagename.endswith('.html'):
         logging.debug('rendering %s as html', pagename)
-        return read(pagename), 'text/html'
+        return read(pagename, raw=True), 'text/html'
     elif not pagename.endswith(('.pdf', '.png', '.ico', '.jpg', '.jpeg')):
         logging.debug('rendering %s as plain text', pagename)
         return ('<div class="post">%s</div>' % html.escape(
-            read(pagename)), 'text/plain')
+            read(pagename)), 'text/plain').encode()
     else:
         logging.debug('rendering %s using its mimetype', pagename)
         return (read(pagename, raw=True),
@@ -309,9 +309,9 @@ def postwrap(something):
     or False (close)
     '''
     if isinstance(something, int):  # expecting True (1) or False (0)
-        return ['</div>', '<div class="post">'][something]
+        return [b'</div>', b'<div class="post">'][something]
     else:
-        return '<div class="post">%s</div>' % something
+        return b'<div class="post">%s</div>' % something
 
 def specialsort(listing):
     '''
@@ -330,29 +330,22 @@ def read(filename, maxread = MAXLENGTH, raw=False):
     '''
     return contents of a file, closing it properly
     '''
-    decode = None
+    decoded = None
     try:
         infile = open(filename, 'rb')
         data = infile.read(MAXLENGTH)
         infile.close()
-        try:
-            decoded = data.decode('utf8')
-        except UnicodeDecodeError:
-            decoded = data.decode('latin1')
+        if not raw:
+            try:
+                decoded = data.decode('utf8')
+            except UnicodeDecodeError:
+                decoded = data.decode('latin1')
     except IOError:
         message = ('File %s was not found relative to %s' %
                    (filename, os.path.abspath(os.curdir)))
         logging.error(message)
         decoded = message
-    return decoded
-
-def write(filename, data):
-    '''
-    write data to a file, closing it properly
-    '''
-    outfile = open(filename, 'w')
-    outfile.write(data)
-    outfile.close()
+    return decoded or data
 
 def load_keys():
     '''
