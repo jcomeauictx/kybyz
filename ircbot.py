@@ -119,6 +119,7 @@ class IRCBot():
             try:
                 self.client.send(chunk)
                 sent = True
+                tries = 0  # only abandon after several *consecutive* tries
             except BrokenPipeError:
                 logging.debug('lost connection, rejoining IRC...')
                 self.connection = self.connect(
@@ -136,8 +137,16 @@ class IRCBot():
         set ircbot.terminate to True in order to shut it down
         '''
         logging.debug('ircbot monitoring incoming traffic')
-        while not self.terminate:
-            received = self.stream.readline().rstrip()
+        tries = 0
+        while tries < 10:
+            try:
+                received = self.stream.readline().rstrip()
+                tries = 0
+            except ConnectionResetError:
+                tries += 1
+                self.connection = self.connect(
+                    self.server, self.port, self.nickname, self.realname)
+                continue
             logging.info('received: %r, length: %d', received, len(received))
             end_message = len(received) < 510
             # make sure all words[n] references are accounted for
