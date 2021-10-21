@@ -52,6 +52,11 @@ class GPG():
         '''
         if not hasattr(subprocess, 'run'):
             subprocess.run = run_process
+        else:
+            try:
+                subprocess.run(['ls'], capture_output=True)
+            except TypeError:  # Python3.5
+                subprocess.run = run_process
 
     def sign(self, data):
         '''
@@ -248,3 +253,4 @@ def check_username(identifier):
         #logging.error('cannot find nickname in %s', identifier)
         nickname = matched = None
     return nickname, matched
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
