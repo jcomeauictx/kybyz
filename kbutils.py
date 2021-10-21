@@ -54,7 +54,7 @@ class GPG():
             subprocess.run = run_process
         else:
             try:
-                subprocess.run(['ls'], capture_output=True)
+                subprocess.run(['ls'], capture_output=True, check=True)
             except TypeError:  # Python3.5
                 subprocess.run = run_process
 
