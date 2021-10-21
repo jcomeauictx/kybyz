@@ -4,6 +4,7 @@ O := Unternet
 E := hostmaster
 OU := Tech
 DRYRUN ?= --dry-run
+all: restart
 localtest: kybyz.py
 	python $<
 client_test: localtest
@@ -37,8 +38,8 @@ ini: $(USER)-kybyz.ini kybyz-example.ini
 	cwd=$(PWD); for file in $+; do \
 	 (cd /etc/uwsgi/apps-enabled && sudo ln -sf $$cwd/$$file .); \
 	done
-restart: $(HOME)/.kybyz/favicon.ico ini
-	sudo service uwsgi restart
+restart: $(USER)-kybyz.ini $(HOME)/.kybyz/favicon.ico ini
+	uwsgi $<
 backup:
 	for server in backup1 backup2; do \
 	 rsync -avuz $(DRYRUN) --delete ~/.kybyz/ $$server:.kybyz/; \

@@ -2,7 +2,7 @@
 # symlink this under /etc/uwsgi/apps-enabled/ (Debian)
 #log-syslog
 http-socket = kybyz:2424
-plugin = python
+plugin = python3
 wsgi-file = $PWD/kybyz.py
 callable = kybyz_client
 chdir = $PWD

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 '''
 implement local website http://kybyz/
 
@@ -14,7 +14,8 @@ must first mate a local IP address with the name `kybyz` in /etc/hosts, e.g.:
 127.0.1.125 kybyz
 '''
 from __future__ import print_function
-import sys, os, urllib2, logging, pwd, subprocess, site, cgi
+import sys, os, logging, pwd, subprocess, site, cgi
+site.main()
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 logging.debug('os.getuid(): %s', os.getuid())
 logging.debug('os.geteuid(): %s', os.geteuid())
@@ -47,7 +48,7 @@ FILETYPES = [
     'txt',
     'html',
     'css',
-] + MIMETYPES.keys()
+] + list(MIMETYPES.keys())
 
 class Node(str):
     '''
