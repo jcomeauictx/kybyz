@@ -224,7 +224,7 @@ def render(pagename):
     elif not pagename.endswith(('.pdf', '.png', '.ico', '.jpg', '.jpeg')):
         logging.debug('rendering %s as plain text', pagename)
         return ('<div class="post">%s</div>' % html.escape(
-            read(pagename)), 'text/plain').encode()
+            read(pagename)).encode(), 'text/plain')
     else:
         logging.debug('rendering %s using its mimetype', pagename)
         return (read(pagename, raw=True),

@@ -38,7 +38,7 @@ ini: $(USER)-kybyz.ini kybyz-example.ini
 	cwd=$(PWD); for file in $+; do \
 	 (cd /etc/uwsgi/apps-enabled && sudo ln -sf $$cwd/$$file .); \
 	done
-restart: $(USER)-kybyz.ini $(HOME)/.kybyz/favicon.ico ini
+restart: $(USER)-kybyz.ini $(HOME)/.kybyz/favicon.ico
 	uwsgi $<
 backup:
 	for server in backup1 backup2; do \
