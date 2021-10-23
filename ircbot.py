@@ -81,7 +81,10 @@ class IRCBot():
         '''
         connect to the server and identify ourselves
         '''
-        connection = self.client.connect((server, port))
+        try:
+            connection = self.client.connect((server, port))
+        except OSError as problem:
+            logging.warning('Cannot connect: %s', problem)
         self.user(nickname, realname)
         self.nick(nickname)
         self.join(CHANNEL)
