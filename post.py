@@ -2,16 +2,63 @@
 '''
 kybyz post
 '''
-import os, json  # pylint: disable=multiple-imports
+import os, json, re  # pylint: disable=multiple-imports
 from kbutils import read, make_timestamp
 from kbcommon import logging
+
+class PostAttribute():  # pylint: disable=too-few-public-methods
+    '''
+    base class for kybyz post attributes
+    '''
+    def __init__(self, name, required=True, hashed=True, values=None):
+        '''
+        post attribute have unique names
+
+        required can be True or False
+
+        hashed can be:
+            True,
+            False (both key and value removed before hashing,
+            None (set to None (null) before hashing),
+            or a particular value (such as [] to empty a list before hashing)
+
+        values can be a tuple of allowed values, None to allow any value,
+        a re.Pattern to specify a match pattern (implying str object), or
+        a lambda expression that must return True for the value to be valid.
+        '''
+        self.name = name
+        self.required = required
+        self.hashed = hashed
+        self.values = values
 
 class BasePost():
     '''
     base class for kybyz posts
     '''
     classname = 'basepost'
-
+    versions = {
+        '0.0.1': {
+            'type': PostAttribute('type', values=('post', 'netmeme', 'kybyz')),
+            'version': PostAttribute('version', values=('0.0.1',)),
+            'author': PostAttribute('author'),
+            'fingerprint': PostAttribute(
+                'fingerprint',
+                values=re.compile(r'^[0-9A-F]{16}')),
+            'image': PostAttribute('image'),
+            'mimetype': PostAttribute('mimetype'),
+            'toptext': PostAttribute('toptext'),
+            'bottomtext': PostAttribute('bottomtext'),
+            'signed': PostAttribute('signed', required=False),
+            'in-reply-to': PostAttribute('in-reply-to',
+                                         required=False,
+                                         hashed=[],
+                                         values=lambda v: isinstance(v, list)),
+            'replies': PostAttribute('replies',
+                                     required=False,
+                                     hashed=[],
+                                     values=lambda v: isinstance(v, list)),
+        }
+    }
     def __new__(cls, filename=None, **kwargs):
         mapping = {subclass.classname: subclass
                    for subclass in cls.__subclasses__()}
