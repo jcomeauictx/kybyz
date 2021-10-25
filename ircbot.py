@@ -29,24 +29,14 @@ class IRCBot():
         '''
         initialize the client
         '''
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # enable keepalives at the socket (SOL_SOCKET) level
-        self.client.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-        # after 1 second of TCP inactivity, trigger keepalive pings
-        self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 1)
-        # send a keepalive ping every 60 seconds
-        self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 60)
-        # quit after 5 consecutive failures
-        self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
-        self.stream = self.client.makefile()
+        self.client = self.stream = None  # set by connect()
         self.server = server
         self.port = port
         self.nickname = nickname or pwd.getpwuid(os.geteuid()).pw_name
         # NOTE: when we implement true p2p networking, realname should include
         # connection port
         self.realname = realname or pwd.getpwuid(os.geteuid()).pw_gecos
-        self.connection = self.connect(server, port,
-                                       self.nickname, self.realname)
+        self.connect(server, port, self.nickname, self.realname)
         self.terminate = False
         daemon = threading.Thread(target=self.monitor, name='ircbot_daemon')
         daemon.daemon = True
@@ -81,14 +71,20 @@ class IRCBot():
         '''
         connect to the server and identify ourselves
         '''
-        try:
-            connection = self.client.connect((server, port))
-        except OSError as problem:
-            logging.warning('Cannot connect: %s', problem)
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # enable keepalives at the socket (SOL_SOCKET) level
+        self.client.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+        # after 1 second of TCP inactivity, trigger keepalive pings
+        self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 1)
+        # send a keepalive ping every 60 seconds
+        self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 60)
+        # quit after 5 consecutive failures
+        self.client.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
+        self.stream = self.client.makefile()
+        self.client.connect((server, port))
         self.user(nickname, realname)
         self.nick(nickname)
         self.join(CHANNEL)
-        return connection
 
     def privmsg(self, target, message):
         '''
@@ -124,12 +120,11 @@ class IRCBot():
                 sent = True
                 tries = 0  # only abandon after several *consecutive* tries
             except BrokenPipeError:
-                logging.debug('lost connection, rejoining IRC...')
-                self.connection = self.connect(
-                    self.server, self.port, self.nickname, self.realname)
+                logging.debug('lost connection, waiting for monitor to rejoin')
                 tries += 1
                 if tries == 5:
                     raise
+                time.sleep(3)
 
     def monitor(self):
         '''
@@ -147,8 +142,8 @@ class IRCBot():
                 tries = 0
             except ConnectionResetError:
                 tries += 1
-                self.connection = self.connect(
-                    self.server, self.port, self.nickname, self.realname)
+                self.connect(self.server, self.port,
+                             self.nickname, self.realname)
                 continue
             logging.info('received: %r, length: %d', received, len(received))
             end_message = len(received) < 510
