@@ -96,8 +96,8 @@ def serve(env=None, start_response=None):
                 update_status = '406 Not Acceptable'
         else:
             update_page = (
-                            '<div>no updates for %s</div>' % args['name']
-                          ).encode()
+                '<div>no updates for %s</div>' % args['name']
+            ).encode()
             update_status = '404 Not Found'
         return update_status, update_page
 
