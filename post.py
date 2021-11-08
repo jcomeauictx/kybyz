@@ -12,7 +12,7 @@ class PostAttribute():  # pylint: disable=too-few-public-methods
     '''
     def __init__(self, name, required=True, hashed=True, values=None):
         '''
-        post attribute have unique names
+        post attributes have unique names
 
         required can be True or False
 
