@@ -14,7 +14,15 @@ class PostAttribute():  # pylint: disable=too-few-public-methods
         '''
         post attributes have unique names
 
-        required can be True or False
+        required can be:
+            True,
+            False,
+            a tuple evaluated as names of other post attributes that must be
+            present and evaluate to True; for example, mimetype is dependent on
+            there being an image, so mimetype's `required` value would be
+            ('image',),
+            or any other object which fits `values`, which will be used as
+            the default, and required therefore presumed to be True.
 
         hashed can be:
             True,
@@ -45,7 +53,7 @@ class BasePost():
                 'fingerprint',
                 values=re.compile(r'^[0-9A-F]{16}')),
             'image': PostAttribute('image'),
-            'mimetype': PostAttribute('mimetype'),
+            'mimetype': PostAttribute('mimetype', required=('image',)),
             'toptext': PostAttribute('toptext'),
             'bottomtext': PostAttribute('bottomtext'),
             'signed': PostAttribute('signed', required=False),
