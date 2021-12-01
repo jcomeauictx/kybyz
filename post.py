@@ -52,10 +52,10 @@ class BasePost():
             'fingerprint': PostAttribute(
                 'fingerprint',
                 values=re.compile(r'^[0-9A-F]{16}')),
-            'image': PostAttribute('image'),
+            'image': PostAttribute('image', required=False),
             'mimetype': PostAttribute('mimetype', required=('image',)),
-            'toptext': PostAttribute('toptext'),
-            'bottomtext': PostAttribute('bottomtext'),
+            'toptext': PostAttribute('toptext', required=''),
+            'bottomtext': PostAttribute('bottomtext', required=''),
             'signed': PostAttribute('signed', required=False),
             'in-reply-to': PostAttribute('in-reply-to',
                                          required=False,
