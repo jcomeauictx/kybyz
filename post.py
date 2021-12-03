@@ -3,7 +3,7 @@
 kybyz post
 '''
 import os, json, re  # pylint: disable=multiple-imports
-from kbutils import read, make_timestamp
+from kbutils import read, make_timestamp, tuplify
 from kbcommon import logging
 
 class PostAttribute():  # pylint: disable=too-few-public-methods
@@ -97,6 +97,8 @@ class BasePost():
             setattr(self, key, kwargs[key])
         if not getattr(self, 'timestamp', None):
             self.timestamp = make_timestamp()
+        if not getattr(self, 'version', None):
+            self.version = max(self.versions, key=tuplify)
 
     def __str__(self):
         '''
@@ -112,6 +114,7 @@ class BasePost():
             raise RuntimeError('Must not run with optimization')
         assert (getattr(self, 'type', None) == self.classname or
                 getattr(self, 'filename', '').endswith('.' + self.classname))
+        logging.info('post validation schema: %s', self.versions[self.version])
 
     def to_html(self):
         '''
