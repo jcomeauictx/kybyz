@@ -218,6 +218,7 @@ def loadposts(to_html=True):
     get_post = BasePost if to_html else read
     posts = [get_post(os.path.join(directory, filename))
              for filename in os.listdir(directory)]
+    logging.debug('running loadposts(%s)', to_html)
     return list(filter(None, posts))
 
 def background():
