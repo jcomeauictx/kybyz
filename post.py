@@ -97,8 +97,10 @@ class BasePost():
             setattr(self, key, kwargs[key])
         if not getattr(self, 'timestamp', None):
             self.timestamp = make_timestamp()
+        # if no version specified, use latest
         if not getattr(self, 'version', None):
             self.version = max(self.versions, key=tuplify)
+        self.validate()
 
     def __str__(self):
         '''
