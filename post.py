@@ -43,9 +43,41 @@ class PostAttribute():  # pylint: disable=too-few-public-methods
         '''
         make sure this attribute fits requirement
         '''
+        def validate_tuple(value):
+            '''
+            helper function for values tuple
+            '''
+            return value in self.values
+
+        def validate_pattern(value):
+            '''
+            helper function for values as compiled regex
+            '''
+            return self.values.match(value)
+
+        def validate_none(value):  # pylint: disable=unused-argument
+            '''
+            helper function for value that can be anything
+            '''
+            return True
+
+        def validate_lambda(value):
+            '''
+            helper function for values as lambda expression
+            '''
+            return self.values(value)
+
+        validation_dispatcher = {
+            type(None): validate_none,
+            type(re.compile(r'^$')): validate_pattern,
+            type(lambda: None): validate_lambda,
+            type(()): validate_tuple,
+        }
+
         try:
             value = getattr(post, self.name)
-            assert value in self.values
+            logging.debug('checking that %r in %s', value, self.values)
+            validation_dispatcher[type(self.values)](value)
         except AttributeError:
             if self.required is True:
                 raise ValueError(
@@ -61,10 +93,13 @@ class BasePost():
         '0.0.1': {
             'type': PostAttribute('type', values=('post', 'netmeme', 'kybyz')),
             'version': PostAttribute('version', values=('0.0.1',)),
-            'author': PostAttribute('author'),
+            'author': PostAttribute(
+                'author',
+                values=re.compile(r'^\w+[\w\s]*\w$')
+            ),
             'fingerprint': PostAttribute(
                 'fingerprint',
-                values=re.compile(r'^[0-9A-F]{16}')),
+                values=re.compile(r'^[0-9A-F]{16}$')),
             'image': PostAttribute('image', required=False),
             'mimetype': PostAttribute('mimetype', required=('image',)),
             'toptext': PostAttribute('toptext', required=''),
