@@ -26,7 +26,7 @@ class PostAttribute():  # pylint: disable=too-few-public-methods
 
         hashed can be:
             True,
-            False (both key and value removed before hashing,
+            False (both key and value removed before hashing),
             None (set to None (null) before hashing),
             or a particular value (such as [] to empty a list before hashing)
 
@@ -38,6 +38,19 @@ class PostAttribute():  # pylint: disable=too-few-public-methods
         self.required = required
         self.hashed = hashed
         self.values = values
+
+    def validate(self, post):
+        '''
+        make sure this attribute fits requirement
+        '''
+        try:
+            value = getattr(post, self.name)
+            assert value in self.values
+        except AttributeError:
+            if self.required is True:
+                raise ValueError(
+                    'Required attribute %s missing in %s' % (self.name, post)
+                )
 
 class BasePost():
     '''
@@ -116,7 +129,10 @@ class BasePost():
             raise RuntimeError('Must not run with optimization')
         assert (getattr(self, 'type', None) == self.classname or
                 getattr(self, 'filename', '').endswith('.' + self.classname))
-        logging.info('post validation schema: %s', self.versions[self.version])
+        schema = self.versions[self.version]
+        logging.info('post validation schema: %s', schema)
+        for attribute in schema:
+            schema[attribute].validate(self)
 
     def to_html(self):
         '''
