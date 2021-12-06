@@ -6,6 +6,16 @@ import os, json, re  # pylint: disable=multiple-imports
 from kbutils import read, make_timestamp, tuplify
 from kbcommon import logging
 
+class PostValidationError(ValueError):  # pylint: disable=too-few-public-methods
+    '''
+    distinguish validation errors from other ValueErrors
+    '''
+
+class NoDefault():  # pylint: disable=too-few-public-methods
+    '''
+    distinguish attributes with no defaults from None
+    '''
+
 class PostAttribute():  # pylint: disable=too-few-public-methods
     '''
     base class for kybyz post attributes
@@ -159,13 +169,16 @@ class BasePost():
     def validate(self):
         '''
         make sure post contents fit the version given
+
+        note that additional attributes can be given a post and they
+        will not be checked; we only check the schema
         '''
         if not self.__doc__:
             raise RuntimeError('Must not run with optimization')
         assert (getattr(self, 'type', None) == self.classname or
                 getattr(self, 'filename', '').endswith('.' + self.classname))
         schema = self.versions[self.version]
-        logging.info('post validation schema: %s', schema)
+        logging.debug('post validation schema: %s', schema)
         for attribute in schema:
             schema[attribute].validate(self)
 
