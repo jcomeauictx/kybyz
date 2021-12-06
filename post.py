@@ -84,15 +84,21 @@ class PostAttribute():  # pylint: disable=too-few-public-methods
             type(()): validate_tuple,
         }
 
-        try:
-            value = getattr(post, self.name)
-            logging.debug('checking that %r in %s', value, self.values)
-            validation_dispatcher[type(self.values)](value)
-        except AttributeError:
-            if self.required is True:
-                raise ValueError(
-                    'Required attribute %s missing in %s' % (self.name, post)
-                )
+        required = self.required
+        default = NoDefault
+        if isinstance(required, tuple):
+            required = all((getattr(post, attribute) for attribute in required))
+        elif required and required is not True:
+            default = required
+            required = True
+        value = getattr(post, self.name, default)
+        logging.debug('checking that %r in %s', value, self.values)
+        validation_dispatcher[type(self.values)](value)
+        if value == NoDefault and self.required:
+            raise PostValidationError('Post %s lacks valid %d attribute' %
+                                      (post, self.name))
+        elif value != NoDefault:
+            setattr(post, self.name, value)  # default if nothing else
 
 class BasePost():
     '''
