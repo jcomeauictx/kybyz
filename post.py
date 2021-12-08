@@ -16,7 +16,7 @@ class NoDefault():  # pylint: disable=too-few-public-methods
     distinguish attributes with no defaults from None
     '''
 
-class PostAttribute():  # pylint: disable=too-few-public-methods
+class PostAttribute():
     '''
     base class for kybyz post attributes
     '''
@@ -99,6 +99,25 @@ class PostAttribute():  # pylint: disable=too-few-public-methods
                                       (post, self.name))
         elif value != NoDefault:
             setattr(post, self.name, value)  # default if nothing else
+
+    def hashvalue(self, post):
+        '''
+        return key and value for hashing
+
+        if post lacks attribute at this point, return invalid (None, None)
+        '''
+        try:
+            value = getattr(post, self.name)
+            if self.hashed is False:
+                raise AttributeError(
+                    '%s not part of post hashvalue' % self.name
+                )
+        except AttributeError:
+            return (None, None)
+        if self.hashed is True:
+            return (self.name, value)
+        # None or any other explicit value
+        return (self.name, self.hashed)
 
 class BasePost():
     '''
