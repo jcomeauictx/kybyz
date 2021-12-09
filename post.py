@@ -5,6 +5,7 @@ kybyz post
 import os, json, re  # pylint: disable=multiple-imports
 from kbutils import read, make_timestamp, tuplify
 from kbcommon import logging
+from canonical_json import canonicalize
 
 class PostValidationError(ValueError):  # pylint: disable=too-few-public-methods
     '''
@@ -153,19 +154,21 @@ class BasePost():
     def __new__(cls, filename=None, **kwargs):
         mapping = {subclass.classname: subclass
                    for subclass in cls.__subclasses__()}
+        logging.debug('mapping: %s', mapping)
         if not kwargs:
             try:
                 kwargs = json.loads(read(filename))
             except TypeError:
                 kwargs = {}
-        if filename and not kwargs.get('type'):
+        logging.debug('cls.classname: %s', cls.classname)
+        post_type = kwargs.get('type', cls.classname)
+        if filename and post_type not in mapping:
             post_type = os.path.splitext(filename)[1].lstrip('.')
-        else:
-            post_type = kwargs['type']
         subclass = mapping.get(post_type, None)
         try:
             instance = super(BasePost, subclass).__new__(subclass)
         except TypeError:
+            logging.exception('Unknown post type %s', subclass)
             instance = None
         return instance
 
@@ -214,14 +217,23 @@ class BasePost():
         template = read(self.classname + '.html').decode()
         return template.format(post=self)
 
-    def to_json(self):
+    def to_json(self, for_hashing=False):
         '''
         output contents as JSON
         '''
+        if for_hashing:
+            dictionary = dict((value.hashvalue() for value in
+                               self.versions[self.version].values()))
+            del dictionary[None]  # clears out last of values not to be hashed
+        else:
+            dictionary = vars(self)
+        return canonicalize(dictionary)
 
 class Post(BasePost):
     '''
     encapsulation of kybyz post
+
+    >>> Post(toptext='This is only a test...')
     '''
     classname = 'post'
 
