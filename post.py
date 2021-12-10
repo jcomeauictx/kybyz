@@ -88,7 +88,8 @@ class PostAttribute():
         required = self.required
         default = NoDefault
         if isinstance(required, tuple):
-            required = all((getattr(post, attribute) for attribute in required))
+            required = all((getattr(post, attribute, None)
+                            for attribute in required))
         elif required and required is not True:
             default = required
             required = True
@@ -151,7 +152,7 @@ class BasePost():
                                      values=lambda v: isinstance(v, list)),
         }
     }
-    def __new__(cls, filename=None, **kwargs):
+    def __new__(cls, filename='', **kwargs):
         mapping = {subclass.classname: subclass
                    for subclass in cls.__subclasses__()}
         logging.debug('mapping: %s', mapping)
@@ -162,9 +163,10 @@ class BasePost():
                 kwargs = {}
         logging.debug('cls.classname: %s', cls.classname)
         post_type = kwargs.get('type', cls.classname)
+        kwargs['type'] = post_type  # make sure it's there for __init__
         if filename and post_type not in mapping:
             post_type = os.path.splitext(filename)[1].lstrip('.')
-        subclass = mapping.get(post_type, None)
+        subclass = mapping.get(post_type, cls)
         try:
             instance = super(BasePost, subclass).__new__(subclass)
         except TypeError:
@@ -172,7 +174,7 @@ class BasePost():
             instance = None
         return instance
 
-    def __init__(self, filename=None, **kwargs):
+    def __init__(self, filename='', **kwargs):
         '''
         initialize instantiation from **dict
         '''
@@ -183,6 +185,8 @@ class BasePost():
             setattr(self, key, kwargs[key])
         if not getattr(self, 'timestamp', None):
             self.timestamp = make_timestamp()
+        if not getattr(self, 'type', None):
+            self.type = self.classname
         # if no version specified, use latest
         if not getattr(self, 'version', None):
             self.version = max(self.versions, key=tuplify)
@@ -233,7 +237,7 @@ class Post(BasePost):
     '''
     encapsulation of kybyz post
 
-    >>> Post(toptext='This is only a test...')
+    >>> Post(author='jc', fingerprint='0000111122223333')
     '''
     classname = 'post'
 
