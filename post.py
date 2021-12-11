@@ -53,29 +53,37 @@ class PostAttribute():
     def validate(self, post):
         '''
         make sure this attribute fits requirement
+
+        NOTE: sets attribute in post if not present and has default value
         '''
         def validate_tuple(value):
             '''
             helper function for values tuple
             '''
+            logging.debug('validating that value %r in %s', value, self.values)
             return value in self.values
 
         def validate_pattern(value):
             '''
             helper function for values as compiled regex
             '''
+            logging.debug('validating pattern %s matches value %r',
+                          self.values, value)
             return self.values.match(value)
 
         def validate_none(value):  # pylint: disable=unused-argument
             '''
             helper function for value that can be anything
             '''
+            logging.debug('validating %r regardless of what it is', value)
             return True
 
         def validate_lambda(value):
             '''
             helper function for values as lambda expression
             '''
+            logging.debug('validating lambda expression %s(%r)',
+                          self.values, value)
             return self.values(value)
 
         validation_dispatcher = {
@@ -94,13 +102,19 @@ class PostAttribute():
             default = required
             required = True
         value = getattr(post, self.name, default)
-        logging.debug('checking that %r in %s', value, self.values)
+        logging.debug('checking that %s value %r in %s',
+                      self.name, value, self.values)
         validation_dispatcher[type(self.values)](value)
         if value == NoDefault and self.required:
-            raise PostValidationError('Post %s lacks valid %d attribute' %
+            raise PostValidationError('Post %r lacks valid %s attribute' %
                                       (post, self.name))
         elif value != NoDefault:
+            logging.debug('setting attribute %s in post to %s',
+                          self.name, value)
             setattr(post, self.name, value)  # default if nothing else
+        else:
+            logging.debug('attribute %s has value %r and no default value',
+                          self.name, value)
 
     def hashvalue(self, post):
         '''
@@ -212,6 +226,7 @@ class BasePost():
         schema = self.versions[self.version]
         logging.debug('post validation schema: %s', schema)
         for attribute in schema:
+            logging.debug('validating attribute %s in schema', attribute)
             schema[attribute].validate(self)
 
     def to_html(self):
@@ -230,7 +245,8 @@ class BasePost():
                                self.versions[self.version].values()))
             del dictionary[None]  # clears out last of values not to be hashed
         else:
-            dictionary = vars(self)
+            dictionary = {key: getattr(self, key, None) for key in dir(self)
+                          if not key.startswith('__')}
         return canonicalize(dictionary)
 
 class Post(BasePost):
