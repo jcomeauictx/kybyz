@@ -96,16 +96,20 @@ class PostAttribute():
         required = self.required
         default = NoDefault
         if isinstance(required, tuple):
-            required = all((getattr(post, attribute, None)
+            evaluated = all((getattr(post, attribute, None)
                             for attribute in required))
+            logging.debug('tuple %s evaluated to required=%s',
+                          required, evaluated)
+            required = evaluated
         elif required and required is not True:
+            logging.debug('setting default for %s to %r', self.name, required)
             default = required
             required = True
         value = getattr(post, self.name, default)
         logging.debug('checking that %s value %r in %s',
                       self.name, value, self.values)
         validation_dispatcher[type(self.values)](value)
-        if value == NoDefault and self.required:
+        if value == NoDefault and required:
             raise PostValidationError('Post %r lacks valid %s attribute' %
                                       (post, self.name))
         elif value != NoDefault:
@@ -151,7 +155,7 @@ class BasePost():
             'fingerprint': PostAttribute(
                 'fingerprint',
                 values=re.compile(r'^[0-9A-F]{16}$')),
-            'image': PostAttribute('image', required=False),
+            'image': PostAttribute('image', required=''),
             'mimetype': PostAttribute('mimetype', required=('image',)),
             'toptext': PostAttribute('toptext', required=''),
             'bottomtext': PostAttribute('bottomtext', required=''),
@@ -253,7 +257,7 @@ class Post(BasePost):
     '''
     encapsulation of kybyz post
 
-    >>> Post(author='jc', fingerprint='0000111122223333')
+    >>> str(Post(author='jc', fingerprint='0000111122223333'))
     '''
     classname = 'post'
 
