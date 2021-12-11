@@ -97,11 +97,11 @@ class PostAttribute():
         default = NoDefault
         if isinstance(required, tuple):
             evaluated = all((getattr(post, attribute, None)
-                            for attribute in required))
+                             for attribute in required))
             logging.debug('tuple %s evaluated to required=%s',
                           required, evaluated)
             required = evaluated
-        elif required and required is not True:
+        elif required not in [True, False]:
             logging.debug('setting default for %s to %r', self.name, required)
             default = required
             required = True
@@ -254,10 +254,12 @@ class BasePost():
         return canonicalize(dictionary)
 
 class Post(BasePost):
-    '''
+    r'''
     encapsulation of kybyz post
 
-    >>> str(Post(author='jc', fingerprint='0000111122223333'))
+    >>> str(Post(author='jc',
+    ...          fingerprint='0000111122223333'))  # doctest: +ELLIPSIS
+    '<div class="post">\n...'
     '''
     classname = 'post'
 
