@@ -4,7 +4,7 @@ kybyz post
 '''
 import os, json, re  # pylint: disable=multiple-imports
 from kbutils import read, make_timestamp, tuplify
-from kbcommon import logging
+from kbcommon import logging, CACHED
 from canonical_json import canonicalize
 
 class PostValidationError(ValueError):  # pylint: disable=too-few-public-methods
@@ -150,10 +150,12 @@ class BasePost():
             'version': PostAttribute('version', values=('0.0.1',)),
             'author': PostAttribute(
                 'author',
+                required=CACHED.get('username', True),
                 values=re.compile(r'^\w+[\w\s]*\w$')
             ),
             'fingerprint': PostAttribute(
                 'fingerprint',
+                required=CACHED.get('gpgkey', '')[-16:] or True,
                 values=re.compile(r'^[0-9A-F]{16}$')),
             'image': PostAttribute('image', required=''),
             'mimetype': PostAttribute('mimetype', required=('image',)),
@@ -257,8 +259,8 @@ class Post(BasePost):
     r'''
     encapsulation of kybyz post
 
-    >>> str(Post(author='jc',
-    ...          fingerprint='0000111122223333'))  # doctest: +ELLIPSIS
+    >>> str(Post(author='test',
+    ...          fingerprint='0000000000000000'))  # doctest: +ELLIPSIS
     '<div class="post">\n...'
     '''
     classname = 'post'
