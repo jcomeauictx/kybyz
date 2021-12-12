@@ -117,7 +117,7 @@ class PostAttribute():
         if value == NoDefault and required:
             raise PostValidationError('Post %r lacks valid %s attribute' %
                                       (post, self.name))
-        elif value != NoDefault:
+        if value != NoDefault:
             logging.debug('setting attribute %s in post to %s',
                           self.name, value)
             setattr(post, self.name, value)  # default if nothing else
