@@ -201,6 +201,7 @@ def post(post_type, *args, **kwargs):
         return newpost
     except AttributeError:
         logging.exception('Post failed')
+        return None
 
 def guess_mimetype(filename, contents):
     '''
