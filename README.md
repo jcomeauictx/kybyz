@@ -10,6 +10,10 @@ one, currently $6/month.
 `myemail@example.com` with your own, hopefully unique, username and your real
 email address.
 
+**ALSO NOTE** if these instructions do not work, revert to the same version
+as the README. You will be missing the latest functionality, but the steps have
+a better chance of working correctly. I don't test the installation often.
+
 1. Login as root
 2. `apt update`
 3. `apt upgrade`
@@ -29,19 +33,19 @@ That's all as root; you should now login as a regular user
 5. `git clone https://github.com/jcomeauictx/kybyz`
 6. `cd kybyz`
 7. `./kybyz.py register myusername myemail@example.com`
-7. `make`; Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear. **If pylint fails**, you can still test the app using `make PYLINT=echo`
-8. Wait for the `kbz>` prompt
-9. `send myusername myemail@example.com this is a private message`
-10. Watch the log messages and make sure it was sent and received correctly.
-11. Send to another user. First you'll need to import their public GPG key.
-12. Login to Facebook and visit <https://www.facebook.com/jcomeauictx/about_contact_and_basic_info>. Copy my PGP key.
-13. ^C out of kybyz on the droplet, and at the command line: `cat > /tmp/jc.key`.
-14. Paste the key by clicking the middle mouse button (or both left and right if there is no middle).
-15. ^D to get back to the command line.
-16. `gpg --import /tmp/jc.key`
-17. `gpg --sign-key jc@unternet.net`
-18. `make`
-19. At the `kbz>` prompt: `send jcomeauictx jc@unternet.net hey this is Joe`
+8. `make`; Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear. **If pylint fails**, you can still test the app using `make PYLINT=echo`
+9. Wait for the `kbz>` prompt
+10. `send myusername myemail@example.com this is a private message`
+11. Watch the log messages and make sure it was sent and received correctly.
+12. Send to another user. First you'll need to import their public GPG key.
+13. Login to Facebook and visit <https://www.facebook.com/jcomeauictx/about_contact_and_basic_info>. Copy my PGP key.
+14. ^C out of kybyz on the droplet, and at the command line: `cat > /tmp/jc.key`.
+15. Paste the key by clicking the middle mouse button (or both left and right if there is no middle).
+16. ^D to get back to the command line.
+17. `gpg --import /tmp/jc.key`
+18. `gpg --sign-key jc@unternet.net`
+19. `make`
+20. At the `kbz>` prompt: `send jcomeauictx jc@unternet.net hey this is Joe`
 
 I'll be able to read your message, but won't be able to verify who it's from
 unless I have imported *your* key.
