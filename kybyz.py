@@ -2,7 +2,7 @@
 '''
 Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
-import sys, os, time, threading, cgi  # pylint: disable=multiple-imports
+import sys, os, time, threading, cgi, shlex  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from collections import namedtuple
@@ -27,6 +27,13 @@ MESSAGES = '''<div class="column" id="kbz-messages"
     {messages}
   <div id="kbz-js-warning">webpage:{javascript}</div>
 </div>'''
+EXPECTED_ERRORS = (  # for repl loop
+    RuntimeError,
+    KeyError,
+    ValueError,
+    TypeError,
+    AttributeError
+)
 
 def init():
     '''
@@ -185,14 +192,15 @@ def post(post_type, *args, **kwargs):
     '''
     make a new post from the command line or from another subroutine
     '''
-    post_types = [subclass.classname for subclass in BasePost.__subclasses__()]
-    if not post_type in post_types:
-        raise ValueError('Unknown post type %s' % post_type)
     kwargs.update({'type': post_type})
     for arg in args:
         logging.debug('parsing %s', arg)
         kwargs.update(dict((arg.split('=', 1),)))
-    return BasePost(None, **kwargs)
+    try:
+        newpost = BasePost(None, **kwargs)
+        return newpost
+    except AttributeError:
+        logging.exception('Post failed')
 
 def guess_mimetype(filename, contents):
     '''
@@ -286,9 +294,9 @@ def commandloop():
     while args[0:1] != ['quit']:
         try:
             print(process(args))
-        except (RuntimeError, KeyError, ValueError, TypeError) as problem:
+        except EXPECTED_ERRORS as problem:
             logging.exception(problem)
-        args = input('kbz> ').split()
+        args = shlex.split(input('kbz> '))
     logging.warning('input loop terminated')
 
 if __name__ == '__main__':
