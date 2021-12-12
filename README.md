@@ -28,6 +28,7 @@ That's all as root; you should now login as a regular user
 4. `cd src`
 5. `git clone https://github.com/jcomeauictx/kybyz`
 6. `cd kybyz`
+7. `mkdir -p $HOME/log && touch $HOME/log/kybyz.log`
 7. `./kybyz.py register myusername myemail@example.com`
 7. `make`; Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear. **If pylint fails**, you can still test the app using `make PYLINT=echo`
 8. Wait for the `kbz>` prompt
@@ -97,5 +98,6 @@ previous block, and no newer than the transaction timestamp.
 
 ## prerequisites
 
+* debian-based distribution (with `apt-get`)
 * python3
 * gpg
