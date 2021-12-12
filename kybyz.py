@@ -296,7 +296,10 @@ def commandloop():
             print(process(args))
         except EXPECTED_ERRORS as problem:
             logging.exception(problem)
-        args = shlex.split(input('kbz> '))
+        try:
+            args = shlex.split(input('kbz> '))
+        except EOFError:
+            break
     logging.warning('input loop terminated')
 
 if __name__ == '__main__':
