@@ -12,7 +12,8 @@ KYBYZ_HOME = os.path.join(CACHE, 'home')
 BASE_LOG_FORMAT = '%(levelname)s:%(name)s:%(message)s'
 EXTENDED_LOG_FORMAT = '%(asctime)s:%(threadName)s:' + BASE_LOG_FORMAT
 LOG_TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
-LOGFILE = os.path.join(os.path.join(HOME, 'log', 'kybyz.log'))
+LOGDIR = os.getenv('KB_LOGDIR', os.path.join(HOME, 'log'))
+LOGFILE = os.path.join(os.path.join(LOGDIR, 'kybyz.log'))
 LOGSTREAM_HANDLER = logging.StreamHandler()
 if not os.path.split(sys.argv[0])[1].endswith(('doctest', 'doctest.py')):
     LOGSTREAM_HANDLER.setLevel(logging.INFO)
@@ -40,6 +41,7 @@ class DequeHandler(logging.NullHandler):
 LOGQUEUE_HANDLER = DequeHandler()
 LOGQUEUE_HANDLER.setLevel(logging.INFO)
 
+os.makedirs(LOGDIR, exist_ok=True)
 logging.basicConfig(
     level=logging.DEBUG if __debug__ else logging.INFO,
     format=BASE_LOG_FORMAT,

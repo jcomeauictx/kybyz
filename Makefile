@@ -5,19 +5,22 @@ PYTHON ?= python3
 PYLINT ?= pylint3
 # set KB_DELAY to smaller number for more frequent progress logging
 KB_DELAY = 600
+# set KB_LOGDIR to desired path
+# it will be created by kbcommon.py at startup
+KB_LOGDIR = $(HOME)/log
 PATH := $(HOME)/bin:$(PATH)
 export
 all: doctests lint uwsgi
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
-doctests: $(HOME)/log $(SOURCES:.py=.doctest)
+doctests: $(SOURCES:.py=.doctest)
 %.lint: %.py $(PYLINT)
 	$(PYLINT) $<
 lint: $(SOURCES:.py=.lint)
-uwsgi: kybyz.ini $(HOME)/log
-	#strace -f -v -t -s4096 -o $(HOME)/log/kybyz_strace.log uwsgi $<
+uwsgi: kybyz.ini
+	#strace -f -v -t -s4096 -o /tmp/kybyz_strace.log uwsgi $<
 	uwsgi $<
-$(HOME)/bin $(HOME)/log:
+$(HOME)/bin:
 	mkdir -p $@
 $(PYLINT): $(HOME)/bin
 	which $@ || sudo apt-get install $@
