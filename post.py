@@ -69,7 +69,12 @@ class PostAttribute():
             '''
             logging.debug('validating pattern %s matches value %r',
                           self.values, value)
-            return self.values.match(value)
+            try:
+                return self.values.match(value)
+            except TypeError as error:
+                raise PostValidationError(
+                    '%r is wrong type for pattern match' % value
+                ) from error
 
         def validate_none(value):  # pylint: disable=unused-argument
             '''
@@ -139,6 +144,11 @@ class PostAttribute():
         # None or any other explicit value
         return (self.name, self.hashed)
 
+    def __str__(self):
+        return '<PostAttribute name=%r required=%r hashed=%r values=%r>' % (
+            self.name, self.required, self.hashed, self.values)
+    __repr__ = __str__
+
 class BasePost():
     '''
     base class for kybyz posts
@@ -150,12 +160,10 @@ class BasePost():
             'version': PostAttribute('version', values=('0.0.1',)),
             'author': PostAttribute(
                 'author',
-                required=CACHED.get('username', True),
                 values=re.compile(r'^\w+[\w\s]*\w$')
             ),
             'fingerprint': PostAttribute(
                 'fingerprint',
-                required=CACHED.get('gpgkey', '')[-16:] or True,
                 values=re.compile(r'^[0-9A-F]{16}$')),
             'image': PostAttribute('image', required=''),
             'mimetype': PostAttribute('mimetype', required=('image',)),
@@ -189,6 +197,11 @@ class BasePost():
         subclass = mapping.get(post_type, cls)
         try:
             instance = super(BasePost, subclass).__new__(subclass)
+            # fill in defaults from things unknown at script load time
+            instance.versions['0.0.1']['author'].required = CACHED.get(
+                'username', True)
+            instance.versions['0.0.1']['fingerprint'].required = CACHED.get(
+                'gpgkey', '')[-16:] or True
         except TypeError:
             logging.exception('Unknown post type %s', subclass)
             instance = None
@@ -227,6 +240,8 @@ class BasePost():
         '''
         if not self.__doc__:
             raise RuntimeError('Must not run with optimization')
+        # why doesn't 'author' have default value from cache?
+        logging.debug('BasePost.validate: CACHED: %s', CACHED)
         assert (getattr(self, 'type', None) == self.classname or
                 getattr(self, 'filename', '').endswith('.' + self.classname))
         schema = self.versions[self.version]

@@ -37,6 +37,7 @@ def init():
     CACHED.update(registration()._asdict())
     CACHED['uptime'] = 0
     CACHED['javascript'] = 'ERROR:javascript disabled or incompatible'
+    logging.debug('CACHED: %s', CACHED)
     kybyz = threading.Thread(target=background, name='kybyz')
     kybyz.daemon = True
     kybyz.start()
