@@ -8,7 +8,7 @@ from urllib.request import urlopen
 from collections import namedtuple
 from hashlib import md5
 from ircbot import IRCBot
-from kbutils import read, verify_key
+from kbutils import read, verify_key, kbhash
 from kbutils import send  # pylint: disable=unused-import
 from kbcommon import CACHE, CACHED, KYBYZ_HOME, logging, MESSAGE_QUEUE, TO_PAGE
 from post import BasePost
@@ -198,10 +198,28 @@ def post(post_type, *args, **kwargs):
         kwargs.update(dict((arg.split('=', 1),)))
     try:
         newpost = BasePost(None, **kwargs)
-        return newpost
+        jsonified = newpost.to_json()
+        post_type = newpost.type
+        hashed = kbhash(jsonified)
+        cached = cache('.'.join((hashed, post_type)), jsonified)
+        jsonified = newpost.to_json(for_hashing=True)
+        hashed = kbhash(jsonified)
+        hashcached = cache('.'.join((hashed, post_type)), jsonified)
+        os.symlink(cached, os.path.splitext(hashcached)[0])
+        return hashed
     except AttributeError:
         logging.exception('Post failed')
         return None
+
+def cache(path, data):
+    '''
+    store data in cache for later retrieval
+    '''
+    fullpath = os.path.join(CACHE, path)
+    os.makedirs(os.path.dirname(fullpath), exist_ok=True)
+    with open(fullpath, 'w') as outfile:
+        outfile.write(data)
+    return fullpath
 
 def guess_mimetype(filename, contents):
     '''
