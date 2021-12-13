@@ -15,12 +15,18 @@ def canonicalize(obj):
     https://gibson042.github.io/canonicaljson-spec/ and
     http://wiki.laptop.org/go/Canonical_JSON for reference
 
+    if it's not json, just return it as is.
+
     >>> print(canonicalize({'test': [1, 2, 3, 'test again']}), end='')
     {"test":[1,2,3,"test again"]}
     '''
     if isinstance(obj, str):
         logging.debug('object passed as string: %s', obj)
-        obj = json.loads(obj)
+        try:
+            obj = json.loads(obj)
+        except ValueError:
+            logging.debug('%r does not represent a valid Python object', obj)
+            return obj
     logging.debug('object being canonicalized: %s', obj)
     result = json.dumps(
         obj,
