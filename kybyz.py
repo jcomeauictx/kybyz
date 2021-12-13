@@ -75,7 +75,7 @@ def serve(env=None, start_response=None):
     posts = ''.join(['<div>%s</div>' % post for post in loadposts()])
     posts_hash = md5(posts.encode()).hexdigest()
     posts = POSTS.format(posts=posts, posts_hash=posts_hash)
-    navigation = NAVIGATION.format(navigation=''.join(['&nbsp;']))
+    navigation = NAVIGATION.format(navigation=''.join(['<h3>Navigation</h3>']))
 
     # make helper functions for dispatcher
     def update():
@@ -295,10 +295,9 @@ def commandloop():
     while args[0:1] != ['quit']:
         try:
             print(process(args))
-        except EXPECTED_ERRORS as problem:
-            logging.exception(problem)
-        try:
             args = shlex.split(input('kbz> '))
+        except EXPECTED_ERRORS:
+            logging.exception('Command failed, please try again')
         except EOFError:
             break
     logging.warning('input loop terminated')
