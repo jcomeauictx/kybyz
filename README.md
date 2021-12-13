@@ -17,7 +17,7 @@ a better chance of working correctly. I don't test the installation often.
 1. Login as root
 2. `apt update`
 3. `apt upgrade`
-4. `apt install firefox-esr python3 pylint3 gpg git xauth make uwsgi-plugin-python3`
+4. `apt install chromium pylint3 gpg git xauth make uwsgi-plugin-python3`
 6. `adduser tester`
 7. `usermod -a -G sudo tester`
 8. `mkdir ~tester/.ssh`
