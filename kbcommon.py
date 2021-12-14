@@ -8,7 +8,7 @@ from collections import defaultdict, deque
 CACHED = defaultdict(str, {'uptime': None})
 HOME = os.path.expanduser('~')
 CACHE = os.path.join(HOME, '.kybyz')
-KYBYZ_HOME = os.path.join(CACHE, 'home')
+KYBYZ_HOME = os.path.realpath(os.path.join(CACHE, 'home'))
 BASE_LOG_FORMAT = '%(levelname)s:%(name)s:%(message)s'
 EXTENDED_LOG_FORMAT = '%(asctime)s:%(threadName)s:' + BASE_LOG_FORMAT
 LOG_TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
