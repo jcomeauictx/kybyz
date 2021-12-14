@@ -73,7 +73,7 @@ class PostAttribute():
                 return self.values.match(value)
             except TypeError as error:
                 raise PostValidationError(
-                    '%r is wrong type for pattern match' % value
+                    '%r is wrong type for pattern match %s' % (value, self)
                 ) from error
 
         def validate_none(value):  # pylint: disable=unused-argument
@@ -262,12 +262,12 @@ class BasePost():
         output contents as JSON
         '''
         if for_hashing:
-            dictionary = dict((value.hashvalue() for value in
+            dictionary = dict((value.hashvalue(self) for value in
                                self.versions[self.version].values()))
             del dictionary[None]  # clears out last of values not to be hashed
         else:
-            dictionary = {key: getattr(self, key, None) for key in dir(self)
-                          if not key.startswith('__')}
+            dictionary = self.__dict__
+            logging.warning('dictionary: %s', dictionary)
         return canonicalize(dictionary)
 
 class Post(BasePost):

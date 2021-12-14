@@ -327,3 +327,5 @@ elif COMMAND == 'uwsgi':
     uwsgi_init()
 elif 'doctest' in COMMAND:
     init()
+else:  # e.g. `from kybyz import *` from Python commandline
+    init()

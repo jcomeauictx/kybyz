@@ -151,12 +151,12 @@ def kbhash(message):
     return base58 of sha256 hash of message, with prefix 'kbz'
 
     >>> kbhash({'test': 0})
-    b'kbz6cd8vvJh7zja18Nju1GTuCNKqhDdFo7RCWvVbjHyqEuv'
+    'kbz6cd8vvJh7zja18Nju1GTuCNKqhDdFo7RCWvVbjHyqEuv'
     '''
     prefix = b'\x07\x88\xcc'  # when added to 32-byte string produces 'kbz'
     canonical = canonicalize(message).encode()
     hashed = sha256(canonical).digest()
-    return b58encode(prefix + hashed)
+    return b58encode(prefix + hashed).decode()
 
 def verify_key(email):
     '''
