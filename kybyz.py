@@ -205,7 +205,13 @@ def post(post_type, *args, **kwargs):
         jsonified = newpost.to_json(for_hashing=True)
         hashed = kbhash(jsonified)
         hashcached = cache('.'.join((hashed, post_type)), jsonified)
-        os.symlink(cached, os.path.splitext(hashcached)[0])
+        unadorned = os.path.splitext(hashcached)[0]
+        try:
+            os.symlink(cached, unadorned)
+        except FileExistsError:
+            logging.warning('updating post')
+            os.unlink(unadorned)
+            os.symlink(cached, unadorned)
         return hashed
     except AttributeError:
         logging.exception('Post failed')
@@ -233,6 +239,18 @@ def guess_mimetype(filename, contents):
     }
     return mimetypes.get(extension, 'text/html')
 
+def get_posts(directory):
+    '''
+    get list of posts
+
+    we use only those symlinked to by unadorned hashes
+    '''
+    filenames = [os.path.join(directory, filename)
+                 for filename in os.listdir(directory)]
+    return [os.path.realpath(filename)
+            for filename in filenames
+            if os.path.islink(filename)]
+
 def loadposts(to_html=True):
     '''
     fetch and return all posts from KYBYZ_HOME or, if empty, from EXAMPLE
@@ -244,10 +262,9 @@ def loadposts(to_html=True):
     else:
         directory = EXAMPLE
     get_post = BasePost if to_html else read
-    posts = [get_post(os.path.join(directory, filename))
-             for filename in os.listdir(directory)]
+    posts = [get_post(postfile) for postfile in get_posts(directory)]
     logging.debug('running loadposts(%s)', to_html)
-    return list(filter(None, posts))
+    return sorted(filter(None, posts), key=lambda p: p.timestamp, reverse=True)
 
 def background():
     '''
