@@ -162,6 +162,7 @@ class BasePost():
                 'author',
                 values=re.compile(r'^\w+[\w\s]*\w$')
             ),
+            'filename': PostAttribute('filename', required=False, hashed=False),
             'fingerprint': PostAttribute(
                 'fingerprint',
                 values=re.compile(r'^[0-9A-F]{16}$')),
@@ -170,6 +171,7 @@ class BasePost():
             'toptext': PostAttribute('toptext', required=''),
             'bottomtext': PostAttribute('bottomtext', required=''),
             'signed': PostAttribute('signed', required=False),
+            'timestamp': PostAttribute('timestamp', hashed=False),
             'in-reply-to': PostAttribute('in-reply-to',
                                          required=False,
                                          hashed=[],
