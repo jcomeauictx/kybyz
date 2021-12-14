@@ -223,7 +223,7 @@ def cache(path, data):
     store data in cache for later retrieval
     '''
     fullpath = os.path.realpath(os.path.join(KYBYZ_HOME, path))
-    if not fullpath.startswith(KYBYZ_HOME + os.sep):
+    if not fullpath.startswith(os.path.realpath(KYBYZ_HOME) + os.sep):
         raise ValueError('Attempt to write %s outside of app bounds' % fullpath)
     os.makedirs(os.path.dirname(fullpath), exist_ok=True)
     binary = 'b' if isinstance(data, bytes) else ''
