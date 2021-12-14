@@ -215,7 +215,7 @@ def cache(path, data):
     '''
     store data in cache for later retrieval
     '''
-    fullpath = os.path.join(CACHE, path)
+    fullpath = os.path.join(KYBYZ_HOME, path)
     os.makedirs(os.path.dirname(fullpath), exist_ok=True)
     with open(fullpath, 'w') as outfile:
         outfile.write(data)
