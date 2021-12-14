@@ -129,6 +129,7 @@ def serve(env=None, start_response=None):
             with urlopen('https://ipfs.io/' + requested) as request:
                 page = request.read()
                 headers = [('Content-type', guess_mimetype(requested, page))]
+            cache(requested, page)
         else:
             logging.warning('%s not found', requested)
             status = '404 Not Found'
@@ -221,9 +222,12 @@ def cache(path, data):
     '''
     store data in cache for later retrieval
     '''
-    fullpath = os.path.join(KYBYZ_HOME, path)
+    fullpath = os.path.realpath(os.path.join(KYBYZ_HOME, path))
+    if not fullpath.startswith(KYBYZ_HOME + os.sep):
+        raise ValueError('Attempt to write %s outside of app bounds' % fullpath)
     os.makedirs(os.path.dirname(fullpath), exist_ok=True)
-    with open(fullpath, 'w') as outfile:
+    binary = 'b' if isinstance(data, bytes) else ''
+    with open(fullpath, 'w' + binary) as outfile:
         outfile.write(data)
     return fullpath
 
