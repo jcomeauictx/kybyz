@@ -166,6 +166,7 @@ def verify_key(email):
     gpg = GPG()
     # pylint: disable=no-member
     verified = gpg.verify(gpg.sign('').data)
+    logging.debug('verified: %s', verified)
     if not verified.username.endswith('<' + email + '>'):
         raise ValueError('%s no match for GPG certificate %s' %
                          (email, verified.username))
