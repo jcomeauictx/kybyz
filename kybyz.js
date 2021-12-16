@@ -51,6 +51,6 @@ window.addEventListener("load", function(event) {
     const offset = text.data.indexOf(":") + 1;
     fixed = text.data.substring(0, offset) + fixed;
     warning.replaceChild(document.createTextNode(fixed), text);
-    window.setInterval(cka.updatePage, cka.UpdateInterval);
+    //window.setInterval(cka.updatePage, cka.UpdateInterval);
 });
 // vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
