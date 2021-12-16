@@ -9,13 +9,13 @@ com.kybyz.app.getDataName = function(string) {
 
 com.kybyz.app.updatePage = function() {
     const cka = com.kybyz.app;
-    //cka.updateCheck("kbz-posts");
+    cka.updateCheck("kbz-posts");
     cka.updateCheck("kbz-messages");
 };
 
 com.kybyz.app.updateCheck = function(elementId) {
     const cka = com.kybyz.app;
-    let xhr, contentHash;
+    let oldContent, newContent, contentHash, xhr;
     if (window.XMLHttpRequest) xhr = new XMLHttpRequest();
     else xhr = new ActiveXObject("Microsoft.XMLHTTP");
     xhr.open("POST", "/update/", true);
@@ -26,8 +26,12 @@ com.kybyz.app.updateCheck = function(elementId) {
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4 && xhr.status == 200) {
             console.log("result of updateCheck XHR:", xhr.response);
-            /* new content */
-            oldContent.replaceWith(xhr.response.body.firstChild);
+            newContent = xhr.response.body.firstChild;
+            if (newContent.getAttribute("id") == elementId)
+                oldContent.replaceWith(newContent);
+            else console.log("wrong replacement element ID " +
+                             newContent.getAttribute("id") +
+                             " for " + elementId);
         } else {
             console.log("xhr.readyState:", xhr.readyState,
                         ", xhr.status: ", xhr.status);
@@ -51,6 +55,6 @@ window.addEventListener("load", function(event) {
     const offset = text.data.indexOf(":") + 1;
     fixed = text.data.substring(0, offset) + fixed;
     warning.replaceChild(document.createTextNode(fixed), text);
-    //window.setInterval(cka.updatePage, cka.UpdateInterval);
+    window.setInterval(cka.updatePage, cka.UpdateInterval);
 });
 // vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
