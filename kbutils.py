@@ -321,11 +321,11 @@ def get_posts(directory, pattern=None, convert=None):
     '''
     pattern = re.compile(pattern or '^kbz[0-9A-Za-z]*$')
     filenames = [os.path.join(directory, filename)
-                 for filename in os.listdir(directory)]
+                 for filename in os.listdir(directory)
+                 if pattern.match(filename)]
     convert = convert or str  # or specify convert=os.path.realpath
-    return [convert(filename)
-            for filename in filenames
-            if os.path.islink(filename) and pattern.match(filename)]
+    return [convert(filename) for filename in filenames
+            if os.path.islink(filename)]
 
 def find_post(directory, suffix):
     '''
