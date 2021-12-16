@@ -2,22 +2,18 @@
 '''
 Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
-import sys, os, time, threading, cgi, shlex  # pylint: disable=multiple-imports
+import os, time, threading, cgi, shlex, re  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
-from collections import namedtuple
 from hashlib import md5
 from ircbot import IRCBot
-from kbutils import read, verify_key, kbhash
-from kbutils import send  # pylint: disable=unused-import
+from kbutils import read, verify_key, kbhash, loadposts
+from kbutils import send, publish  # pylint: disable=unused-import
 from kbcommon import CACHE, CACHED, KYBYZ_HOME, logging, MESSAGE_QUEUE, TO_PAGE
+from kbcommon import COMMAND, ARGS, REGISTRATION
 from post import BasePost
 
-COMMAND = sys.argv[0]
-ARGS = sys.argv[1:]
-logging.info('COMMAND: %s, ARGS: %s', COMMAND, ARGS)
-EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
-COMMANDS = ['post', 'register', 'send']
+COMMANDS = ['post', 'register', 'send', 'publish']
 NAVIGATION = '<div class="column" id="kbz-navigation">{navigation}</div>'
 POSTS = '''<div class="column" id="kbz-posts" data-version="{posts_hash}">
   {posts}
@@ -160,8 +156,7 @@ def registration():
         except OSError:
             logging.exception('Bad registration')
         gpgkey = verify_key(email)
-    return namedtuple('registration', ('username', 'email', 'gpgkey'))(
-        username, email, gpgkey)
+    return REGISTRATION(username, email, gpgkey)
 
 def register(username=None, email=None):
     '''
@@ -243,32 +238,19 @@ def guess_mimetype(filename, contents):
     }
     return mimetypes.get(extension, 'text/html')
 
-def get_posts(directory):
+def get_posts(directory, pattern=None, convert=None):
     '''
     get list of posts
 
     we use only those symlinked to by unadorned hashes
     '''
+    pattern = re.compile(pattern or '^kbz[0-9A-Za-z]*$')
     filenames = [os.path.join(directory, filename)
                  for filename in os.listdir(directory)]
-    return [os.path.realpath(filename)
+    convert = convert or str  # or specify convert=os.path.realpath
+    return [convert(filename)
             for filename in filenames
-            if os.path.islink(filename)]
-
-def loadposts(to_html=True):
-    '''
-    fetch and return all posts from KYBYZ_HOME or, if empty, from EXAMPLE
-
-    setting to_html to True forces conversion from JSON format to HTML
-    '''
-    if os.path.exists(KYBYZ_HOME) and get_posts(KYBYZ_HOME):
-        directory = KYBYZ_HOME
-    else:
-        directory = EXAMPLE
-    get_post = BasePost if to_html else read
-    posts = [get_post(postfile) for postfile in get_posts(directory)]
-    logging.debug('running loadposts(%s)', to_html)
-    return sorted(filter(None, posts), key=lambda p: p.timestamp, reverse=True)
+            if os.path.islink(filename) and pattern.match(filename)]
 
 def background():
     '''

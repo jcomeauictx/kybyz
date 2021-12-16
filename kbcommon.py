@@ -3,8 +3,11 @@
 common data structures needed by various parts of kybyz
 '''
 import sys, os, logging, logging.handlers  # pylint: disable=multiple-imports
-from collections import defaultdict, deque
+from collections import defaultdict, deque, namedtuple
 
+COMMAND = sys.argv[0]
+ARGS = sys.argv[1:]
+EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
 CACHED = defaultdict(str, {'uptime': None})
 HOME = os.path.expanduser('~')
 CACHE = os.path.join(HOME, '.kybyz')
@@ -23,6 +26,7 @@ LOGFILE_HANDLER.setLevel(logging.DEBUG)
 LOGFILE_HANDLER.setFormatter(logging.Formatter(EXTENDED_LOG_FORMAT))
 MESSAGE_QUEUE = deque(maxlen=1024)
 TO_PAGE = {'extra': {'to_page': True}}
+REGISTRATION = namedtuple('registration', ('username', 'email', 'gpgkey'))
 
 class DequeHandler(logging.NullHandler):
     '''
@@ -47,3 +51,4 @@ logging.basicConfig(
     format=BASE_LOG_FORMAT,
     handlers=[LOGSTREAM_HANDLER, LOGFILE_HANDLER, LOGQUEUE_HANDLER]
 )
+logging.info('COMMAND: %s, ARGS: %s', COMMAND, ARGS)

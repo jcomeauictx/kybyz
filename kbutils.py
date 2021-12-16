@@ -7,7 +7,9 @@ from datetime import datetime, timezone
 from hashlib import sha256
 from base58 import b58encode, b58decode
 from canonical_json import canonicalize
-from kbcommon import CACHED, logging
+from kbcommon import CACHE, CACHED, EXAMPLE, KYBYZ_HOME, COMMAND, ARGS, logging
+from kbcommon import REGISTRATION
+from post import BasePost
 
 def run_process(command, **kwargs):
     '''
@@ -173,6 +175,26 @@ def verify_key(email):
     gpgkey = verified.key_id
     return gpgkey
 
+def publish(post_id, publish_to='all'):
+    '''
+    send post out to network
+
+    unencrypted if to='all', otherwise encrypted to each recipient with
+    their own keys
+    '''
+    posts = find_post(KYBYZ_HOME, post_id)
+    post_count = len(posts)
+    if post_count != 1:
+        raise ValueError('No posts matching %r' % post_id if post_count == 0
+                         else 'Ambiguous suffix %r matches %s' % (
+                             posts))
+    recipients = ','.split(publish_to)
+    for recipient in recipients:
+        if recipient == 'all':
+            send('#kybyz', '-', read(posts[0]))
+        else:
+            send(recipient, recipient, read(posts[0]))
+
 def send(recipient, email, *words):
     '''
     encrypt, sign, and send a private message to recipient
@@ -207,6 +229,142 @@ def send(recipient, email, *words):
             logging.warning('setting message to "(encryption failed)"')
             encoded = '(encryption failed)'
     CACHED['ircbot'].privmsg(recipient, encoded)
+
+def registration():
+    '''
+    get and return information on user, if any
+
+    assume only one key for user's email address, for now.
+    we should probably pick the one with the latest expiration date.
+    '''
+    username = email = gpgkey = None
+    if os.path.exists(KYBYZ_HOME):
+        try:
+            symlink = os.readlink(KYBYZ_HOME)
+            username = os.path.split(symlink)[1]
+            symlink = os.readlink(symlink)
+            email = os.path.split(symlink)[1]
+        except OSError:
+            logging.exception('Bad registration')
+        gpgkey = verify_key(email)
+    return REGISTRATION(username, email, gpgkey)
+
+def register(username=None, email=None):
+    '''
+    register kybyz account
+    '''
+    current = registration()  # see what we already have, if anything
+    if username is None or email is None:
+        logging.error('Usage: %s %s USERNAME EMAIL_ADDRESS',
+                      COMMAND, ARGS[0])
+        raise ValueError('Must specify desired username and email address')
+    if any(current):
+        if (username, email) != current[:2]:
+            raise ValueError('Previously registered as %s %s' % current[:2])
+        logging.warning('Already registered as %s %s', *current[:2])
+    else:
+        verify_key(email)
+        os.makedirs(os.path.join(CACHE, email))
+        os.symlink(os.path.join(CACHE, email), os.path.join(CACHE, username))
+        os.symlink(os.path.join(CACHE, username), KYBYZ_HOME)
+        logging.info('Now registered as %s %s', username, email)
+        if CACHED.get('ircbot', None):
+            CACHED['ircbot'].nick(username)
+            CACHED['ircbot'].leave()  # rejoin to freshen CACHED['irc_id']
+            CACHED['ircbot'].join()
+        else:
+            logging.info('registering outside of running application')
+
+def post(post_type, *args, **kwargs):
+    '''
+    make a new post from the command line or from another subroutine
+    '''
+    kwargs.update({'type': post_type})
+    for arg in args:
+        logging.debug('parsing %s', arg)
+        kwargs.update(dict((arg.split('=', 1),)))
+    try:
+        newpost = BasePost(None, **kwargs)
+        jsonified = newpost.to_json()
+        post_type = newpost.type
+        hashed = kbhash(jsonified)
+        cached = cache('.'.join((hashed, post_type)), jsonified)
+        jsonified = newpost.to_json(for_hashing=True)
+        hashed = kbhash(jsonified)
+        hashcached = cache('.'.join((hashed, post_type)), jsonified)
+        unadorned = os.path.splitext(hashcached)[0]
+        try:
+            os.symlink(cached, unadorned)
+        except FileExistsError:
+            logging.warning('updating post')
+            os.unlink(unadorned)
+            os.symlink(cached, unadorned)
+        return hashed
+    except AttributeError:
+        logging.exception('Post failed')
+        return None
+
+def cache(path, data):
+    '''
+    store data in cache for later retrieval
+    '''
+    fullpath = os.path.realpath(os.path.join(KYBYZ_HOME, path))
+    if not fullpath.startswith(os.path.realpath(KYBYZ_HOME) + os.sep):
+        raise ValueError('Attempt to write %s outside of app bounds' % fullpath)
+    os.makedirs(os.path.dirname(fullpath), exist_ok=True)
+    binary = 'b' if isinstance(data, bytes) else ''
+    with open(fullpath, 'w' + binary) as outfile:
+        outfile.write(data)
+    return fullpath
+
+def guess_mimetype(filename, contents):
+    '''
+    guess and return mimetype based on name and/or contents
+    '''
+    logging.debug('filename: %s, contents: %r', filename, contents[:32])
+    extension = os.path.splitext(filename)[1]
+    mimetypes = {
+        '.jpg': 'image/jpeg',
+        '.css': 'text/css',
+    }
+    return mimetypes.get(extension, 'text/html')
+
+def get_posts(directory, pattern=None, convert=None):
+    '''
+    get list of posts
+
+    we use only those symlinked to by unadorned hashes
+    '''
+    pattern = re.compile(pattern or '^kbz[0-9A-Za-z]*$')
+    filenames = [os.path.join(directory, filename)
+                 for filename in os.listdir(directory)]
+    convert = convert or str  # or specify convert=os.path.realpath
+    return [convert(filename)
+            for filename in filenames
+            if os.path.islink(filename) and pattern.match(filename)]
+
+def find_post(directory, suffix):
+    '''
+    get list of posts matching suffix
+    '''
+    posts = get_posts(directory, '^kbz[0-9A-Za-z]*%s$' % suffix)
+    return posts
+
+def loadposts(to_html=True):
+    '''
+    fetch and return all posts from KYBYZ_HOME or, if empty, from EXAMPLE
+
+    setting to_html to True forces conversion from JSON format to HTML
+    '''
+    if os.path.exists(KYBYZ_HOME) and get_posts(KYBYZ_HOME):
+        directory = KYBYZ_HOME
+    else:
+        directory = EXAMPLE
+    get_post = BasePost if to_html else read
+    posts = [get_post(postfile) for postfile in get_posts(directory)]
+    logging.debug('running loadposts(%s)', to_html)
+    return sorted(filter(None, posts), key=lambda p: p.timestamp, reverse=True)
+
 
 def decrypt(message):
     '''
