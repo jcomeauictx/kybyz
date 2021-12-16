@@ -7,7 +7,7 @@ from hashlib import sha256
 from base58 import b58encode, b58decode
 from canonical_json import canonicalize
 from kbcommon import CACHE, CACHED, EXAMPLE, KYBYZ_HOME, COMMAND, ARGS, logging
-from kbcommon import REGISTRATION, read
+from kbcommon import REGISTRATION, read, CHANNEL
 from post import BasePost
 
 def run_process(command, **kwargs):
@@ -172,10 +172,11 @@ def publish(post_id, publish_to='all'):
         raise ValueError('No posts matching %r' % post_id if post_count == 0
                          else 'Ambiguous suffix %r matches %s' % (
                              posts))
-    recipients = ','.split(publish_to)
+    recipients = publish_to.split(',')
     for recipient in recipients:
+        logging.debug('recipient: %s', recipient)
         if recipient == 'all':
-            send('#kybyz', '-', read(posts[0]))
+            send(CHANNEL, '-', read(posts[0]))
         else:
             send(recipient, recipient, read(posts[0]))
 
@@ -189,7 +190,11 @@ def send(recipient, email, *words):
 
     use `-` instead of email to send plain text
     '''
-    text = ' '.join(words).encode()
+    if len(words) > 1 or isinstance(words[0], str):
+        text = ' '.join(words).encode()
+    else:
+        text = words[0]  # as when called by `publish`
+    logging.debug('words: %s', words)
     encoded = None
     if email != '-':
         gpg = GPG()

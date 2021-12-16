@@ -4,12 +4,11 @@ IRC communications for server discovery
 '''
 # pylint: disable=multiple-imports
 import sys, os, socket, pwd, threading, time
-from kbcommon import CACHED, logging, TO_PAGE
+from kbcommon import CACHED, logging, TO_PAGE, CHANNEL
 from kbutils import decrypt, check_username
 
 IRCSERVER = 'irc.lfnet.org'
 PORT = 6667
-CHANNEL = '#kybyz'
 BUFFERSIZE = 16 * 1024  # make it big enough to get full banner from IRC server
 CRLF = '\r\n'
 TIMEOUT = int(os.getenv('KB_DELAY') or 600)

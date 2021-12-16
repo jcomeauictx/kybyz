@@ -20,14 +20,17 @@ LOGDIR = os.getenv('KB_LOGDIR', os.path.join(HOME, 'log'))
 os.makedirs(LOGDIR, exist_ok=True)
 LOGFILE = os.path.join(os.path.join(LOGDIR, 'kybyz.log'))
 LOGSTREAM_HANDLER = logging.StreamHandler()
+# limit logging to screen when using kbz> commandline
+LOGLEVEL = logging.DEBUG if ARGS else logging.INFO
 if not os.path.split(sys.argv[0])[1].endswith(('doctest', 'doctest.py')):
-    LOGSTREAM_HANDLER.setLevel(logging.INFO)
+    LOGSTREAM_HANDLER.setLevel(LOGLEVEL)
 LOGFILE_HANDLER = logging.FileHandler(LOGFILE)
 LOGFILE_HANDLER.setLevel(logging.DEBUG)
 LOGFILE_HANDLER.setFormatter(logging.Formatter(EXTENDED_LOG_FORMAT))
 MESSAGE_QUEUE = deque(maxlen=1024)
 TO_PAGE = {'extra': {'to_page': True}}
 REGISTRATION = namedtuple('registration', ('username', 'email', 'gpgkey'))
+CHANNEL = '#kybyz'
 
 class DequeHandler(logging.NullHandler):
     '''
