@@ -9,6 +9,7 @@ com.kybyz.app.getDataName = function(string) {
 
 com.kybyz.app.updatePage = function() {
     const cka = com.kybyz.app;
+    //cka.updateCheck("kbz-posts");
     cka.updateCheck("kbz-messages");
 };
 
@@ -26,8 +27,7 @@ com.kybyz.app.updateCheck = function(elementId) {
         if (xhr.readyState == 4 && xhr.status == 200) {
             console.log("result of updateCheck XHR:", xhr.response);
             /* new content */
-            oldContent.parentNode.replaceChild(
-                xhr.response.body.firstChild, oldContent);
+            oldContent.replaceWith(xhr.response.body.firstChild);
         } else {
             console.log("xhr.readyState:", xhr.readyState,
                         ", xhr.status: ", xhr.status);
