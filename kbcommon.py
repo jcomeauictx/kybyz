@@ -4,6 +4,7 @@ common data structures needed by various parts of kybyz
 '''
 import sys, os, logging, logging.handlers  # pylint: disable=multiple-imports
 from collections import defaultdict, deque, namedtuple
+from datetime import datetime, timezone
 
 COMMAND = sys.argv[0]
 ARGS = sys.argv[1:]
@@ -52,3 +53,31 @@ logging.basicConfig(
     handlers=[LOGSTREAM_HANDLER, LOGFILE_HANDLER, LOGQUEUE_HANDLER]
 )
 logging.info('COMMAND: %s, ARGS: %s', COMMAND, ARGS)
+
+def read(filename):
+    '''
+    read and return file contents
+    '''
+    with open(filename, 'rb') as infile:
+        return infile.read()
+
+def make_timestamp():
+    '''
+    untrusted timestamp.
+
+    will need blockchain for a trusted timestamp
+    '''
+    return datetime.now(timezone.utc).isoformat()
+
+def tuplify(versionstring):
+    '''
+    convert version string to tuple of integers
+
+    >>> tuplify('0.0.1')
+    (0, 0, 1)
+    >>> max(['0.0.100', '0.0.11'])
+    '0.0.11'
+    >>> max(['0.0.100', '0.0.11'], key=tuplify)
+    '0.0.100'
+    '''
+    return tuple(int(s) for s in versionstring.split('.'))

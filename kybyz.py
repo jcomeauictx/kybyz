@@ -7,10 +7,10 @@ from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from hashlib import md5
 from ircbot import IRCBot
-from kbutils import read, verify_key, kbhash, loadposts
+from kbutils import verify_key, kbhash, loadposts
 from kbutils import send, publish  # pylint: disable=unused-import
 from kbcommon import CACHE, CACHED, KYBYZ_HOME, logging, MESSAGE_QUEUE, TO_PAGE
-from kbcommon import COMMAND, ARGS, REGISTRATION
+from kbcommon import COMMAND, ARGS, REGISTRATION, read
 from post import BasePost
 
 COMMANDS = ['post', 'register', 'send', 'publish']

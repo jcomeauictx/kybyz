@@ -3,8 +3,7 @@
 kybyz post
 '''
 import os, json, re  # pylint: disable=multiple-imports
-from kbutils import read, make_timestamp, tuplify
-from kbcommon import logging, CACHED
+from kbcommon import read, make_timestamp, tuplify, logging, CACHED
 from canonical_json import canonicalize
 
 class PostValidationError(ValueError):  # pylint: disable=too-few-public-methods

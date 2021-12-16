@@ -3,12 +3,11 @@
 Kybyz utilities
 '''
 import os, re, subprocess  # pylint: disable=multiple-imports
-from datetime import datetime, timezone
 from hashlib import sha256
 from base58 import b58encode, b58decode
 from canonical_json import canonicalize
 from kbcommon import CACHE, CACHED, EXAMPLE, KYBYZ_HOME, COMMAND, ARGS, logging
-from kbcommon import REGISTRATION
+from kbcommon import REGISTRATION, read
 from post import BasePost
 
 def run_process(command, **kwargs):
@@ -132,21 +131,6 @@ class GPG():
             logging.exception('did not find needed data in %r', combined)
             raise problem
         return run
-
-def read(filename):
-    '''
-    read and return file contents
-    '''
-    with open(filename, 'rb') as infile:
-        return infile.read()
-
-def make_timestamp():
-    '''
-    untrusted timestamp.
-
-    will need blockchain for a trusted timestamp
-    '''
-    return datetime.now(timezone.utc).isoformat()
 
 def kbhash(message):
     '''
@@ -387,19 +371,6 @@ def decrypt(message):
         logging.exception(problem)
         decrypted = type('', (), {'data': b''})
     return decrypted.data, verified
-
-def tuplify(versionstring):
-    '''
-    convert version string to tuple of integers
-
-    >>> tuplify('0.0.1')
-    (0, 0, 1)
-    >>> max(['0.0.100', '0.0.11'])
-    '0.0.11'
-    >>> max(['0.0.100', '0.0.11'], key=tuplify)
-    '0.0.100'
-    '''
-    return tuple(int(s) for s in versionstring.split('.'))
 
 def check_username(identifier):
     '''
