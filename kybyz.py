@@ -261,7 +261,7 @@ def loadposts(to_html=True):
 
     setting to_html to True forces conversion from JSON format to HTML
     '''
-    if os.path.exists(KYBYZ_HOME) and os.listdir(KYBYZ_HOME):
+    if os.path.exists(KYBYZ_HOME) and get_posts(KYBYZ_HOME):
         directory = KYBYZ_HOME
     else:
         directory = EXAMPLE
