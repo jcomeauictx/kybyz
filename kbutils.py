@@ -47,7 +47,7 @@ class GPG():
     limited to the few calls that kybyz makes
     '''
     # pylint: disable=no-self-use
-    def __init__(self):
+    def __init__(self, defaultkey=None):
         '''
         add subprocess.run replacement if it doesn't exist
         '''
@@ -58,6 +58,7 @@ class GPG():
                 subprocess.run(['ls'], capture_output=True, check=True)
             except TypeError:  # Python3.5
                 subprocess.run = run_process
+        self.defaultkey = defaultkey or registration().email
 
     def sign(self, data):
         '''
@@ -65,8 +66,11 @@ class GPG():
 
         unlike python-gnupg, return as binary data
         '''
-        run = subprocess.run(['gpg', '--sign'], input=data,
-                             capture_output=True, check=True)
+        run = subprocess.run(
+            ['gpg', '--sign', '--default-key', self.defaultkey],
+            input=data,
+            capture_output=True,
+            check=True)
         run.data = run.stdout
         return run
 
@@ -78,7 +82,7 @@ class GPG():
         for recipient in recipients:
             command.extend(['-r', recipient])
         if sign:
-            command.append('--sign')
+            command.extend(['--sign', '--default-key', self.defaultkey])
         if armor:
             command.append('--armor')
         run = subprocess.run(command, input=data,
@@ -91,7 +95,10 @@ class GPG():
         gpg decrypt data
         '''
         run = subprocess.run(
-            ['gpg', '--decrypt'], input=data, capture_output=True, check=False)
+            ['gpg', '--decrypt', '--default-key', self.defaultkey],
+            input=data,
+            capture_output=True,
+            check=False)
         run.data = run.stdout
         logging.debug('decrypt stderr: %s', run.stderr)
         output = list(filter(None, run.stderr.decode().split('\n')))
@@ -149,7 +156,7 @@ def verify_key(email):
     fetch user's GPG key and make sure it matches given email address
     '''
     gpgkey = None
-    gpg = GPG()
+    gpg = GPG(email)
     # pylint: disable=no-member
     verified = gpg.verify(gpg.sign('').data)
     logging.debug('verified: %s', verified)
@@ -197,7 +204,7 @@ def send(recipient, email, *words):
     logging.debug('words: %s', words)
     encoded = None
     if email != '-':
-        gpg = GPG()
+        gpg = GPG(email)
         logging.debug('message before encrypting: %s', text)
         encrypted = gpg.encrypt(
             text,  # pylint: disable=no-member
