@@ -40,104 +40,110 @@ def run_process(command, **kwargs):
         'stderr': stderr,
     })
 
-class GPG():
-    '''
-    drop-in replacement for python3-gnupg class
+try:
+    from gnupg import GPG
+except ImportError:
+    logging.warning('Using primitive GPG functionality')
 
-    limited to the few calls that kybyz makes
-    '''
-    # pylint: disable=no-self-use
-    def __init__(self, defaultkey=None):
+    class GPG():
         '''
-        add subprocess.run replacement if it doesn't exist
+        drop-in replacement for python3-gnupg class
+
+        limited to the few calls that kybyz makes
         '''
-        if not hasattr(subprocess, 'run'):
-            subprocess.run = run_process
-        else:
-            try:
-                subprocess.run(['ls'], capture_output=True, check=True)
-            except TypeError:  # Python3.5
+        # pylint: disable=no-self-use
+        def __init__(self, defaultkey=None):
+            '''
+            add subprocess.run replacement if it doesn't exist
+            '''
+            if not hasattr(subprocess, 'run'):
                 subprocess.run = run_process
-        self.defaultkey = defaultkey or registration().email
+            else:
+                try:
+                    subprocess.run(['ls'], capture_output=True, check=True)
+                except TypeError:  # Python3.5
+                    subprocess.run = run_process
+            self.defaultkey = defaultkey or registration().email
 
-    def sign(self, data):
-        '''
-        gpg sign given data
+        def sign(self, data):
+            '''
+            gpg sign given data
 
-        unlike python-gnupg, return as binary data
-        '''
-        run = subprocess.run(
-            ['gpg', '--sign', '--default-key', self.defaultkey],
-            input=data,
-            capture_output=True,
-            check=True)
-        run.data = run.stdout
-        return run
+            unlike python-gnupg, return as binary data
+            '''
+            run = subprocess.run(
+                ['gpg', '--sign', '--default-key', self.defaultkey],
+                input=data,
+                capture_output=True,
+                check=True)
+            run.data = run.stdout
+            return run
 
-    def encrypt(self, data, recipients, sign=True, armor=True):
-        '''
-        gpg encrypt data for recipients
-        '''
-        command = ['gpg', '--encrypt']
-        for recipient in recipients:
-            command.extend(['-r', recipient])
-        if sign:
-            command.extend(['--sign', '--default-key', self.defaultkey])
-        if armor:
-            command.append('--armor')
-        run = subprocess.run(command, input=data,
-                             capture_output=True, check=False)
-        run.data = run.stdout
-        return run
+        def encrypt(self, data, recipients, sign=True, armor=True):
+            '''
+            gpg encrypt data for recipients
+            '''
+            command = ['gpg', '--encrypt']
+            for recipient in recipients:
+                command.extend(['-r', recipient])
+            if sign:
+                command.extend(['--sign', '--default-key', self.defaultkey])
+            if armor:
+                command.append('--armor')
+            run = subprocess.run(command, input=data,
+                                 capture_output=True, check=False)
+            run.data = run.stdout
+            return run
 
-    def decrypt(self, data):
-        '''
-        gpg decrypt data
-        '''
-        run = subprocess.run(
-            ['gpg', '--decrypt', '--default-key', self.defaultkey],
-            input=data,
-            capture_output=True,
-            check=False)
-        run.data = run.stdout
-        logging.debug('decrypt stderr: %s', run.stderr)
-        output = list(filter(None, run.stderr.decode().split('\n')))
-        logging.debug('looking for username and trust_text in %s', output[-1])
-        try:
-            run.username, run.trust_text = re.compile(
-                r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
-                    output[-1]).groups()
-        except AttributeError:
-            run.username = run.trust_text = None
-        return run
+        def decrypt(self, data):
+            '''
+            gpg decrypt data
+            '''
+            run = subprocess.run(
+                ['gpg', '--decrypt', '--default-key', self.defaultkey],
+                input=data,
+                capture_output=True,
+                check=False)
+            run.data = run.stdout
+            logging.debug('decrypt stderr: %s', run.stderr)
+            output = list(filter(None, run.stderr.decode().split('\n')))
+            logging.debug('looking for username and trust_text in %s',
+                          output[-1])
+            try:
+                run.username, run.trust_text = re.compile(
+                    r'^gpg: Good signature from "([^"]+)" \[([^]]+)\]$').match(
+                        output[-1]).groups()
+            except AttributeError:
+                run.username = run.trust_text = None
+            return run
 
-    def verify(self, signed):
-        '''
-        verify signature on given signed data
-        '''
-        run = subprocess.run(['gpg', '--verify'], input=signed,
-                             capture_output=True, check=False)
-        output = run.stderr.decode().split('\n')
-        combined = ' '.join(output)
-        try:
-            run.timestamp = re.compile(
-                r'^gpg: Signature made (.*?)(?: using .*)?$').match(
-                    output[0]).groups()[0]
-            logging.debug('run.timestamp: %s', run.timestamp)
-            run.key_id = re.compile(
-                r' using RSA key (?:ID )?([0-9A-F]{8,40})\s').search(
-                    combined).groups()[0]
-            logging.debug('run.key_id: %s', run.key_id)
-            pattern = re.compile(
-                r' Good signature from "([^"]+)"(?: \[([^]]+)\])?')
-            logging.debug('pattern: %s', pattern)
-            run.username, run.trust_text = pattern.search(combined).groups()
-            logging.debug('run.username: %s, run.trust_text: %s',
-                          run.username, run.trust_text)
-        except (AttributeError, IndexError) as problem:
-            logging.exception('did not find needed data in %r', combined)
-            raise problem
-        return run
+        def verify(self, signed):
+            '''
+            verify signature on given signed data
+            '''
+            run = subprocess.run(['gpg', '--verify'], input=signed,
+                                 capture_output=True, check=False)
+            output = run.stderr.decode().split('\n')
+            combined = ' '.join(output)
+            try:
+                run.timestamp = re.compile(
+                    r'^gpg: Signature made (.*?)(?: using .*)?$').match(
+                        output[0]).groups()[0]
+                logging.debug('run.timestamp: %s', run.timestamp)
+                run.key_id = re.compile(
+                    r' using RSA key (?:ID )?([0-9A-F]{8,40})\s').search(
+                        combined).groups()[0]
+                logging.debug('run.key_id: %s', run.key_id)
+                pattern = re.compile(
+                    r' Good signature from "([^"]+)"(?: \[([^]]+)\])?')
+                logging.debug('pattern: %s', pattern)
+                run.username, run.trust_text = pattern.search(combined).groups()
+                logging.debug('run.username: %s, run.trust_text: %s',
+                              run.username, run.trust_text)
+            except (AttributeError, IndexError) as problem:
+                logging.exception('did not find needed data in %r', combined)
+                raise problem
+            return run
 
 def kbhash(message):
     '''
