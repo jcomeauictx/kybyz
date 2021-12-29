@@ -60,12 +60,15 @@ class GPG():
                 subprocess.run = run_process
         self.defaultkey = defaultkey or registration().email
 
-    def sign(self, data):
+    def sign(self, data, keyid=None):
         '''
         gpg sign given data
 
         unlike python-gnupg, return as binary data
+
+        NOTE: side effect: sets self.defaultkey if it wasn't set by constructor
         '''
+        self.defaultkey = self.defaultkey or keyid
         run = subprocess.run(
             ['gpg', '--sign', '--default-key', self.defaultkey],
             input=data,
@@ -158,7 +161,7 @@ def verify_key(email):
     gpgkey = None
     gpg = GPG(email)
     # pylint: disable=no-member
-    verified = gpg.verify(gpg.sign('').data)
+    verified = gpg.verify(gpg.sign('', keyid=email).data)
     logging.debug('verified: %s', verified)
     if not verified.username.endswith('<' + email + '>'):
         raise ValueError('%s no match for GPG certificate %s' %
