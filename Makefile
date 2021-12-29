@@ -32,3 +32,5 @@ $(PYLINT): $(HOME)/bin
 	which $@ || sudo ln -sf $$(which pylint) /usr/bin/$@
 env:
 	$@
+edit: k*.py
+	vi $+
