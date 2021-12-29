@@ -49,10 +49,11 @@ except ImportError:
         '''
         drop-in replacement for python3-gnupg class
 
-        limited to the few calls that kybyz makes
+        limited to the few calls that kybyz makes,
+        and only for English language, among other limitations.
         '''
         # pylint: disable=no-self-use
-        def __init__(self, defaultkey=None):
+        def __init__(self, options=None):
             '''
             add subprocess.run replacement if it doesn't exist
             '''
@@ -63,7 +64,15 @@ except ImportError:
                     subprocess.run(['ls'], capture_output=True, check=True)
                 except TypeError:  # Python3.5
                     subprocess.run = run_process
-            self.defaultkey = defaultkey or registration().email
+            options = options or []
+            self.defaultkey = None
+            for option in options:
+                parts = option.split()
+                if parts[0] == '--default-key':
+                    # python-gnupg requires hexadecimal
+                    # however, the binary isn't as picky and accepts
+                    # email address, or any part of the name
+                    self.defaultkey = parts[1]
 
         def sign(self, data):
             '''
@@ -71,8 +80,11 @@ except ImportError:
 
             unlike python-gnupg, return as binary data
             '''
+            command = ['gpg', '--sign']
+            if self.defaultkey:
+                command.extend(['--default-key', self.defaultkey])
             run = subprocess.run(
-                ['gpg', '--sign', '--default-key', self.defaultkey],
+                command,
                 input=data,
                 capture_output=True,
                 check=True)
@@ -84,10 +96,12 @@ except ImportError:
             gpg encrypt data for recipients
             '''
             command = ['gpg', '--encrypt']
+            if self.defaultkey:
+                command.extend(['--defaultkey', self.defaultkey])
             for recipient in recipients:
                 command.extend(['-r', recipient])
             if sign:
-                command.extend(['--sign', '--default-key', self.defaultkey])
+                command.append('--sign')
             if armor:
                 command.append('--armor')
             run = subprocess.run(command, input=data,
@@ -99,8 +113,11 @@ except ImportError:
             '''
             gpg decrypt data
             '''
+            command = ['gpg', '--decrypt']
+            if self.defaultkey:
+                command.extend(['--default-key', self.defaultkey])
             run = subprocess.run(
-                ['gpg', '--decrypt', '--default-key', self.defaultkey],
+                command,
                 input=data,
                 capture_output=True,
                 check=False)
@@ -162,7 +179,7 @@ def verify_key(email):
     fetch user's GPG key and make sure it matches given email address
     '''
     gpgkey = None
-    gpg = GPG(email)
+    gpg = GPG()
     # pylint: disable=no-member
     verified = gpg.verify(gpg.sign('').data)
     logging.debug('verified: %s', verified)
@@ -210,7 +227,7 @@ def send(recipient, email, *words):
     logging.debug('words: %s', words)
     encoded = None
     if email != '-':
-        gpg = GPG(email)
+        gpg = GPG()
         logging.debug('message before encrypting: %s', text)
         encrypted = gpg.encrypt(
             text,  # pylint: disable=no-member
