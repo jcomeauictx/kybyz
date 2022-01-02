@@ -69,12 +69,15 @@ except ImportError:
             if len(options) >= 2 and options[0] == '--default-key':
                 self.defaultkey = options[1]
 
-        def sign(self, data):
+        def sign(self, data, keyid=None):
             '''
             gpg sign given data
 
             unlike python-gnupg, return as binary data
+
+            NOTE: side effect: sets self.defaultkey if not set by constructor
             '''
+            self.defaultkey = self.defaultkey or keyid
             command = ['gpg', '--sign']
             if self.defaultkey:
                 command.extend(['--default-key', self.defaultkey])
@@ -176,7 +179,7 @@ def verify_key(email):
     gpgkey = None
     gpg = GPG()
     # pylint: disable=no-member
-    verified = gpg.verify(gpg.sign('').data)
+    verified = gpg.verify(gpg.sign('', keyid=email).data)
     logging.debug('verified: %s', verified)
     if not verified.username.endswith('<' + email + '>'):
         raise ValueError('%s no match for GPG certificate %s' %
