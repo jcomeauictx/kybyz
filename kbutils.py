@@ -66,13 +66,8 @@ except ImportError:
                     subprocess.run = run_process
             options = options or []
             self.defaultkey = None
-            for option in options:
-                parts = option.split()
-                if parts[0] == '--default-key':
-                    # python-gnupg requires hexadecimal
-                    # however, the binary isn't as picky and accepts
-                    # email address, or any part of the name
-                    self.defaultkey = parts[1]
+            if len(options) >= 2 and options[0] == '--default-key':
+                self.defaultkey = options[1]
 
         def sign(self, data):
             '''
