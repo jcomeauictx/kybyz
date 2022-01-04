@@ -89,28 +89,30 @@ except ImportError:
             run.data = run.stdout
             return run
 
-        def encrypt(self, data, recipients, sign=True, armor=True):
+        def encrypt(self, data, recipients, **kwargs):
             '''
             gpg encrypt data for recipients
             '''
+            self.defaultkey = self.defaultkey or kwargs.get('keyid', None)
             command = ['gpg', '--encrypt']
             if self.defaultkey:
                 command.extend(['--defaultkey', self.defaultkey])
             for recipient in recipients:
                 command.extend(['-r', recipient])
-            if sign:
+            if kwargs.get('sign', None):
                 command.append('--sign')
-            if armor:
+            if kwargs.get('armor', None):
                 command.append('--armor')
             run = subprocess.run(command, input=data,
                                  capture_output=True, check=False)
             run.data = run.stdout
             return run
 
-        def decrypt(self, data):
+        def decrypt(self, data, keyid=None):
             '''
             gpg decrypt data
             '''
+            self.defaultkey = self.defaultkey or keyid
             command = ['gpg', '--decrypt']
             if self.defaultkey:
                 command.extend(['--default-key', self.defaultkey])
