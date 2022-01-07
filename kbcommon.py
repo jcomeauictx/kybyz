@@ -2,7 +2,7 @@
 '''
 common data structures needed by various parts of kybyz
 '''
-import sys, os, logging, logging.handlers  # pylint: disable=multiple-imports
+import sys, os, logging, re  # pylint: disable=multiple-imports
 from collections import defaultdict, deque, namedtuple
 from datetime import datetime, timezone
 
@@ -28,6 +28,7 @@ LOGFILE_HANDLER = logging.FileHandler(LOGFILE)
 LOGFILE_HANDLER.setLevel(logging.DEBUG)
 LOGFILE_HANDLER.setFormatter(logging.Formatter(EXTENDED_LOG_FORMAT))
 MESSAGE_QUEUE = deque(maxlen=1024)
+POSTS_QUEUE = deque(maxlen=1024)
 TO_PAGE = {'extra': {'to_page': True}}
 REGISTRATION = namedtuple('registration', ('username', 'email', 'gpgkey'))
 CHANNEL = '#kybyz'
@@ -41,11 +42,14 @@ class DequeHandler(logging.NullHandler):
     '''
     def handle(self, record):
         if hasattr(record, 'to_page') and record.to_page:
-            MESSAGE_QUEUE.append(':'.join([
-                record.name,
-                record.levelname,
-                record.msg % record.args
-            ]))
+            if re.compile('^{[^{}]+}$').match(record.msg):
+                POSTS_QUEUE.append(record.msg)
+            else:
+                MESSAGE_QUEUE.append(':'.join([
+                    record.name,
+                    record.levelname,
+                    record.msg % record.args
+                ]))
 
 LOGQUEUE_HANDLER = DequeHandler()
 LOGQUEUE_HANDLER.setLevel(logging.INFO)
