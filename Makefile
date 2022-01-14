@@ -1,14 +1,29 @@
 # set shell to Bash to allow use of bashisms in recipes
-SHELL := /bin/bash
+SHELL := /bin/bash -x
 SOURCES ?= $(wildcard *.py)
-PYTHON ?= python3
-PYLINT ?= pylint3
+INSTALLER ?= $(shell command -v yum || command -v apt-get || command -v echo)
+REQUIRED := chromium gpg git xauth
+PKG_REQUIRED := uwsgi-plugin-python3 python3-gnupg pylint3
+PIP_REQUIRED := uwsgi python-gnupg pylint
+USER_BIN ?= $(HOME)/.local/bin
+USER_LOG ?= $(HOME)/.local/log
+PY_VER := $(shell python -c "import sys; print(sys.version_info[0])")
+ifeq ($(PY_VER),3)
+ PYTHON ?= python
+ PYLINT ?= pylint
+ PIP ?= pip
+else
+ PYTHON ?= python3
+ PYLINT ?= pylint3
+ PIP ?= pip3
+ REQUIRED += PKG_REQUIRED
+endif
 # set KB_DELAY to smaller number for more frequent progress logging
 KB_DELAY = 600
 # set KB_LOGDIR to desired path
 # it will be created by kbcommon.py at startup
-KB_LOGDIR = $(HOME)/log
-PATH := $(HOME)/bin:$(PATH)
+KB_LOGDIR = $(USER_LOG)
+PATH := $(USER_BIN):$(PATH)
 export
 all: doctests lint uwsgi
 %.doctest: %.py
@@ -17,19 +32,29 @@ doctests: $(SOURCES:.py=.doctest)
 %.lint: %.py $(PYLINT)
 	$(PYLINT) $<
 lint: $(SOURCES:.py=.lint)
+install:  # run first as root, then as user
+	if [ -w / ]; then \
+	 $(INSTALLER) update; \
+	 command -v python3 || command -v python || \
+	 $(INSTALLER) install python3 || $(INSTALLER) install python; \
+	 command -v pip3 || command -v pip || \
+	 $(INSTALLER) install python3-pip || $(INSTALLER) install python-pip; \
+	 $(INSTALLER) install $(REQUIRED); \
+	else \
+	 for package in $(PIP_REQUIRED); do \
+	  command -v $$package || \
+	  $(PYTHON) -c "import $${package##python-}" || \
+	  $(PIP) install $$package; \
+	 done; \
+	fi  
 uwsgi: kybyz.ini
 	#strace -f -v -t -s4096 -o /tmp/kybyz_strace.log uwsgi $<
 	uwsgi $<
-$(HOME)/bin:
+$(USER_BIN):
 	mkdir -p $@
-$(PYLINT): $(HOME)/bin
-	which $@ || sudo apt-get install $@
-	# for Debian Bullseye, no more pylint3
-	which $@ || which pylint # fails if no pylint either
-	which $@ || ln -sf $$(which pylint) $(HOME)/bin/$@
-	# progressively worse (more global) locations
-	which $@ || sudo ln -sf $$(which pylint) /usr/local/bin/$@
-	which $@ || sudo ln -sf $$(which pylint) /usr/bin/$@
+$(PYLINT): $(USER_BIN)
+	# assuming either pylint3 or pylint available
+	ln -s $$(command -v pylint3 || command -v pylint) $</$@
 env:
 	$@
 edit: k*.py

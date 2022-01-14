@@ -17,10 +17,10 @@ a better chance of working correctly. I don't test the installation often.
 1. Login as root
 2. `apt update`
 3. `apt upgrade`
-4. `apt install chromium pylint3 gpg git xauth make uwsgi-plugin-python3`
-6. `adduser tester`
-7. `usermod -a -G sudo tester`
-8. `mkdir ~tester/.ssh`
+4. `apt install make`
+5. `adduser tester`
+6. `usermod -a -G sudo tester`  # will be `sudoers` on some systems
+7. `mkdir ~tester/.ssh`
 9. `cp ~/.ssh/authorized_keys ~tester/.ssh/`
 10. `chown -R tester.tester ~tester/.ssh`
 
@@ -32,20 +32,21 @@ That's all as root; you should now login as a regular user
 4. `cd src`
 5. `git clone https://github.com/jcomeauictx/kybyz`
 6. `cd kybyz`
-7. `./kybyz.py register myusername myemail@example.com`
-8. `make`; Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear. **If pylint fails**, you can still test the app using `make PYLINT=echo`
-9. Wait for the `kbz>` prompt
-10. `send myusername myemail@example.com this is a private message`
-11. Watch the log messages and make sure it was sent and received correctly.
-12. Send to another user. First you'll need to import their public GPG key.
-13. Login to Facebook and visit <https://www.facebook.com/jcomeauictx/about_contact_and_basic_info>. Copy my PGP key.
-14. ^C out of kybyz on the droplet, and at the command line: `cat > /tmp/jc.key`.
-15. Paste the key by clicking the middle mouse button (or both left and right if there is no middle).
-16. ^D to get back to the command line.
-17. `gpg --import /tmp/jc.key`
-18. `gpg --sign-key jc@unternet.net`
-19. `make`
-20. At the `kbz>` prompt: `send jcomeauictx jc@unternet.net hey this is Joe`
+7. `sudo make install && make install`
+8. `./kybyz.py register myusername myemail@example.com`
+9. `make`; Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear. **If pylint fails**, you can still test the app using `make PYLINT=echo`
+10. Wait for the `kbz>` prompt
+11. `send myusername myemail@example.com this is a private message`
+12. Watch the log messages and make sure it was sent and received correctly.
+13. Send to another user. First you'll need to import their public GPG key.
+14. Login to Facebook and visit <https://www.facebook.com/jcomeauictx/about_contact_and_basic_info>. Copy my PGP key.
+15. ^C out of kybyz on the droplet, and at the command line: `cat > /tmp/jc.key`.
+16. Paste the key by clicking the middle mouse button (or both left and right if there is no middle).
+17. ^D to get back to the command line.
+18. `gpg --import /tmp/jc.key`
+19. `gpg --sign-key jc@unternet.net`
+20. `make`
+21. At the `kbz>` prompt: `send jcomeauictx jc@unternet.net hey this is Joe`
 
 I'll be able to read your message, but won't be able to verify who it's from
 unless I have imported *your* key.
