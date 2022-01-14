@@ -1,5 +1,6 @@
 # set shell to Bash to allow use of bashisms in recipes
-SHELL := /bin/bash -x
+# `make SHELL='/bin/bash -x'` to debug Makefile
+SHELL := /bin/bash
 SOURCES ?= $(wildcard *.py)
 INSTALLER ?= $(shell command -v yum || command -v apt-get || command -v echo)
 REQUIRED := chromium gpg git xauth
@@ -25,11 +26,11 @@ KB_DELAY = 600
 KB_LOGDIR = $(USER_LOG)
 PATH := $(USER_BIN):$(PATH)
 export
-all: doctests lint uwsgi
+all: $(PYLINT) doctests lint uwsgi
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
 doctests: $(SOURCES:.py=.doctest)
-%.lint: %.py $(PYLINT)
+%.lint: %.py
 	$(PYLINT) $<
 lint: $(SOURCES:.py=.lint)
 install:  # run first as root, then as user
@@ -54,6 +55,7 @@ $(USER_BIN):
 	mkdir -p $@
 $(PYLINT): $(USER_BIN)
 	# assuming either pylint3 or pylint available
+	command -v $(PYLINT) || \
 	ln -s $$(command -v pylint3 || command -v pylint) $</$@
 env:
 	$@
