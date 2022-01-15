@@ -17,7 +17,7 @@ else
  PYTHON ?= python3
  PYLINT ?= pylint3
  PIP ?= pip3
- REQUIRED += PKG_REQUIRED
+ REQUIRED += $(PKG_REQUIRED)
 endif
 # set KB_DELAY to smaller number for more frequent progress logging
 KB_DELAY = 600
