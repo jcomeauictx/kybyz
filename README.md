@@ -34,7 +34,7 @@ That's all as root; you should now login as a regular user
 8. `./kybyz.py register $KB_USERNAME $KB_EMAIL`
 9. `make` \# Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear. **If pylint fails**, you can still test the app using `make PYLINT=echo`
 10. \# Wait for the `kbz>` prompt
-11. \# `send $KB_USERNAME $KB_EMAIL this is a private message`
+11. \# `send myusername myemail@example.com this is a private message` \# remember to use your actual kybyz username and email
 12. \# Watch the log messages and make sure it was sent and received correctly.
 13. \# Send to another user. First you'll need to import their public GPG key.
 14. \# Login to Facebook and visit <https://www.facebook.com/jcomeauictx/about_contact_and_basic_info>. Copy my PGP key.
