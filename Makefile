@@ -45,7 +45,7 @@ install:  # run first as root, then as user
 	 for package in $(PIP_REQUIRED); do \
 	  command -v $$package || \
 	  $(PYTHON) -c "import $${package##python-}" || \
-	  $(PIP) install $$package; \
+	  $(PIP) install --user $$package; \
 	 done; \
 	fi  
 uwsgi: kybyz.ini
