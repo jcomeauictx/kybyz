@@ -11,9 +11,9 @@ as the README. You will be missing the latest functionality, but the steps have
 a better chance of working correctly. I don't test the installation often.
 
 1. Login as root
-2. `apt update`
+2. `apt update`  \# for CentOS, use `yum`
 3. `apt upgrade`
-4. `apt install make git xauth`
+4. `apt install make git xauth`  \# for CentOS, add `gcc`, `firefox`, and `python3-devel`
 5. `adduser tester`
 6. `usermod -a -G sudo tester`  \# will be `sudoers` on some systems
 7. `mkdir ~tester/.ssh`
@@ -29,7 +29,7 @@ That's all as root; you should now login as a regular user
 5. `cd src`
 6. `git clone https://github.com/jcomeauictx/kybyz`
 7. `cd kybyz`
-8. `sudo make install && make install`
+8. `sudo make install && make install`  \# on CentOs, `sudo make install` will fail and you'll need to `make install` separately.
 9. `./kybyz.py register $KB_USERNAME $KB_EMAIL`
 10. `make` \# Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear. **If pylint fails**, you can still test the app using `make PYLINT=echo`
 11. \# Wait for the `kbz>` prompt
