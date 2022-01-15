@@ -3,7 +3,7 @@
 SHELL := /bin/bash
 SOURCES ?= $(wildcard *.py)
 INSTALLER ?= $(shell command -v yum || command -v apt-get || command -v echo)
-REQUIRED := chromium gpg git xauth
+REQUIRED := chromium gpg
 PKG_REQUIRED := uwsgi-plugin-python3 python3-gnupg pylint3
 PIP_REQUIRED := uwsgi python-gnupg pylint
 USER_BIN ?= $(HOME)/.local/bin
