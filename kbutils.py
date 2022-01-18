@@ -7,7 +7,7 @@ from hashlib import sha256
 from base58 import b58encode, b58decode
 from canonical_json import canonicalize
 from kbcommon import CACHE, CACHED, EXAMPLE, KYBYZ_HOME, COMMAND, ARGS, logging
-from kbcommon import REGISTRATION, read, CHANNEL
+from kbcommon import REGISTRATION, read, CHANNEL, POSTS_QUEUE
 from post import BasePost
 
 try:
@@ -49,7 +49,7 @@ def publish(post_id, publish_to='all'):
     unencrypted if to='all', otherwise encrypted to each recipient with
     their own keys
     '''
-    posts = find_post(KYBYZ_HOME, post_id)
+    posts = find_posts(KYBYZ_HOME, post_id)
     post_count = len(posts)
     if post_count != 1:
         raise ValueError('No posts matching %r' % post_id if post_count == 0
@@ -147,7 +147,7 @@ def register(username=None, email=None):
         else:
             logging.info('registering outside of running application')
 
-def post(post_type, *args, **kwargs):
+def post(post_type, *args, returned='hashed', **kwargs):
     '''
     make a new post from the command line or from another subroutine
     '''
@@ -168,10 +168,14 @@ def post(post_type, *args, **kwargs):
         try:
             os.symlink(cached, unadorned)
         except FileExistsError:
-            logging.warning('updating post')
-            os.unlink(unadorned)
-            os.symlink(cached, unadorned)
-        return hashed
+            existing = os.readlink(unadorned)
+            if existing != cached:
+                logging.warning('updating post %s to %s', unadorned, cached)
+                os.unlink(unadorned)
+                os.symlink(cached, unadorned)
+            else:
+                logging.debug('%s already symlinked to %s', unadorned, cached)
+        return hashed if returned == 'hashed' else newpost
     except AttributeError:
         logging.exception('Post failed')
         return None
@@ -185,8 +189,16 @@ def cache(path, data):
         raise ValueError('Attempt to write %s outside of app bounds' % fullpath)
     os.makedirs(os.path.dirname(fullpath), exist_ok=True)
     binary = 'b' if isinstance(data, bytes) else ''
-    with open(fullpath, 'w' + binary) as outfile:
-        outfile.write(data)
+    try:
+        with open(fullpath, 'x' + binary) as outfile:
+            outfile.write(data)
+    except FileExistsError:
+        existing = read(fullpath)
+        if data != existing:
+            logging.error('Failed to update %s from %r to %r', fullpath,
+                          existing, data)
+        else:
+            logging.debug('% already cached', fullpath)
     return fullpath
 
 def guess_mimetype(filename, contents):
@@ -215,7 +227,7 @@ def get_posts(directory, pattern=None, convert=None):
     return [convert(filename) for filename in filenames
             if os.path.islink(filename)]
 
-def find_post(directory, suffix):
+def find_posts(directory, suffix):
     '''
     get list of posts matching suffix
     '''
@@ -228,15 +240,19 @@ def loadposts(to_html=True):
 
     setting to_html to True forces conversion from JSON format to HTML
     '''
+    logging.debug('running loadposts(%s)', to_html)
     if os.path.exists(KYBYZ_HOME) and get_posts(KYBYZ_HOME):
         directory = KYBYZ_HOME
+        save = lambda p: p
     else:
         directory = EXAMPLE
+        save = lambda p: post(p, returned='post')
     get_post = BasePost if to_html else read
-    posts = [get_post(postfile) for postfile in get_posts(directory)]
-    logging.debug('running loadposts(%s)', to_html)
+    posts = [save(get_post(p)) for p in get_posts(directory)]
+    # now any that came in over the wire
+    save = lambda p: post(p, returned='post')
+    posts.extend([save(POSTS_QUEUE.popleft()) for p in list(POSTS_QUEUE)])
     return sorted(filter(None, posts), key=lambda p: p.timestamp, reverse=True)
-
 
 def decrypt(message):
     '''
