@@ -7,11 +7,11 @@ from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from hashlib import md5
 from ircbot import IRCBot
-from kbutils import verify_key, kbhash, loadposts
-from kbutils import send, publish  # pylint: disable=unused-import
-from kbcommon import CACHE, CACHED, KYBYZ_HOME, logging, MESSAGE_QUEUE, TO_PAGE
-from kbcommon import COMMAND, ARGS, REGISTRATION, read
-from post import BasePost
+from kbutils import loadposts, registration, cache
+from kbutils import send, publish, post  # pylint: disable=unused-import
+from kbutils import register  # pylint: disable=unused-import
+from kbcommon import CACHE, CACHED, logging, MESSAGE_QUEUE, TO_PAGE
+from kbcommon import COMMAND, ARGS, read
 
 COMMANDS = ['post', 'register', 'send', 'publish']
 NAVIGATION = '<div class="column" id="kbz-navigation">{navigation}</div>'
@@ -138,93 +138,6 @@ def serve(env=None, start_response=None):
     logging.warning('serve: failing with env=%s and start_response=%s',
                     env, start_response)
     return [b'']
-
-def registration():
-    '''
-    get and return information on user, if any
-
-    assume only one key for user's email address, for now.
-    we should probably pick the one with the latest expiration date.
-    '''
-    username = email = gpgkey = None
-    if os.path.exists(KYBYZ_HOME):
-        try:
-            symlink = os.readlink(KYBYZ_HOME)
-            username = os.path.split(symlink)[1]
-            symlink = os.readlink(symlink)
-            email = os.path.split(symlink)[1]
-        except OSError:
-            logging.exception('Bad registration')
-        gpgkey = verify_key(email)
-    return REGISTRATION(username, email, gpgkey)
-
-def register(username=None, email=None):
-    '''
-    register kybyz account
-    '''
-    current = registration()  # see what we already have, if anything
-    if username is None or email is None:
-        logging.error('Usage: %s %s USERNAME EMAIL_ADDRESS',
-                      COMMAND, ARGS[0])
-        raise ValueError('Must specify desired username and email address')
-    if any(current):
-        if (username, email) != current[:2]:
-            raise ValueError('Previously registered as %s %s' % current[:2])
-        logging.warning('Already registered as %s %s', *current[:2])
-    else:
-        verify_key(email)
-        os.makedirs(os.path.join(CACHE, email))
-        os.symlink(os.path.join(CACHE, email), os.path.join(CACHE, username))
-        os.symlink(os.path.join(CACHE, username), KYBYZ_HOME)
-        logging.info('Now registered as %s %s', username, email)
-        if CACHED.get('ircbot', None):
-            CACHED['ircbot'].nick(username)
-            CACHED['ircbot'].leave()  # rejoin to freshen CACHED['irc_id']
-            CACHED['ircbot'].join()
-        else:
-            logging.info('registering outside of running application')
-
-def post(post_type, *args, **kwargs):
-    '''
-    make a new post from the command line or from another subroutine
-    '''
-    kwargs.update({'type': post_type})
-    for arg in args:
-        logging.debug('parsing %s', arg)
-        kwargs.update(dict((arg.split('=', 1),)))
-    try:
-        newpost = BasePost(None, **kwargs)
-        jsonified = newpost.to_json()
-        post_type = newpost.type
-        hashed = kbhash(jsonified)
-        cached = cache('.'.join((hashed, post_type)), jsonified)
-        jsonified = newpost.to_json(for_hashing=True)
-        hashed = kbhash(jsonified)
-        hashcached = cache('.'.join((hashed, post_type)), jsonified)
-        unadorned = os.path.splitext(hashcached)[0]
-        try:
-            os.symlink(cached, unadorned)
-        except FileExistsError:
-            logging.warning('updating post')
-            os.unlink(unadorned)
-            os.symlink(cached, unadorned)
-        return hashed
-    except AttributeError:
-        logging.exception('Post failed')
-        return None
-
-def cache(path, data):
-    '''
-    store data in cache for later retrieval
-    '''
-    fullpath = os.path.realpath(os.path.join(KYBYZ_HOME, path))
-    if not fullpath.startswith(os.path.realpath(KYBYZ_HOME) + os.sep):
-        raise ValueError('Attempt to write %s outside of app bounds' % fullpath)
-    os.makedirs(os.path.dirname(fullpath), exist_ok=True)
-    binary = 'b' if isinstance(data, bytes) else ''
-    with open(fullpath, 'w' + binary) as outfile:
-        outfile.write(data)
-    return fullpath
 
 def guess_mimetype(filename, contents):
     '''
