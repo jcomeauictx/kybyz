@@ -4,7 +4,7 @@ IRC communications for server discovery
 '''
 # pylint: disable=multiple-imports
 import sys, os, socket, pwd, threading, time
-from kbcommon import CACHED, logging, TO_PAGE, CHANNEL
+from kbcommon import CACHED, logging, TO_PAGE, CHANNEL, JSON, POSTS_QUEUE
 from kbutils import decrypt, check_username
 
 IRCSERVER = 'irc.lfnet.org'
@@ -174,6 +174,8 @@ class IRCBot():
                         sender,
                         text.decode().replace('<', '&lt;').replace('>', '&gt;'),
                         **TO_PAGE)
+                    if JSON.match(CACHED[sender]):
+                        POSTS_QUEUE.append(CACHED[sender])
                     CACHED[sender] = ''
                 elif len(CACHED[sender]) > MAXSIZE:
                     logging.info(

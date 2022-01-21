@@ -43,15 +43,11 @@ class DequeHandler(logging.NullHandler):
     '''
     def handle(self, record):
         if hasattr(record, 'to_page') and record.to_page:
-            match = JSON.search(record.msg)
-            if match:
-                POSTS_QUEUE.append(match.group())
-            else:
-                MESSAGE_QUEUE.append(':'.join([
-                    record.name,
-                    record.levelname,
-                    record.msg % record.args
-                ]))
+            MESSAGE_QUEUE.append(':'.join([
+                record.name,
+                record.levelname,
+                record.msg % record.args
+            ]))
 
 LOGQUEUE_HANDLER = DequeHandler()
 LOGQUEUE_HANDLER.setLevel(logging.INFO)
