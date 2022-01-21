@@ -2,7 +2,7 @@
 '''
 Kybyz utilities
 '''
-import os, re, subprocess  # pylint: disable=multiple-imports
+import os, re, subprocess, json  # pylint: disable=multiple-imports
 from hashlib import sha256
 from base58 import b58encode, b58decode
 from canonical_json import canonicalize
@@ -151,10 +151,18 @@ def post(post_type, *args, returned='hashed', **kwargs):
     '''
     make a new post from the command line or from another subroutine
     '''
-    kwargs.update({'type': post_type})
-    for arg in args:
-        logging.debug('parsing %s', arg)
-        kwargs.update(dict((arg.split('=', 1),)))
+    if post_type:
+        kwargs.update({'type': post_type})
+    if len(args) == 1 and re.compile(r'^{.*}$').match(args[0]):
+        try:
+            kwargs.update(json.loads(args[0]))
+        except json.decoder.JSONDecodeError:
+            logging.error('Post not valid JSON format: %s' % args[0])
+    else:
+        logging.debug('args %s not valid JSON, using as key-value pairs', args)
+        for arg in args:
+            logging.debug('parsing %s', arg)
+            kwargs.update(dict((arg.split('=', 1),)))
     try:
         newpost = BasePost(None, **kwargs)
         jsonified = newpost.to_json()
@@ -246,11 +254,11 @@ def loadposts(to_html=True, tries=0):
             raise ValueError('No posts found after example posts cached')
         # populate KYBYZ_HOME from EXAMPLE
         for example in get_posts(EXAMPLE):
-            post(example)
+            post(None, read(example).decode())
         return loadposts(to_html, tries=tries + 1)
     # now cache any that came in over the wire
     for index in range(len(POSTS_QUEUE)):  # pylint: disable=unused-variable
-        post(POSTS_QUEUE.popleft())
+        post(None, POSTS_QUEUE.popleft())
     get_post = BasePost if to_html else read
     posts = [get_post(p) for p in get_posts(KYBYZ_HOME)]
     return sorted(filter(None, posts), key=lambda p: p.timestamp, reverse=True)
