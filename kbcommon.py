@@ -32,6 +32,7 @@ POSTS_QUEUE = deque(maxlen=1024)
 TO_PAGE = {'extra': {'to_page': True}}
 REGISTRATION = namedtuple('registration', ('username', 'email', 'gpgkey'))
 CHANNEL = '#kybyz'
+JSON = re.compile(r'\{.*\}$')
 
 class DequeHandler(logging.NullHandler):
     '''
@@ -42,8 +43,9 @@ class DequeHandler(logging.NullHandler):
     '''
     def handle(self, record):
         if hasattr(record, 'to_page') and record.to_page:
-            if re.compile('^{[^{}]+}$').match(record.msg):
-                POSTS_QUEUE.append(record.msg)
+            match = JSON.search(record.msg)
+            if match:
+                POSTS_QUEUE.append(match.group())
             else:
                 MESSAGE_QUEUE.append(':'.join([
                     record.name,

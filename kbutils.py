@@ -7,7 +7,7 @@ from hashlib import sha256
 from base58 import b58encode, b58decode
 from canonical_json import canonicalize
 from kbcommon import CACHE, CACHED, EXAMPLE, KYBYZ_HOME, COMMAND, ARGS, logging
-from kbcommon import REGISTRATION, read, CHANNEL, POSTS_QUEUE
+from kbcommon import REGISTRATION, read, CHANNEL, POSTS_QUEUE, JSON
 from post import BasePost
 
 try:
@@ -153,7 +153,7 @@ def post(post_type, *args, returned='hashed', **kwargs):
     '''
     if post_type:
         kwargs.update({'type': post_type})
-    if len(args) == 1 and re.compile(r'^{.*}$').match(args[0]):
+    if len(args) == 1 and JSON.match(args[0]):
         try:
             kwargs.update(json.loads(args[0]))
         except json.decoder.JSONDecodeError:
