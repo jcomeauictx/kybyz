@@ -234,24 +234,25 @@ def find_posts(directory, suffix):
     posts = get_posts(directory, '^kbz[0-9A-Za-z]*%s$' % suffix)
     return posts
 
-def loadposts(to_html=True):
+def loadposts(to_html=True, tries=0):
     '''
     fetch and return all posts from KYBYZ_HOME or, if empty, from EXAMPLE
 
     setting to_html to True forces conversion from JSON format to HTML
     '''
     logging.debug('running loadposts(%s)', to_html)
-    if os.path.exists(KYBYZ_HOME) and get_posts(KYBYZ_HOME):
-        directory = KYBYZ_HOME
-        save = lambda p: p
-    else:
-        directory = EXAMPLE
-        save = lambda p: post(p, returned='post')
+    if not get_posts(KYBYZ_HOME):
+        if tries > 1:
+            raise ValueError('No posts found after example posts cached')
+        # populate KYBYZ_HOME from EXAMPLE
+        for example in get_posts(EXAMPLE):
+            post(example)
+        return loadposts(to_html, tries=tries + 1)
+    # now cache any that came in over the wire
+    for index in range(len(POSTS_QUEUE)):  # pylint: disable=unused-variable
+        post(POSTS_QUEUE.popleft())
     get_post = BasePost if to_html else read
-    posts = [save(get_post(p)) for p in get_posts(directory)]
-    # now any that came in over the wire
-    save = lambda p: post(p, returned='post')
-    posts.extend([save(POSTS_QUEUE.popleft()) for p in list(POSTS_QUEUE)])
+    posts = [get_post(p) for p in get_posts(KYBYZ_HOME)]
     return sorted(filter(None, posts), key=lambda p: p.timestamp, reverse=True)
 
 def decrypt(message):
