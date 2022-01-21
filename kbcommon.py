@@ -32,7 +32,7 @@ POSTS_QUEUE = deque(maxlen=1024)
 TO_PAGE = {'extra': {'to_page': True}}
 REGISTRATION = namedtuple('registration', ('username', 'email', 'gpgkey'))
 CHANNEL = '#kybyz'
-JSON = re.compile(r'\{.*\}$')
+JSON = re.compile(r'^\{.*\}$')
 
 class DequeHandler(logging.NullHandler):
     '''

@@ -151,8 +151,6 @@ def post(post_type, *args, returned='hashed', **kwargs):
     '''
     make a new post from the command line or from another subroutine
     '''
-    if post_type:
-        kwargs.update({'type': post_type})
     if len(args) == 1 and JSON.match(args[0]):
         try:
             kwargs.update(json.loads(args[0]))
@@ -163,6 +161,9 @@ def post(post_type, *args, returned='hashed', **kwargs):
         for arg in args:
             logging.debug('parsing %s', arg)
             kwargs.update(dict((arg.split('=', 1),)))
+    # override post_type if specified
+    if post_type:
+        kwargs.update({'type': post_type})
     try:
         newpost = BasePost(None, **kwargs)
         jsonified = newpost.to_json()

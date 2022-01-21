@@ -176,6 +176,10 @@ class IRCBot():
                         **TO_PAGE)
                     if JSON.match(CACHED[sender]):
                         POSTS_QUEUE.append(CACHED[sender])
+                        logging.debug('appended %r to POSTS_QUEUE',
+                                      CACHED[sender])
+                    else:
+                        logging.debug('Not JSON: %s', CACHED[sender])
                     CACHED[sender] = ''
                 elif len(CACHED[sender]) > MAXSIZE:
                     logging.info(
