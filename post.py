@@ -211,7 +211,6 @@ class BasePost():
         '''
         initialize instantiation from **dict
         '''
-        self.filename = filename
         if not kwargs:
             kwargs = json.loads(read(filename))
         for key in kwargs:
