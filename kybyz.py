@@ -7,7 +7,7 @@ from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from hashlib import md5
 from ircbot import IRCBot
-from kbutils import loadposts, registration, cache
+from kbutils import loadposts, registration, cache, guess_mimetype
 from kbutils import send, publish, post  # pylint: disable=unused-import
 from kbutils import register  # pylint: disable=unused-import
 from kbcommon import CACHE, CACHED, logging, MESSAGE_QUEUE, TO_PAGE
@@ -138,18 +138,6 @@ def serve(env=None, start_response=None):
     logging.warning('serve: failing with env=%s and start_response=%s',
                     env, start_response)
     return [b'']
-
-def guess_mimetype(filename, contents):
-    '''
-    guess and return mimetype based on name and/or contents
-    '''
-    logging.debug('filename: %s, contents: %r', filename, contents[:32])
-    extension = os.path.splitext(filename)[1]
-    mimetypes = {
-        '.jpg': 'image/jpeg',
-        '.css': 'text/css',
-    }
-    return mimetypes.get(extension, 'text/html')
 
 def get_posts(directory, pattern=None, convert=None):
     '''
