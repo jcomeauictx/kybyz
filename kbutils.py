@@ -186,8 +186,10 @@ def post(post_type, *args, returned='hashed', **kwargs):
                 logging.debug('%s already symlinked to %s', unadorned, cached)
         return hashed if returned == 'hashed' else newpost
     except AttributeError:
-        logging.exception('Post failed')
+        logging.exception('Post failed: attribute error')
         return None
+    except TypeError:
+        logging.exception('Post failed with kwargs: %s', kwargs)
 
 def cache(path, data):
     '''
