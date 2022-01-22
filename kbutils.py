@@ -190,6 +190,7 @@ def post(post_type, *args, returned='hashed', **kwargs):
         return None
     except TypeError:
         logging.exception('Post failed with kwargs: %s', kwargs)
+        return None
 
 def cache(path, data):
     '''
