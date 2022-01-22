@@ -161,7 +161,6 @@ class BasePost():
                 'author',
                 values=re.compile(r'^\w+[\w\s]*\w$')
             ),
-            'filename': PostAttribute('filename', required=False, hashed=False),
             'fingerprint': PostAttribute(
                 'fingerprint',
                 values=re.compile(r'^[0-9A-F]{16}$')),
@@ -184,7 +183,7 @@ class BasePost():
     def __new__(cls, filename='', **kwargs):
         mapping = {subclass.classname: subclass
                    for subclass in cls.__subclasses__()}
-        logging.debug('mapping: %s', mapping)
+        logging.debug('mapping: %s, kwargs: %s', mapping, kwargs)
         if not kwargs:
             try:
                 kwargs = json.loads(read(filename))
