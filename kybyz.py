@@ -227,7 +227,8 @@ def commandloop():
             print(process(args))
             args = shlex.split(input('kbz> '))
         except EXPECTED_ERRORS:
-            logging.exception('Command failed, please try again')
+            logging.exception('command failed, please try again')
+            args[:] = []
         except EOFError:
             break
     logging.warning('input loop terminated')
