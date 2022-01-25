@@ -110,36 +110,41 @@ def registration():
     we should probably pick the one with the latest expiration date.
     '''
     username = email = gpgkey = None
+    links = []
     if os.path.exists(KYBYZ_HOME):
         try:
-            symlink = os.readlink(KYBYZ_HOME)
-            username = os.path.split(symlink)[1]
-            symlink = os.readlink(symlink)
-            email = os.path.split(symlink)[1]
+            links.append(os.readlink(KYBYZ_HOME))
+            username = os.path.basename(links[-1])
+            links.append(os.readlink(links[-1]))
+            email = os.path.basename(links[-1])
+            links.append(os.readlink(links[-1]))
+            gpgkey = os.path.basename(links[-1])
+            logging.debug('links found: %s', links)
         except OSError:
-            logging.exception('Bad registration')
-        gpgkey = verify_key(email)
+            logging.exception('Bad registration at %s', links[-1])
     return REGISTRATION(username, email, gpgkey)
 
-def register(username=None, email=None):
+def register(username=None, email=None, gpgkey=None):
     '''
     register kybyz account
     '''
+    if gpgkey is None:
+        gpgkey = verify_key(email)
     current = registration()  # see what we already have, if anything
     if username is None or email is None:
         logging.error('Usage: %s %s USERNAME EMAIL_ADDRESS',
                       COMMAND, ARGS[0])
         raise ValueError('Must specify desired username and email address')
     if any(current):
-        if (username, email) != current[:2]:
-            raise ValueError('Previously registered as %s %s' % current[:2])
-        logging.warning('Already registered as %s %s', *current[:2])
+        if (username, email, gpgkey) != current:
+            raise ValueError('Previously registered as %s %s %s' % current)
+        logging.warning('Already registered as %s %s %s', *current)
     else:
-        verify_key(email)
-        os.makedirs(os.path.join(CACHE, email))
+        os.makedirs(os.path.join(CACHE, gpgkey))
+        os.symlink(os.path.join(CACHE, gpgkey), os.path.join(CACHE, email))
         os.symlink(os.path.join(CACHE, email), os.path.join(CACHE, username))
         os.symlink(os.path.join(CACHE, username), KYBYZ_HOME)
-        logging.info('Now registered as %s %s', username, email)
+        logging.info('Now registered as %s %s %s', username, email, gpgkey)
         if CACHED.get('ircbot', None):
             CACHED['ircbot'].nick(username)
             CACHED['ircbot'].leave()  # rejoin to freshen CACHED['irc_id']

@@ -38,6 +38,14 @@ def init():
     logging.debug('beginning kybyz initialization')
     os.makedirs(CACHE, 0o700, exist_ok=True)
     CACHED.update(registration()._asdict())
+    if not CACHED['gpgkey']:
+        username = os.getenv('KB_USERNAME', None)
+        email = os.getenv('KB_EMAIL', None)
+        if username and email:
+            register(username, email)
+            CACHED.update(registration()._asdict())
+        else:
+            logging.error('need to set envvars KB_USERNAME and KB_EMAIL')
     CACHED['uptime'] = 0
     CACHED['javascript'] = 'ERROR:javascript disabled or incompatible'
     logging.debug('CACHED: %s', CACHED)
