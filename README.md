@@ -29,21 +29,18 @@ That's all as root; you should now login as a regular user
 5. `cd src`
 6. `git clone https://github.com/jcomeauictx/kybyz`
 7. `cd kybyz`
-8. `sudo make install && make install`  \# on CentOs, `sudo make install` will fail and you'll need to `make install` separately.
-9. `./kybyz.py register $KB_USERNAME $KB_EMAIL`
+8. `cp Makefile.template Makefile`, and edit Makefile with your `KB_USERNAME` and `KB_EMAIL` values.
+9. `sudo make install && make install`  \# on CentOs, `sudo make install` will fail and you'll need to `make install` separately.
 10. `make` \# Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear. **If pylint fails**, you can still test the app using `make PYLINT=echo`
 11. \# Wait for the `kbz>` prompt
 12. \# `send myusername myemail@example.com this is a private message` \# remember to use your actual kybyz username and email
 13. \# Watch the log messages and make sure it was sent and received correctly.
 14. \# Send to another user. First you'll need to import their public GPG key.
-15. \# Login to Facebook and visit <https://www.facebook.com/jcomeauictx/about_contact_and_basic_info>. Copy my PGP key.
-16. \# ^C out of kybyz on the droplet, and at the command line: `cat > /tmp/jc.key`.
-17. \# Paste the key by clicking the middle mouse button (or both left and right if there is no middle).
-18. \# ^D to get back to the command line.
-19. \# `gpg --import /tmp/jc.key`
-20. \# `gpg --sign-key jc@unternet.net`
-21. \# `make`
-22. \# At the `kbz>` prompt: `send jcomeauictx jc@unternet.net hey this is Joe`
+15. \# ^C to get back to the command line.
+16. \# `gpg --import kybyzdotcom.pub`
+17. \# `gpg --sign-key kybyzdotcom`
+18. \# `make`
+19. \# At the `kbz>` prompt: `send kybyzdotcom kybyz@kybyz.com hey this is Joe`
 
 I'll be able to read your message, but won't be able to verify who it's from
 unless I have imported *your* key.
