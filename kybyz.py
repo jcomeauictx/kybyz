@@ -238,7 +238,5 @@ if __name__ == '__main__':
     process(args=ARGS)
 elif COMMAND == 'uwsgi':
     uwsgi_init()
-elif 'doctest' in COMMAND:
-    init()
-else:  # e.g. `from kybyz import *` from Python commandline
+elif not os.path.basename(COMMAND).endswith(('pydoc3',)):
     init()
