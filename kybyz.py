@@ -2,7 +2,8 @@
 '''
 Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
-import os, time, threading, cgi, shlex, re  # pylint: disable=multiple-imports
+import sys, os, time, threading  # pylint: disable=multiple-imports
+import cgi, shlex, re  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from hashlib import md5
@@ -202,14 +203,16 @@ def uwsgi_init():
     except AttributeError:
         logging.exception('cannot determine port')
     init()
-    # if host is not None, port must also be set
-    if host is not None and not os.getenv('WSL'):
-        logging.debug('opening browser window to %s', host)
-        webbrowser.open('http://%s' % host)
+    if not sys.stdin.isatty():
+        logging.info('running as background process, will not launch browser')
     else:
-        logging.exception('cannot open browser to %s', host)
-        logging.info("if you're running under WSL (Windows Subsystem for"
-                     " Linux), just open Windows browser to %s", host)
+        if host is not None and not os.getenv('WSL'):
+            logging.debug('opening browser window to %s', host)
+            webbrowser.open('http://%s' % host)
+        else:
+            logging.exception('cannot open browser to %s', host)
+            logging.info("if you're running under WSL (Windows Subsystem for"
+                         " Linux), just open Windows browser to %s", host)
     repl = threading.Thread(target=commandloop, name='repl')
     repl.daemon = True
     repl.start()
