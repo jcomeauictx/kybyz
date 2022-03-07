@@ -5,5 +5,5 @@
 __pycache__
 dynamicFiltering.html
 Makefile
-nginx.conf
+kybyz.conf
 kybyz.service

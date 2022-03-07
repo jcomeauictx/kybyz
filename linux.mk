@@ -64,5 +64,5 @@ edit: k*.py
 	vi $+
 kybyz.service: service.template
 	envsubst < $< > $@
-nginx.conf: nginx.conf.template
+kybyz.conf: nginx.conf.template
 	envsubst < $< > $@
