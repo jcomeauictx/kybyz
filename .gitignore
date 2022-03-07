@@ -5,3 +5,4 @@
 __pycache__
 dynamicFiltering.html
 Makefile
+nginx.conf

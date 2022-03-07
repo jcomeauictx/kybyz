@@ -1,0 +1,11 @@
+[Unit]
+Description=Kybyz monitor, specifically for kybyz.com
+
+[Service]
+User=$USER
+Group=$USER
+WorkingDirectory=$PWD
+ExecStart=make
+
+[Install]
+WantedBy=multi-user.target

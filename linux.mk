@@ -1,6 +1,7 @@
 # set shell to Bash to allow use of bashisms in recipes
 # `make SHELL='/bin/bash -x'` to debug Makefile
 SHELL := /bin/bash
+APP := $(notdir $(PWD))
 SOURCES ?= $(wildcard *.py)
 INSTALLER ?= $(shell command -v yum || command -v apt-get || command -v echo)
 REQUIRED := chromium gpg
@@ -61,3 +62,7 @@ env:
 	$@
 edit: k*.py
 	vi $+
+kybyz.service: service.template
+	envsubst < $< > $@
+nginx.conf: nginx.conf.template
+	envsubst < $< > $@
