@@ -21,11 +21,12 @@ else
  REQUIRED += $(PKG_REQUIRED)
 endif
 # set KB_DELAY to smaller number for more frequent progress logging
-KB_DELAY = 600
+KB_DELAY ?= 600
 # set KB_LOGDIR to desired path
 # it will be created by kbcommon.py at startup
-KB_LOGDIR = $(USER_LOG)
+KB_LOGDIR := $(USER_LOG)
 PATH := $(USER_BIN):$(PATH)
+KB_PORT := $(shell python3 -c "print(int('kbz', 36))  \# port 26351")
 export
 all: $(PYLINT) doctests lint uwsgi
 %.doctest: %.py
