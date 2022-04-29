@@ -98,3 +98,15 @@ previous block, and no newer than the transaction timestamp.
 
 * python3
 * gpg
+
+## notes on Android
+
+It can run under Termux. Install from f-droid, not from the App Store.
+Termux has the uwsgi package, but no plugin for Python, so
+`git clone https://github.com/jcomeauictx/uwsgi` at the Termux shell prompt,
+cd to the directory, and
+`python uwsgiconfig.py --plugin plugins/python core python3` as gleaned from
+<https://stackoverflow.com/a/38863007/493161>. Then cd back to the kybyz
+directory and symlink: `ln -s ../uwsgi/python3-plugin.so .`.
+
+Then `make PYLINT=echo`
