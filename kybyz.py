@@ -2,6 +2,7 @@
 '''
 Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
+# pylint: disable=bad-option-value, consider-using-f-string
 import sys, os, time, threading  # pylint: disable=multiple-imports
 import cgi, shlex, re  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
