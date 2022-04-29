@@ -3,6 +3,8 @@
 IRC communications for server discovery
 '''
 # pylint: disable=multiple-imports
+# the following is for newer, pip-installed pylint
+# pylint: disable=bad-option-value, consider-using-f-string
 import sys, os, socket, pwd, threading, time
 from kbcommon import CACHED, logging, TO_PAGE, CHANNEL, JSON, POSTS_QUEUE
 from kbutils import decrypt, check_username
@@ -195,6 +197,7 @@ def test(nickname=None, realname=None):
     '''
     run a bot from the command line, for testing
     '''
+    ircbot = type('IRCBot', (), {'terminate': False})()
     try:
         ircbot = IRCBot(nickname=nickname, realname=realname)
         time.sleep(TIMEOUT)
