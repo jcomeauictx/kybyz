@@ -27,7 +27,8 @@ KB_DELAY ?= 600
 KB_LOGDIR := $(USER_LOG)
 PATH := $(USER_BIN):$(PATH)
 # set fixed port of 26351 derived from base36 of 'kbz'
-KB_PORT := $(shell python3 -c "print(int('kbz', 36))")
+KB_PORT := $(shell $(PYTHON) -c "print(int('kbz', 36))")
+TMPDIR := $(shell $(PYTHON) -c "import tempfile; print(tempfile.gettempdir())")
 export
 all: $(PYLINT) doctests lint uwsgi
 %.doctest: %.py
@@ -52,7 +53,7 @@ install:  # run first as root, then as user
 	 done; \
 	fi  
 uwsgi: kybyz.ini
-	#strace -f -v -t -s4096 -o /tmp/kybyz_strace.log uwsgi $<
+	#strace -f -v -t -s4096 -o $(TMPDIR)/kybyz_strace.log uwsgi $<
 	uwsgi $<
 $(USER_BIN):
 	mkdir -p $@

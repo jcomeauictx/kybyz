@@ -3,6 +3,6 @@ server {
 	server_name kybyz.com kybytz.com www.kybyz.com www.kybytz.com;
 	charset utf-8;
 	location / {
-		uwsgi_pass unix:///tmp/kybyz.sock;
+		uwsgi_pass unix://$TMPDIR/kybyz.sock;
 	}
 }
