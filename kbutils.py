@@ -2,6 +2,7 @@
 '''
 Kybyz utilities
 '''
+# pylint: disable=bad-option-value, consider-using-f-string
 import os, re, subprocess, json  # pylint: disable=multiple-imports
 from hashlib import sha256
 from base58 import b58encode, b58decode
