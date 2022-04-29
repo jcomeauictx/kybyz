@@ -2,6 +2,7 @@
 '''
 kybyz post
 '''
+# pylint: disable=bad-option-value, consider-using-f-string
 import os, json, re  # pylint: disable=multiple-imports
 from kbcommon import read, make_timestamp, tuplify, logging, CACHED
 from canonical_json import canonicalize
