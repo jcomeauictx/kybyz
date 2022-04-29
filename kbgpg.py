@@ -23,11 +23,13 @@ def run_process(command, **kwargs):
     check = kwargs.get('check', None)
     if timeout:
         raise NotImplementedError('"timeout" not supported')
+    # pylint: disable=bad-option-value, consider-using-with
     process = subprocess.Popen(
         command,
         stdin=kwargs.get('stdin', subprocess.PIPE),
         stdout=kwargs.get('stdout', subprocess.PIPE),
         stderr=kwargs.get('stderr', subprocess.PIPE),
+        # pylint: disable=bad-option-value, consider-using-dict-items
         **{k: kwargs[k] for k in kwargs if k not in
            ['input', 'capture_output', 'timeout', 'check']}
     )
