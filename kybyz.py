@@ -4,9 +4,10 @@ Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
 # pylint: disable=bad-option-value, consider-using-f-string
 import sys, os, time, threading  # pylint: disable=multiple-imports
-import cgi, shlex, re  # pylint: disable=multiple-imports
+import cgi, shlex, re, subprocess  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
+from urllib.error import HTTPError
 from hashlib import md5
 from ircbot import IRCBot
 from kbutils import loadposts, registration, cache, guess_mimetype
@@ -132,10 +133,18 @@ def serve(env=None, start_response=None):
             CACHED['javascript'] = 'INFO:found compatible javascript engine'
             status, page = update()
         elif requested.startswith('ipfs/'):
-            with urlopen('https://ipfs.io/' + requested) as request:
-                page = request.read()
-                headers = [('Content-type', guess_mimetype(requested, page))]
-            cache(requested, page)
+            logging.debug('fetching uncached ipfs URL %s', requested)
+            try:
+                with urlopen('https://ipfs.io/' + requested) as request:
+                    page = request.read()
+                    headers = [
+                        ('Content-type', guess_mimetype(requested, page))
+                    ]
+                cache(requested, page)
+            except HTTPError as failed:
+                headers = failed.headers
+                status = ' '.join([str(failed.code), failed.msg])
+                page = b'<div>%s</div>' % status
         else:
             logging.warning('%s not found', requested)
             status = '404 Not Found'
@@ -196,7 +205,14 @@ def uwsgi_init():
     # pylint: disable=import-error, bad-option-value, import-outside-toplevel
     logging.debug('beginning kybyz uwsgi initialization')
     import uwsgi
-    import webbrowser
+    if os.getenv('ANDROID_ROOT') is None:
+        import webbrowser
+    else:
+        webbrowser = type(
+            '',
+            (),
+            {'open': lambda url: subprocess.call(['am', 'start', url])}
+        )()
     port = host = None
     try:
         port = fromfd(uwsgi.sockets[0], AF_INET, SOCK_STREAM).getsockname()[1]
