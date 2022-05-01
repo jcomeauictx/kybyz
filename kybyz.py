@@ -212,7 +212,7 @@ def uwsgi_init():
             '',
             (),
             {'open': lambda url: subprocess.call(['am', 'start', url])}
-        )()
+        )
     port = host = None
     try:
         port = fromfd(uwsgi.sockets[0], AF_INET, SOCK_STREAM).getsockname()[1]
