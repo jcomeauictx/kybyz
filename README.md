@@ -102,11 +102,17 @@ previous block, and no newer than the transaction timestamp.
 ## notes on Android
 
 It can run under Termux. Install from f-droid, not from the App Store.
-Termux has the uwsgi package, but no plugin for Python, so
-`git clone https://github.com/jcomeauictx/uwsgi` at the Termux shell prompt,
-cd to the directory, and
-`python uwsgiconfig.py --plugin plugins/python core python3` as gleaned from
-<https://stackoverflow.com/a/38863007/493161>. Then cd back to the kybyz
-directory and symlink: `ln -s ../uwsgi/python3-plugin.so .`.
+You will need to install a number of packages, including `python`, `uwsgi`,
+and many others I can't think of at the moment. And with `pip`, you will have
+to get, at least, `pylint`.
 
-Then `make PYLINT=echo`
+Termux has the uwsgi package, but no plugin for Python, so we must build one.
+
+1. `git clone https://github.com/jcomeauictx/uwsgi` at the Termux shell prompt,
+and cd to the directory
+2. Find what version of uwsgi you have; `uwsgi --version`. I had 2.0.20
+3. Check out that version into its own branch:
+   `git checkout tags/2.0.20 -bv2.0.20`
+4. `PYTHON=python3 uwsgi --build-plugin "plugins/python python3"`
+5. `cd ../kybyz`; and `ln -s ../uwsgi/python3_plugin.so .`
+6. `make`
