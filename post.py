@@ -197,6 +197,7 @@ class BasePost():
             post_type = os.path.splitext(filename)[1].lstrip('.')
         subclass = mapping.get(post_type, cls)
         try:
+            # pylint: disable=no-value-for-parameter  # (why? dunno)
             instance = super(BasePost, subclass).__new__(subclass)
             # fill in defaults from things unknown at script load time
             instance.versions['0.0.1']['author'].required = CACHED.get(
