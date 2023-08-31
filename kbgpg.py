@@ -49,7 +49,7 @@ class GPG():
     limited to the few calls that kybyz makes,
     and only for English language, among other limitations.
     '''
-    # pylint: disable=no-self-use
+    # pylint: disable=useless-option-value, no-self-use
     def __init__(self, options=None):
         '''
         add subprocess.run replacement if it doesn't exist

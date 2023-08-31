@@ -4,7 +4,7 @@ Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
 # pylint: disable=bad-option-value, consider-using-f-string
 import sys, os, time, threading  # pylint: disable=multiple-imports
-import cgi, shlex, re, subprocess  # pylint: disable=multiple-imports
+import shlex, re, subprocess  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
 from urllib.request import urlopen
 from urllib.error import HTTPError
@@ -15,6 +15,16 @@ from kbutils import send, publish, post  # pylint: disable=unused-import
 from kbutils import register  # pylint: disable=unused-import
 from kbcommon import CACHE, CACHED, logging, MESSAGE_QUEUE, TO_PAGE
 from kbcommon import COMMAND, ARGS, read
+try:
+    from cgi import FieldStorage  # pylint: disable=deprecated-module
+except ModuleNotFoundError:
+    # FIXME: this is just placeholder code  # pylint: disable=fixme
+    from urllib.parse import parse_qsl  # pylint: disable=ungrouped-imports
+    def FieldStorage(data):  # pylint: disable=invalid-name
+        '''
+        just-good-enough (?) replacement for cgi.FieldStorage
+        '''
+        return parse_qsl(data)
 
 COMMANDS = ['post', 'register', 'send', 'publish']
 NAVIGATION = '<div class="column" id="kbz-navigation">{navigation}</div>'
@@ -61,7 +71,7 @@ def serve(env=None, start_response=None):
     handle web requests
     '''
     # pylint: disable=too-many-locals, too-many-statements
-    fields = cgi.FieldStorage(fp=env.get('wsgi.input'), environ=env)
+    fields = FieldStorage(fp=env.get('wsgi.input'), environ=env)
     args = {k: fields[k].value for k in fields}
     logging.debug('args: %s', args)
     #sections = ['posts', 'messages']
