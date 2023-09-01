@@ -54,7 +54,7 @@ install:  # run first as root, then as user
 	fi  
 uwsgi: kybyz.ini
 	#strace -f -v -t -s4096 -o $(TMPDIR)/kybyz_strace.log uwsgi $<
-	uwsgi $<
+	uwsgi $< 2>&1 | tee $(TMPDIR)/kybyz_uwsgi.log
 $(USER_BIN):
 	mkdir -p $@
 $(PYLINT): $(USER_BIN)
