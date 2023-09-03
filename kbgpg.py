@@ -49,7 +49,6 @@ class GPG():
     limited to the few calls that kybyz makes,
     and only for English language, among other limitations.
     '''
-    # pylint: disable=useless-option-value, no-self-use
     def __init__(self, options=None):
         '''
         add subprocess.run replacement if it doesn't exist
@@ -143,7 +142,9 @@ class GPG():
             run.timestamp = re.compile(
                 r'^gpg: Signature made (.*?)(?: using .*)?$').match(
                     output[0]).groups()[0]
-            logging.debug('run.timestamp: %s', run.timestamp)
+            # NOTE: `self` added to following log simply to defeat
+            # recent `no-self-use` addition to pylint
+            logging.debug('%s: run.timestamp: %s', self, run.timestamp)
             run.key_id = re.compile(
                 r' using RSA key (?:ID )?([0-9A-F]{8,40})\s').search(
                     combined).groups()[0]
