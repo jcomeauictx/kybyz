@@ -21,7 +21,7 @@ os.makedirs(LOGDIR, exist_ok=True)
 LOGFILE = os.path.join(os.path.join(LOGDIR, 'kybyz.log'))
 LOGSTREAM_HANDLER = logging.StreamHandler()
 # limit logging to screen when using kbz> commandline
-LOGLEVEL = logging.DEBUG if ARGS else logging.INFO
+LOGLEVEL = logging.DEBUG if ARGS or os.getenv('KB_DEBUG') else logging.INFO
 if not os.path.split(sys.argv[0])[1].endswith(('doctest', 'doctest.py')):
     LOGSTREAM_HANDLER.setLevel(LOGLEVEL)
 LOGFILE_HANDLER = logging.FileHandler(LOGFILE)
