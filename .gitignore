@@ -7,4 +7,5 @@ dynamicFiltering.html
 Makefile
 kybyz.conf
 kybyz.service
+kybyz.torrc
 python3_plugin.so
