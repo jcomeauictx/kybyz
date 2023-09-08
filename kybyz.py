@@ -105,7 +105,7 @@ def serve(env=None, start_response=None):
             if hashed and hashed != eval(name + '_hash'):
                 update_page = eval(name).encode()
             elif hashed:
-                logging.debug('%s unchanged', args['name'])
+                logging.debug('%s unchanged', name)
                 update_page = b''
                 update_status = '304 Not Modified'
             else:
@@ -114,7 +114,7 @@ def serve(env=None, start_response=None):
                 update_status = '406 Not Acceptable'
         else:
             update_page = (
-                '<div>no updates for %s</div>' % args['name']
+                '<div>no updates for %s</div>' % name
             ).encode()
             update_status = '404 Not Found'
         return update_status, update_page
