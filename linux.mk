@@ -27,7 +27,8 @@ KB_DELAY ?= 600
 KB_LOGDIR := $(USER_LOG)
 PATH := $(USER_BIN):$(PATH)
 # set fixed port of 26351 derived from base36 of 'kbz'
-KB_PORT := $(shell $(PYTHON) -c "print(int('kbz', 36))")
+KB_WEB := $(shell $(PYTHON) -c "print(int('kbz', 36))")
+KB_COMMS := $(shell expr $(KB_WEB) + 1)
 TMPDIR := $(shell $(PYTHON) -c "import tempfile; print(tempfile.gettempdir())")
 export
 all: $(PYLINT) doctests lint uwsgi
