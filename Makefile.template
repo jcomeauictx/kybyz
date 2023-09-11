@@ -5,5 +5,9 @@ export
 
 all:
 	$(MAKE) -f linux.mk $@
+kybyz.%: .FORCE
+	$(MAKE) -f linux.mk $@
 %:
-	$(MAKE) -f linux.mk $*
+	$(MAKE) -f linux.mk $@
+.FORCE:
+	true  # so as to avoid `make -f linux.mk .FORCE`

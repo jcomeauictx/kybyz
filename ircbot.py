@@ -35,7 +35,7 @@ class IRCBot():
         self.port = port
         self.nickname = nickname or pwd.getpwuid(os.geteuid()).pw_name
         # NOTE: when we implement true p2p networking, realname should include
-        # connection port
+        # connection port (or maybe not, now that we're using KB_COMMS)
         self.realname = realname or pwd.getpwuid(os.geteuid()).pw_gecos
         self.connect(server, port, self.nickname, self.realname)
         self.terminate = False

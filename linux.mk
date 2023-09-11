@@ -71,5 +71,5 @@ kybyz.service: service.template
 	envsubst < $< > $@
 kybyz.conf: nginx.conf.template
 	envsubst < $< > $@
-kybyz.torrc: kybyz.torrc.template
+kybyz.torrc: kybyz.torrc.template linux.mk
 	envsubst < $< > $@
