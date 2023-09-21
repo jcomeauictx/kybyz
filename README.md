@@ -117,7 +117,7 @@ and cd to the directory
 5. `cd ../kybyz`; and `ln -s ../uwsgi/python3_plugin.so .`
 6. `make`
 
-# kybyzdotcom public key
+## kybyzdotcom public key
 
 ```gpg
 -----BEGIN PGP PUBLIC KEY BLOCK-----
