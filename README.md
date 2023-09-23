@@ -24,7 +24,7 @@ That's all as root; you should now login as a regular user
 
 1. Login as tester; use `ssh -X` to tunnel Xwindows to your local box
 2. Set `KB_USERNAME=myusername` and `KB_EMAIL=myemail@example.com`, replacing `myusername` and `myemail@example.com` with your own, hopefully unique, username and your real email address.
-3. `gpg --pinentry-mode loopback --quick-gen-key "$KB_USERNAME <$KB_EMAIL>"` rsa3072 default never \# **just hit the enter key at the `Passphrase:` prompt**
+3. `gpg --pinentry-mode loopback --quick-gen-key "$KB_USERNAME <$KB_EMAIL>" rsa3072 default never` \# **just hit the enter key at the `Passphrase:` prompt**
 4. `mkdir -p src`
 5. `cd src`
 6. `git clone https://github.com/jcomeauictx/kybyz`
