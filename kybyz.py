@@ -195,7 +195,10 @@ def process(args):
     process a kybyz command
     '''
     if args and args[0] in COMMANDS:
-        print(eval(args[0])(*args[1:]))  # pylint: disable=eval-used
+        print(
+            ('result of %s%s:' % (args[0], str(tuple(args[1:])))),
+            eval(args[0])(*args[1:]) # pylint: disable=eval-used
+    )
     elif args:
         logging.error('must specify one of: %s', COMMANDS)
     else:
@@ -247,7 +250,7 @@ def commandloop():
     logging.info('Ready to accept commands; `quit` to terminate input loop')
     while args[0:1] != ['quit']:
         try:
-            print(process(args))
+            print(('process%s:' % str(tuple(args))), process(args))
             args = shlex.split(input('kbz> '))
         except EXPECTED_ERRORS:
             logging.exception('command failed, please try again')
