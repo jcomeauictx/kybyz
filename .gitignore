@@ -5,6 +5,8 @@
 __pycache__
 dynamicFiltering.html
 Makefile
+# allow subdirectory Makefiles to be part of repo
+!*/Makefile
 kybyz.conf
 kybyz.service
 kybyz.torrc
