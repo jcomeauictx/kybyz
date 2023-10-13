@@ -5,5 +5,5 @@ upload:
 	rsync -avuz $(DRYRUN) \
 	 --exclude=Makefile \
 	 --exclude=README.md \
-	 . root@$(WEBSITE):$(DOCROOT)/
+	 . $(WEBSITE):$(DOCROOT)/
 
