@@ -82,7 +82,7 @@ if you see a post from jcomeauictx, you can assume I was the author.
 On a peer to peer system it's a lot harder. We'll be using cryptographic
 signatures with gpg (GNU's implementation of Pretty Good Privacy, PGP), but
 you'll still have to get your public key out to the people you want in your
-network.
+network using `gpg --armor --export me@example.com | mail -s "my public key" myfriend@example.com`.
 
 ## timestamping
 
