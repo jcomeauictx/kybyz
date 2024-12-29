@@ -7,7 +7,7 @@ import sys, os, time, threading  # pylint: disable=multiple-imports
 import shlex, re, subprocess  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
 from io import StringIO
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from urllib.parse import parse_qs
 from hashlib import md5
@@ -34,6 +34,10 @@ EXPECTED_ERRORS = (  # for repl loop
     ValueError,
     TypeError,
     AttributeError
+)
+USER_AGENT = os.getenv(
+    'USER_AGENT',
+    'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0'
 )
 
 def init():
@@ -137,9 +141,11 @@ def serve(env=None, start_response=None):
             status, page = update()
         elif requested.startswith('ipfs/'):
             url = 'https://ipfs.io/' + requested
+            urlrequest = Request(url)
+            urlrequest.add_header('user-agent', USER_AGENT)
             logging.debug('fetching uncached ipfs URL %s', url)
             try:
-                with urlopen(url) as request:
+                with urlopen(urlrequest) as request:
                     page = request.read()
                     headers = [
                         ('Content-type', guess_mimetype(requested, page))

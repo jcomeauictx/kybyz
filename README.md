@@ -162,3 +162,7 @@ GsO18BQNIGlSMWHJ9c2f1zCQ46kNMuC2vwAxyx6yCC2tdJAvfjWbun09F/eW076e
 =Y6o6
 -----END PGP PUBLIC KEY BLOCK-----
 ```
+# developer notes
+
+* Cloudflare, which is used (now, anyway) by ipfs.io, is returning 403
+  "Forbidden" [errors on urllib requests](https://community.cloudflare.com/t/api-call-suddenly-returns-403-forbidden/396383). need to change useragent string.
