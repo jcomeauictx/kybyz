@@ -35,7 +35,8 @@ That's all as root; you should now login as a regular user
 11. \# Wait for the `kbz>` prompt
 12. \# `send myusername myemail@example.com this is a private message` \# remember to use your actual kybyz username and email
 13. \# Watch the log messages and make sure it was sent and received correctly.
-14. \# Send to another user. First you'll need to import their public GPG key (kybyzdotcom public key is below in this README).
+14. \# Send to another user. First you'll need to import their public GPG key (kybyzdotcom public key is below in this README; copy and paste it into a plain
+text file, and name it kybyzdotcom.pub).
 15. \# ^C to get back to the command line.
 16. `gpg --import kybyzdotcom.pub`
 17. `gpg --sign-key kybyzdotcom`
