@@ -72,6 +72,11 @@ current gpg setup. In that case:
 If you're helping alpha test, each day before running the script you should
 `git pull`. This brings in any code changes since the previous attempt.
 
+If you imported the expired kybyzdotcom public key (before 2024-12-29), you
+should be able to get the new one using `gpg --refresh-keys`. It seemed to
+work automagically for me, anyway. Then when signing with `gpg --sign-key`,
+I had to use the entire 40-character ID shown by `gpg --list-keys kybyzdotcom`
+to be able to sign the new key.
 ## proof of authorship
 
 On a platform such as Facebook, proof of authorship is "automatic" in the sense
