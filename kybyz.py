@@ -136,18 +136,21 @@ def serve(env=None, start_response=None):
             CACHED['javascript'] = 'INFO:found compatible javascript engine'
             status, page = update()
         elif requested.startswith('ipfs/'):
-            logging.debug('fetching uncached ipfs URL %s', requested)
+            url = 'https://ipfs.io/' + requested
+            logging.debug('fetching uncached ipfs URL %s', url)
             try:
-                with urlopen('https://ipfs.io/' + requested) as request:
+                with urlopen(url) as request:
                     page = request.read()
                     headers = [
                         ('Content-type', guess_mimetype(requested, page))
                     ]
                 cache(requested, page)
             except HTTPError as failed:
-                headers = failed.headers
+                headers = failed.headers.items()
                 status = ' '.join([str(failed.code), failed.msg])
-                page = b'<div>%s</div>' % status
+                logging.warning('failed fetching %s: %s, %r',
+                                url, status, headers)
+                page = b'<div>%s</div>' % status.encode()
         else:
             logging.warning('%s not found', requested)
             status = '404 Not Found'
