@@ -81,11 +81,12 @@ def send(recipient, email, *words):
     logging.debug('words: %s', words)
     encoded = None
     if email != '-':
+        user = "%s <%s>" % (recipient, email)
         gpg = GPG()
         logging.debug('message before encrypting: %s', text)
         encrypted = gpg.encrypt(
             text,  # pylint: disable=no-member
-            [email],
+            [user],
             sign=True,
             armor=False)
         logging.debug('encrypted: %r...', encrypted.data[:64])
