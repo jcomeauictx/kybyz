@@ -6,8 +6,6 @@ this will be built on ipfs, using canonical json objects
 '''
 import sys, json, logging  # pylint: disable=multiple-imports
 
-logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
-
 def canonicalize(obj):
     '''
     dump object as canonical json
@@ -37,6 +35,7 @@ def canonicalize(obj):
     return result
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
     try:
         print(canonicalize(sys.argv[1]), end='')  # no trailing whitespace
     except IndexError:

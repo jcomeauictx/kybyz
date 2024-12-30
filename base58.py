@@ -14,8 +14,6 @@ Copyright (C) 2021 jc@unternet.net
 import sys, logging  # pylint: disable=multiple-imports
 from binascii import unhexlify
 
-logging.basicConfig(level=logging.DEBUG if __debug__ else logging.WARN)
-
 BASE58 = b'123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 
 TEST_VECTORS = [
@@ -59,6 +57,7 @@ def decode(bytestring):
 b58encode, b58decode = encode, decode  # pylint: disable=invalid-name
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG if __debug__ else logging.WARN)
     if len(sys.argv) == 1:
         for DECODED, ENCODED in TEST_VECTORS:
             logging.debug('checking encoding of %r', DECODED)
