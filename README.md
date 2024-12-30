@@ -175,3 +175,5 @@ SnaMYEGiKugA
 * Cloudflare, which is used (now, anyway) by ipfs.io, is returning 403
   "Forbidden" [errors on urllib requests](https://community.cloudflare.com/t/api-call-suddenly-returns-403-forbidden/396383). need to change useragent string.
   [fixed by commit 6903a329df]
+* debugging messages are not shown in console window; the debug log is
+  located at `$HOME/.local/log/kybyz.log`
