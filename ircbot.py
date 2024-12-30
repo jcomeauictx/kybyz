@@ -165,11 +165,15 @@ class IRCBot():
                 # chop preceding ':' from ':this is a private message'
                 CACHED[sender] += ' '.join(words[3:])[1:].rstrip()
                 # try decoding what we have so far
+                # gnupg will log a warning if unsuccessful
                 logging.debug('attempting to decode %s', CACHED[sender])
                 text, trustlevel = decrypt(CACHED[sender].encode())
                 logging.debug('text: %s, trustlevel: %s', text, trustlevel)
                 if text or end_message:
                     text = text or CACHED[sender][:256].encode()
+                    logging.info('(ignore any warnings above from gnupg; '
+                                 'the message, once complete, was '
+                                 'successfully decrypted)')
                     logging.info(
                         '%s %s message from %s: %s', trustlevel,
                         privacy,
