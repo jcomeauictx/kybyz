@@ -9,7 +9,7 @@ from socket import fromfd, AF_INET, SOCK_STREAM
 from io import BytesIO
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
-from urllib.parse import parse_qs
+from urllib.parse import parse_qsl
 from hashlib import md5
 from ircbot import IRCBot
 from kbutils import loadposts, registration, cache, guess_mimetype
@@ -71,7 +71,7 @@ def serve(env=None, start_response=None):
     # wsgi.input now (as of 2024-12-30 or before) returns bytes object
     wsgi_input = env.get('wsgi.input', BytesIO(b'')).read().decode()
     logging.debug('wsgi.input: %s', wsgi_input)
-    args = parse_qs(wsgi_input)
+    args = dict(parse_qsl(wsgi_input))
     logging.debug('args: %s', args)
     page = b'(Something went wrong)'
     requested = env.get('REQUEST_URI', None).lstrip('/')
