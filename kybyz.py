@@ -6,7 +6,7 @@ Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 import sys, os, time, threading  # pylint: disable=multiple-imports
 import shlex, re, subprocess  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
-from io import StringIO
+from io import BytesIO
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from urllib.parse import parse_qs
@@ -68,7 +68,8 @@ def serve(env=None, start_response=None):
     '''
     # pylint: disable=too-many-locals, too-many-statements
     env = env or {}
-    wsgi_input = env.get('wsgi.input', StringIO('')).read()
+    # wsgi.input now (as of 2024-12-30 or before) returns bytes object
+    wsgi_input = env.get('wsgi.input', BytesIO(b'')).read().decode()
     logging.debug('wsgi.input: %s', wsgi_input)
     args = parse_qs(wsgi_input)
     logging.debug('args: %s', args)
