@@ -43,6 +43,7 @@ class DequeHandler(logging.NullHandler):
     '''
     def handle(self, record):
         if hasattr(record, 'to_page') and record.to_page:
+            logging.debug('adding to MESSAGE_QUEUE: %s', record)
             MESSAGE_QUEUE.append(':'.join([
                 record.name,
                 record.levelname,

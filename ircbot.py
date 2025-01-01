@@ -175,7 +175,8 @@ class IRCBot():
                                  'the message, once complete, was '
                                  'successfully decrypted)')
                     logging.info(
-                        '%s %s message from %s: %s', trustlevel,
+                        '%s %s message from %s: %s',
+                        trustlevel,
                         privacy,
                         sender,
                         text.decode().replace('<', '&lt;').replace('>', '&gt;'),
