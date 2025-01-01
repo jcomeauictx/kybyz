@@ -80,8 +80,6 @@ def serve(env=None, start_response=None):
     template = read('timeline.html').decode()
     messages = ''.join(['<div>%s</div>' % message for message in
                         reversed(MESSAGE_QUEUE)])
-    if messages:
-        logging.debug('messages: %s', messages)
     messages_hash = md5(messages.encode()).hexdigest()
     messages = MESSAGES.format(
         messages=messages,
