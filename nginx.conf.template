@@ -1,8 +1,17 @@
-server {
-	listen 80;
-	server_name kybyz.com kybytz.com www.kybyz.com www.kybytz.com;
-	charset utf-8;
-	location / {
-		uwsgi_pass unix://$TMPDIR/kybyz.sock;
+# from nginx.org/en/docs/example.html as of 2025-01-02
+user $USER $USER;
+worker_processes 1;
+pid $TMPDIR/$APP.pid;
+events {
+	worker_connections 10;
+}
+http {
+	server {
+		listen 80;
+		server_name $APP $APP.com $ALT.com www.$APP.com www.$ALT.com;
+		charset utf-8;
+		location / {
+			uwsgi_pass unix://$TMPDIR/$APP.sock/external;
+		}
 	}
 }
