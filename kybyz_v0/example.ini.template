@@ -1,7 +1,7 @@
 [uwsgi]
 # symlink this under /etc/uwsgi/apps-enabled/ (Debian)
 #log-syslog
-http-socket = kybyz:2727
+http-socket = kybyz0:2727
 plugin = python
 wsgi-file = $PWD/kybyz.py
 callable = example_client

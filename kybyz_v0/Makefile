@@ -8,7 +8,7 @@ all: restart
 localtest: kybyz.py
 	python $<
 client_test: localtest
-	wget -O- --quiet http://kybyz:2424
+	wget -O- --quiet http://kybyz0:2424
 %.key: Makefile
 	openssl genrsa -out $@ 1024
 %.csr: %.key
@@ -25,9 +25,9 @@ client_test: localtest
 	openssl rsa -pubout -in $< -out $@
 	openssl rsa -text -pubin -in $@
 .PRECIOUS: %.key %.csr %.private.pem
-$(HOME)/etc/kybyz:
+$(HOME)/etc/kybyz0:
 	mkdir -p $@
-keys:	$(HOME)/etc/kybyz
+keys:	$(HOME)/etc/kybyz0
 	$(MAKE) $</kybyz.crt
 	$(MAKE) $</kybyz.public.pem
 $(USER)-kybyz.ini: client.ini.template

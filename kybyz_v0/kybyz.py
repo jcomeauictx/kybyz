@@ -9,9 +9,9 @@ distributed under the terms of the GNU General Public License Version 3
 automatically uploads to and downloads from kybyz.com to populate the
 local website.
 
-must first mate a local IP address with the name `kybyz` in /etc/hosts, e.g.:
+must first mate a local IP address with the name `kybyz0` in /etc/hosts, e.g.:
 
-127.0.1.125 kybyz
+127.0.1.125 kybyz0
 '''
 from __future__ import print_function
 import sys, os, logging, pwd, subprocess, site, cgi, html
@@ -36,7 +36,7 @@ THISDIR = os.path.dirname(sys.argv[0]) or os.path.abspath('.')
 EXAMPLE = uwsgi.opt.get('check_static', os.path.join(THISDIR, 'example.kybyz'))
 logging.debug('HOMEDIR: %s' % HOMEDIR)
 logging.debug('USER_SITE: %s' % site.USER_SITE)
-USER_CONFIG = os.path.join(HOMEDIR, 'etc', 'kybyz')
+USER_CONFIG = os.path.join(HOMEDIR, 'etc', 'kybyz0')
 PRIVATE_KEY = os.path.join(USER_CONFIG, 'kybyz.private.pem')
 PUBLIC_KEY = os.path.join(USER_CONFIG, 'kybyz.public.pem')
 MIMETYPES = {'png': 'image/png', 'ico': 'image/x-icon', 'jpg': 'image/jpeg',
