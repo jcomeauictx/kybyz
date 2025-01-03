@@ -31,7 +31,7 @@ KB_WEB := $(shell $(PYTHON) -c "print(int('kbz', 36))")
 KB_COMMS := $(shell expr $(KB_WEB) + 1)
 TMPDIR := $(shell $(PYTHON) -c "import tempfile; print(tempfile.gettempdir())")
 export
-all: $(PYLINT) doctests lint uwsgi
+all: $(PYLINT) doctests lint kybyz.conf kybyz.torrc uwsgi
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
 doctests: $(SOURCES:.py=.doctest)
