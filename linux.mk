@@ -55,8 +55,15 @@ install:  # run first as root, then as user
 	fi  
 uwsgi: kybyz.ini
 	#strace -f -v -t -s4096 -o $(TMPDIR)/kybyz_strace.log uwsgi $<
-	# redirection commented out, it may affect prompt display
-	uwsgi $< #2>&1 | tee $(TMPDIR)/kybyz_uwsgi.log
+	# don't `2>&1`, it may affect prompt display
+	uwsgi $<
+stop:
+	if [ -e /tmp/kybyz.pid ]; then \
+	 if [ "$$(</tmp/kybyz.pid)" ]; then \
+	  kill $$(</tmp/kybyz.pid); \
+	  rm /tmp/kybyz.pid; \
+	 fi; \
+	fi
 $(USER_BIN):
 	mkdir -p $@
 $(PYLINT): $(USER_BIN)
