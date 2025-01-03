@@ -7,11 +7,13 @@ events {
 }
 http {
 	server {
-		listen 80;
+		listen 8008;
 		server_name $APP $APP.com $ALT.com www.$APP.com www.$ALT.com;
 		charset utf-8;
+		access_log $USER_LOG/kybyz_nginx.access.log;
 		location / {
-			uwsgi_pass unix://$TMPDIR/$APP.sock/external;
+			include /etc/nginx/uwsgi_params;
+			uwsgi_pass unix://$TMPDIR/$APP.sock;
 		}
 	}
 }
