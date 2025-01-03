@@ -57,11 +57,26 @@ uwsgi: kybyz.ini
 	#strace -f -v -t -s4096 -o $(TMPDIR)/kybyz_strace.log uwsgi $<
 	# don't `2>&1`, it may affect prompt display
 	uwsgi $<
+nginx: $(PWD)/kybyz.conf
+	nginx -c $< -e stderr &
+nginx.stop:
+	if [ -e /tmp/nginx_kybyz.pid ]; then \
+	 if [ "$$(</tmp/nginx_kybyz.pid)" ]; then \
+	  kill $$(</tmp/nginx_kybyz.pid) && rm -f /tmp/nginx_kybyz.pid; \
+	 fi; \
+	fi
+tor: kybyz.torrc
+	tor -f $< &
+tor.stop:
+	if [ -e /tmp/tor_kybyz.pid ]; then \
+	 if [ "$$(</tmp/tor_kybyz.pid)" ]; then \
+	  kill $$(</tmp/tor_kybyz.pid) && rm -f /tmp/tor_kybyz.pid; \
+	 fi; \
+	fi
 stop:
 	if [ -e /tmp/kybyz.pid ]; then \
 	 if [ "$$(</tmp/kybyz.pid)" ]; then \
-	  kill $$(</tmp/kybyz.pid); \
-	  rm /tmp/kybyz.pid; \
+	  kill $$(</tmp/kybyz.pid) && rm -f /tmp/kybyz.pid; \
 	 fi; \
 	fi
 $(USER_BIN):
