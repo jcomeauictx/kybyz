@@ -18,6 +18,7 @@ from kbutils import register  # pylint: disable=unused-import
 from kbcommon import CACHE, CACHED, logging, MESSAGE_QUEUE, TO_PAGE
 from kbcommon import COMMAND, ARGS, read
 
+REQUEST_COUNT = 0
 COMMANDS = ['post', 'register', 'send', 'publish']
 NAVIGATION = '<div class="column" id="kbz-navigation">{navigation}</div>'
 POSTS = '''<div class="column" id="kbz-posts" data-version="{posts_hash}">
@@ -67,7 +68,11 @@ def serve(env=None, start_response=None):
     handle web requests
     '''
     # pylint: disable=too-many-locals, too-many-statements
+    global REQUEST_COUNT  # pylint: disable=global-statement
+    REQUEST_COUNT += 1
     env = env or {}
+    if REQUEST_COUNT == 1:
+        logging.debug('env: %s', env)
     # wsgi.input now (as of 2024-12-30 or before) returns bytes object
     wsgi_input = env.get('wsgi.input', BytesIO(b'')).read().decode()
     logging.debug('wsgi.input: %s', wsgi_input)
