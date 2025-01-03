@@ -40,6 +40,7 @@ USER_AGENT = os.getenv(
     'USER_AGENT',
     'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0'
 )
+REMOTE_PORT = 8008  # request coming in via nginx
 
 def init():
     '''
@@ -80,6 +81,7 @@ def serve(env=None, start_response=None):
     logging.debug('args: %s', args)
     page = b'(Something went wrong)'
     requested = env.get('REQUEST_URI', None).lstrip('/')
+    server_port = int(env.get('SERVER_PORT', '0'))
     logging.debug('requested: "%s"', requested)
     status = '200 OK'
     headers = [('Content-type', 'text/html')]
@@ -129,7 +131,11 @@ def serve(env=None, start_response=None):
         return update_status, update_page
 
     if requested is not None and start_response:
-        if requested == '':
+        if server_port == 8008:
+            logging.warning('remote request received, env: %s', env)
+            status = '501 Not Implemented'
+            page = b'<div>Not yet serving remote requests</div>'
+        elif requested == '':
             page = template.format(
                 posts=posts,
                 messages=messages,
