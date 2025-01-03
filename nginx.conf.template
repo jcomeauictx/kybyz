@@ -1,5 +1,6 @@
 # from nginx.org/en/docs/example.html as of 2025-01-02
-user $USER $USER;
+# (only need `user` directive if starting as root)
+#user $USER $USER;
 worker_processes 1;
 pid $TMPDIR/nginx_$APP.pid;
 events {
