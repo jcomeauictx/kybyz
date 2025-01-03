@@ -71,7 +71,7 @@ def serve(env=None, start_response=None):
     global REQUEST_COUNT  # pylint: disable=global-statement
     REQUEST_COUNT += 1
     env = env or {}
-    if REQUEST_COUNT == 1:
+    if REQUEST_COUNT < 1000000:
         logging.debug('env: %s', env)
     # wsgi.input now (as of 2024-12-30 or before) returns bytes object
     wsgi_input = env.get('wsgi.input', BytesIO(b'')).read().decode()
