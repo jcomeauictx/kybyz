@@ -18,7 +18,9 @@ from kbutils import register  # pylint: disable=unused-import
 from kbcommon import CACHE, CACHED, logging, MESSAGE_QUEUE, TO_PAGE
 from kbcommon import COMMAND, ARGS, read
 
+STOPPED = False
 REQUEST_COUNT = 0
+SLEEPTIME = int(os.getenv('KB_DELAY', '600'))  # seconds
 COMMANDS = ['post', 'register', 'send', 'publish']
 NAVIGATION = '<div class="column" id="kbz-navigation">{navigation}</div>'
 POSTS = '''<div class="column" id="kbz-posts" data-version="{posts_hash}">
@@ -205,12 +207,11 @@ def background():
 
     communicate with other kybyz servers
     '''
-    delay = int(os.getenv('KB_DELAY') or 600)  # seconds
     CACHED['ircbot'] = IRCBot(nickname=CACHED.get('username', None))
-    while True:
+    while not STOPPED:
         logging.info('kybyz active %s seconds', CACHED['uptime'], **TO_PAGE)
-        time.sleep(delay)  # releases the GIL for `serve`
-        CACHED['uptime'] += delay
+        time.sleep(SLEEPTIME)  # releases the GIL for `serve`
+        CACHED['uptime'] += SLEEPTIME
         logging.debug('CACHED: %s, threads: %s',
                       CACHED, threading.enumerate())
 
@@ -220,6 +221,8 @@ def nginx():
     '''
     # pylint: disable=consider-using-with
     subprocess.Popen(['nginx', '-c', 'kybyz.conf', '-e', 'stderr'])
+    while not STOPPED:
+        time.sleep(SLEEPTIME)
 
 def tor():
     '''
@@ -227,6 +230,8 @@ def tor():
     '''
     # pylint: disable=consider-using-with
     subprocess.Popen(['tor', '-f', 'kybyz.torrc'])
+    while not STOPPED:
+        time.sleep(SLEEPTIME)
 
 def process(args):
     '''
@@ -283,6 +288,7 @@ def commandloop():
     '''
     simple repl (read-evaluate-process-loop) for command-line testing
     '''
+    global STOPPED  # pylint: disable=global-statement
     time.sleep(10)  # give page a chance to load before starting repl
     args = []
     logging.info('Ready to accept commands; `quit` to terminate input loop')
@@ -295,6 +301,9 @@ def commandloop():
             args[:] = []
         except EOFError:
             break
+        except KeyboardInterrupt:
+            STOPPED = True  # lets threads know it's OK to exit
+            sys.exit(0)
     logging.warning('input loop terminated')
 
 if __name__ == '__main__':
