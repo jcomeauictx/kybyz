@@ -63,22 +63,37 @@ nginx: $(PWD)/kybyz.conf
 nginx.stop:
 	if [ -e /tmp/nginx_kybyz.pid ]; then \
 	 if [ "$$(</tmp/nginx_kybyz.pid)" ]; then \
-	  kill $$(</tmp/nginx_kybyz.pid) && rm -f /tmp/nginx_kybyz.pid; \
+	  kill $$(</tmp/nginx_kybyz.pid); \
+	 else \
+	  echo 'found nginx pidfile empty' >&2; \
 	 fi; \
+	 rm -f /tmp/nginx_kybyz.pid; \
+	else \
+	 echo 'nginx already not running' >&2; \
 	fi
 tor: kybyz.torrc
 	tor -f $< &
 tor.stop:
 	if [ -e /tmp/tor_kybyz.pid ]; then \
 	 if [ "$$(</tmp/tor_kybyz.pid)" ]; then \
-	  kill $$(</tmp/tor_kybyz.pid) && rm -f /tmp/tor_kybyz.pid; \
+	  kill $$(</tmp/tor_kybyz.pid); \
+	 else \
+	  echo 'found tor pidfile empty' >&2; \
 	 fi; \
+	 rm -f /tmp/tor_kybyz.pid; \
+	else \
+	 echo 'tor already not running' >&2; \
 	fi
 stop:
 	if [ -e /tmp/kybyz.pid ]; then \
 	 if [ "$$(</tmp/kybyz.pid)" ]; then \
-	  kill $$(</tmp/kybyz.pid) && rm -f /tmp/kybyz.pid; \
+	  kill $$(</tmp/kybyz.pid); \
+	 else \
+	  echo 'found kybyz pidfile empty' >&2; \
 	 fi; \
+	 rm -f /tmp/kybyz.pid; \
+	else \
+	 echo 'kybyz already not running' >&2; \
 	fi
 $(USER_BIN):
 	mkdir -p $@
