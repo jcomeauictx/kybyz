@@ -210,6 +210,20 @@ def background():
         logging.debug('CACHED: %s, threads: %s',
                       CACHED, threading.enumerate())
 
+def nginx():
+    '''
+    start nginx to handle external requests via tor
+    '''
+    # pylint: disable=consider-using-with
+    subprocess.Popen(['nginx', '-c', 'kybyz.conf', '-e', 'stderr'])
+
+def tor():
+    '''
+    start tor for receiving external requests
+    '''
+    # pylint: disable=consider-using-with
+    subprocess.Popen(['tor', '-f', 'kybyz.torrc'])
+
 def process(args):
     '''
     process a kybyz command
