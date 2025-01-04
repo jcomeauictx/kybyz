@@ -3,8 +3,8 @@
 Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
 # pylint: disable=bad-option-value, consider-using-f-string
-import sys, os, time, threading  # pylint: disable=multiple-imports
-import shlex, re, subprocess  # pylint: disable=multiple-imports
+import sys, os, math, time, threading  # pylint: disable=multiple-imports
+import signal, shlex, re, subprocess  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
 from io import BytesIO
 from urllib.request import Request, urlopen
@@ -20,7 +20,7 @@ from kbcommon import COMMAND, ARGS, read
 
 STOPPED = False
 REQUEST_COUNT = 0
-SLEEPTIME = int(os.getenv('KB_DELAY', '600'))  # seconds
+LOGTIME = int(os.getenv('KB_DELAY', '600'))  # seconds
 COMMANDS = ['post', 'register', 'send', 'publish']
 NAVIGATION = '<div class="column" id="kbz-navigation">{navigation}</div>'
 POSTS = '''<div class="column" id="kbz-posts" data-version="{posts_hash}">
@@ -208,12 +208,16 @@ def background():
     communicate with other kybyz servers
     '''
     CACHED['ircbot'] = IRCBot(nickname=CACHED.get('username', None))
+    delay = 0.6  # must be less than nginx's, and 0.5s or more
     while not STOPPED:
-        logging.info('kybyz active %s seconds', CACHED['uptime'], **TO_PAGE)
-        time.sleep(SLEEPTIME)  # releases the GIL for `serve`
-        CACHED['uptime'] += SLEEPTIME
-        logging.debug('CACHED: %s, threads: %s',
-                      CACHED, threading.enumerate())
+        if math.floor(CACHED['uptime']) % LOGTIME == 0:
+            logging.info('kybyz active %s seconds',
+                         math.floor(CACHED['uptime']), **TO_PAGE)
+            logging.debug('CACHED: %s, threads: %s',
+                          CACHED, threading.enumerate())
+        time.sleep(delay)  # releases the GIL for `serve`
+        CACHED['uptime'] += delay
+    logging.warning('program stopped, cleaning up...')
 
 def nginx():
     '''
@@ -222,7 +226,8 @@ def nginx():
     # pylint: disable=consider-using-with
     subprocess.Popen(['nginx', '-c', 'kybyz.conf', '-e', 'stderr'])
     while not STOPPED:
-        time.sleep(SLEEPTIME)
+        time.sleep(0.9)  # must be less than tor's
+    logging.warning('program stopped, nginx terminating...')
 
 def tor():
     '''
@@ -231,7 +236,8 @@ def tor():
     # pylint: disable=consider-using-with
     subprocess.Popen(['tor', '-f', 'kybyz.torrc'])
     while not STOPPED:
-        time.sleep(SLEEPTIME)
+        time.sleep(1.2)
+    logging.warning('program stopped, tor terminating...')
 
 def process(args):
     '''
@@ -288,7 +294,6 @@ def commandloop():
     '''
     simple repl (read-evaluate-process-loop) for command-line testing
     '''
-    global STOPPED  # pylint: disable=global-statement
     time.sleep(10)  # give page a chance to load before starting repl
     args = []
     logging.info('Ready to accept commands; `quit` to terminate input loop')
@@ -301,16 +306,19 @@ def commandloop():
             args[:] = []
         except EOFError:
             break
-        except KeyboardInterrupt:
-            STOPPED = True  # lets threads know it's OK to exit
-            sys.exit(0)
     logging.warning('input loop terminated')
 
 if __name__ == '__main__':
     init()
     process(args=ARGS)
 elif COMMAND == 'uwsgi':
-    uwsgi_init()
+    try:
+        uwsgi_init()
+    except KeyboardInterrupt:
+        STOPPED = True  # lets threads know it's OK to exit
+        logging.warning('please wait for threads to terminate.')
+        # neither `raise` nor `system.exit` work here, need a bigger hammer
+        signal.signal(signal.SIGQUIT, signal.SIG_DFL)
 elif COMMAND not in ('pydoc3', 'doctest'):
     logging.info('initalizing on command %s', COMMAND)
     init()
