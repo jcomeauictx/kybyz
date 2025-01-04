@@ -311,5 +311,6 @@ if __name__ == '__main__':
     process(args=ARGS)
 elif COMMAND == 'uwsgi':
     uwsgi_init()
-elif not os.path.basename(COMMAND).endswith(('pydoc3',)):
+elif COMMAND not in ('pydoc3', 'doctest'):
+    logging.info('initalizing on command %s', COMMAND)
     init()

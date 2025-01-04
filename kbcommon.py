@@ -6,7 +6,7 @@ import sys, os, logging, re  # pylint: disable=multiple-imports
 from collections import defaultdict, deque, namedtuple
 from datetime import datetime, timezone
 
-COMMAND = sys.argv[0]
+COMMAND = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 ARGS = sys.argv[1:]
 EXAMPLE = 'example.kybyz'  # subdirectory with sample posts
 CACHED = defaultdict(str, {'uptime': None})
