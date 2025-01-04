@@ -35,9 +35,9 @@ all: $(PYLINT) doctests lint kybyz.conf kybyz.torrc uwsgi
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
 doctests: $(SOURCES:.py=.doctest)
-%.lint: %.py
+%.lint %.pylint: %.py
 	$(PYLINT) $<
-lint: $(SOURCES:.py=.lint)
+lint pylint: $(SOURCES:.py=.lint)
 install:  # run first as root, then as user
 	if [ -w / ]; then \
 	 $(INSTALLER) update; \
@@ -95,3 +95,6 @@ kybyz.conf: nginx.conf.template
 	envsubst < $< > $@
 kybyz.torrc: kybyz.torrc.template linux.mk
 	envsubst < $< > $@
+push:
+	git push -u origin master
+	git push githost master
