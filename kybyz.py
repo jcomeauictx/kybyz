@@ -40,7 +40,7 @@ USER_AGENT = os.getenv(
     'USER_AGENT',
     'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0'
 )
-REMOTE_PORT = 8008  # request coming in via nginx
+REMOTE_PORT = int(os.getenv('EXTERNAL_PORT', '-1'))  # request via nginx/tor
 
 def init():
     '''
@@ -63,6 +63,10 @@ def init():
     kybyz = threading.Thread(target=background, name='kybyz')
     kybyz.daemon = True
     kybyz.start()
+    external_server = threading.Thread(target=nginx, name='nginx')
+    external_server.start()
+    punchthrough = threading.Thread(target=tor, name='tor')
+    punchthrough.start()
 
 def serve(env=None, start_response=None):
     '''
@@ -131,7 +135,7 @@ def serve(env=None, start_response=None):
         return update_status, update_page
 
     if requested is not None and start_response:
-        if server_port == 8008:
+        if server_port == REMOTE_PORT:
             logging.warning('remote request received, env: %s', env)
             status = '501 Not Implemented'
             page = b'<div>Not yet serving remote requests</div>'

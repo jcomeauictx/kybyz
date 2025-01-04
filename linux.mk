@@ -30,6 +30,7 @@ PATH := $(USER_BIN):$(PATH)
 KB_WEB := $(shell $(PYTHON) -c "print(int('kbz', 36))")
 KB_COMMS := $(shell expr $(KB_WEB) + 1)
 TMPDIR := $(shell $(PYTHON) -c "import tempfile; print(tempfile.gettempdir())")
+EXTERNAL_PORT := 8008
 export
 all: $(PYLINT) doctests lint kybyz.conf kybyz.torrc uwsgi
 %.doctest: %.py
