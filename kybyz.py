@@ -4,7 +4,7 @@ Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 '''
 # pylint: disable=bad-option-value, consider-using-f-string
 import sys, os, math, time, threading  # pylint: disable=multiple-imports
-import signal, shlex, re, subprocess  # pylint: disable=multiple-imports
+import shlex, re, subprocess  # pylint: disable=multiple-imports
 from socket import fromfd, AF_INET, SOCK_STREAM
 from io import BytesIO
 from urllib.request import Request, urlopen
@@ -18,7 +18,7 @@ from kbutils import register  # pylint: disable=unused-import
 from kbcommon import CACHE, CACHED, logging, MESSAGE_QUEUE, TO_PAGE
 from kbcommon import COMMAND, ARGS, read
 
-STOPPED = False
+RUNNING = threading.Event()
 REQUEST_COUNT = 0
 LOGTIME = int(os.getenv('KB_DELAY', '600'))  # seconds
 COMMANDS = ['post', 'register', 'send', 'publish']
@@ -62,6 +62,7 @@ def init():
     CACHED['uptime'] = 0
     CACHED['javascript'] = 'ERROR:javascript disabled or incompatible'
     logging.debug('CACHED: %s', CACHED)
+    RUNNING.set()
     kybyz = threading.Thread(target=background, name='kybyz')
     kybyz.daemon = True
     kybyz.start()
@@ -209,7 +210,7 @@ def background():
     '''
     CACHED['ircbot'] = IRCBot(nickname=CACHED.get('username', None))
     delay = 0.6  # must be less than nginx's, and 0.5s or more
-    while not STOPPED:
+    while RUNNING.is_set():
         if math.floor(CACHED['uptime']) % LOGTIME == 0:
             logging.info('kybyz active %s seconds',
                          math.floor(CACHED['uptime']), **TO_PAGE)
@@ -225,7 +226,7 @@ def nginx():
     '''
     # pylint: disable=consider-using-with
     subprocess.Popen(['nginx', '-c', 'kybyz.conf', '-e', 'stderr'])
-    while not STOPPED:
+    while RUNNING.is_set():
         time.sleep(0.9)  # must be less than tor's
     logging.warning('program stopped, nginx terminating...')
 
@@ -235,7 +236,7 @@ def tor():
     '''
     # pylint: disable=consider-using-with
     subprocess.Popen(['tor', '-f', 'kybyz.torrc'])
-    while not STOPPED:
+    while RUNNING.is_set():
         time.sleep(1.2)
     logging.warning('program stopped, tor terminating...')
 
@@ -285,8 +286,7 @@ def uwsgi_init():
             logging.exception('cannot open browser to %s', host)
             logging.info("if you're running under WSL (Windows Subsystem for"
                          " Linux), just open Windows browser to %s", host)
-    repl = threading.Thread(target=commandloop, name='repl')
-    repl.daemon = True
+    repl = threading.Thread(target=commandloop, name='repl', daemon=True)
     repl.start()
     logging.debug('uwsgi initialization complete')
 
@@ -312,13 +312,7 @@ if __name__ == '__main__':
     init()
     process(args=ARGS)
 elif COMMAND == 'uwsgi':
-    try:
-        uwsgi_init()
-    except KeyboardInterrupt:
-        STOPPED = True  # lets threads know it's OK to exit
-        logging.warning('please wait for threads to terminate.')
-        # neither `raise` nor `system.exit` work here, need a bigger hammer
-        signal.signal(signal.SIGQUIT, signal.SIG_DFL)
+    uwsgi_init()
 elif COMMAND not in ('pydoc3', 'doctest'):
     logging.info('initalizing on command %s', COMMAND)
     init()

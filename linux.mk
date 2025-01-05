@@ -95,6 +95,13 @@ stop:
 	else \
 	 echo 'kybyz already not running' >&2; \
 	fi
+strace:
+	if [ -e /tmp/kybyz.pid ]; then \
+	 strace -p $$(</tmp/kybyz.pid) \
+	  -f -v -s128 -o '| tee /tmp/kybyz_strace.log'; \
+	else \
+	 echo cannot find pid of kybyz process >&2; \
+	fi
 $(USER_BIN):
 	mkdir -p $@
 $(PYLINT): $(USER_BIN)
