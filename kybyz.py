@@ -19,6 +19,7 @@ from kbcommon import CACHE, CACHED, logging, MESSAGE_QUEUE, TO_PAGE
 from kbcommon import COMMAND, ARGS, read
 
 RUNNING = threading.Event()
+CURDIR = os.path.abspath(os.curdir)
 REQUEST_COUNT = 0
 LOGTIME = int(os.getenv('KB_DELAY', '600'))  # seconds
 COMMANDS = ['post', 'register', 'send', 'publish']
@@ -63,12 +64,11 @@ def init():
     CACHED['javascript'] = 'ERROR:javascript disabled or incompatible'
     logging.debug('CACHED: %s', CACHED)
     RUNNING.set()
-    kybyz = threading.Thread(target=background, name='kybyz')
-    kybyz.daemon = True
+    kybyz = threading.Thread(target=background, name='kybyz', daemon=True)
     kybyz.start()
-    external_server = threading.Thread(target=nginx, name='nginx')
+    external_server = threading.Thread(target=nginx, name='nginx', daemon=True)
     external_server.start()
-    punchthrough = threading.Thread(target=tor, name='tor')
+    punchthrough = threading.Thread(target=tor, name='tor', daemon=True)
     punchthrough.start()
 
 def serve(env=None, start_response=None):
@@ -225,7 +225,8 @@ def nginx():
     start nginx to handle external requests via tor
     '''
     # pylint: disable=consider-using-with
-    subprocess.Popen(['nginx', '-c', 'kybyz.conf', '-e', 'stderr'])
+    configuration = os.path.join(CURDIR, 'kybyz.conf')
+    subprocess.Popen(['nginx', '-c', configuration, '-e', 'stderr'])
     while RUNNING.is_set():
         time.sleep(0.9)  # must be less than tor's
     logging.warning('program stopped, nginx terminating...')
