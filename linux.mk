@@ -30,8 +30,14 @@ PATH := $(USER_BIN):$(PATH)
 KB_WEB := $(shell $(PYTHON) -c "print(int('kbz', 36))")
 KB_COMMS := $(shell expr $(KB_WEB) + 1)
 TMPDIR := $(shell $(PYTHON) -c "import tempfile; print(tempfile.gettempdir())")
+ONION_ADDR = $(shell cat /tmp/kybyz.tor/hostname)
 EXTERNAL_PORT := 8008
+ONION_URL := http://$(ONION_ADDR):$(EXTERNAL_PORT)
+ifeq ($(SHOWENV),)
+export APP KB_DELAY KB_WEB KB_LOGDIR KB_COMMS TMPDIR EXTERNAL_PORT
+else
 export
+endif
 all: $(PYLINT) doctests lint kybyz.conf kybyz.torrc uwsgi
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
@@ -109,9 +115,15 @@ $(PYLINT): $(USER_BIN)
 	command -v $(PYLINT) || \
 	ln -s $$(command -v pylint3 || command -v pylint) $</$@
 env:
+ifeq ($(SHOWENV),)
+	make SHOWENV=1 $@
+else
 	$@
+endif
 edit: k*.py
 	vi $+
+torview:
+	torbrowser-launcher $(ONION_URL)
 kybyz.service: service.template
 	envsubst < $< > $@
 kybyz.conf: nginx.conf.template

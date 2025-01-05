@@ -209,7 +209,9 @@ def background():
     communicate with other kybyz servers
     '''
     CACHED['ircbot'] = IRCBot(nickname=CACHED.get('username', None))
-    delay = 0.6  # must be less than nginx's, and 0.5s or more
+    # delay must be less than nginx's, and more than 1s
+    # (otherwise the `kybyz active %s seconds` display will be doubled)
+    delay = 1.1
     while RUNNING.is_set():
         if math.floor(CACHED['uptime']) % LOGTIME == 0:
             logging.info('kybyz active %s seconds',
@@ -226,9 +228,14 @@ def nginx():
     '''
     # pylint: disable=consider-using-with
     configuration = os.path.join(CURDIR, 'kybyz.conf')
-    subprocess.Popen(['nginx', '-c', configuration, '-e', 'stderr'])
+    subprocess.Popen([
+        'nginx',
+        '-c', configuration,
+        '-e', 'stderr',
+        '-g', 'daemon off;'
+    ])
     while RUNNING.is_set():
-        time.sleep(0.9)  # must be less than tor's
+        time.sleep(1.3)  # must be less than tor's
     logging.warning('program stopped, nginx terminating...')
 
 def tor():
@@ -238,7 +245,7 @@ def tor():
     # pylint: disable=consider-using-with
     subprocess.Popen(['tor', '-f', 'kybyz.torrc'])
     while RUNNING.is_set():
-        time.sleep(1.2)
+        time.sleep(1.5)
     logging.warning('program stopped, tor terminating...')
 
 def process(args):
@@ -273,7 +280,7 @@ def uwsgi_init():
     port = host = None
     try:
         port = fromfd(uwsgi.sockets[0], AF_INET, SOCK_STREAM).getsockname()[1]
-        host = 'localhost:%s' % port
+        host = 'kybyz:%s' % port
     except AttributeError:
         logging.exception('cannot determine port')
     init()

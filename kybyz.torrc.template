@@ -1,4 +1,4 @@
 # see https://community.torproject.org/onion-services/setup/
 HiddenServiceDir /tmp/kybyz.tor
-HiddenServicePort $EXTERNAL_PORT kybyz:$KB_COMMS
+HiddenServicePort $EXTERNAL_PORT kybyz:$EXTERNAL_PORT
 PidFile $TMPDIR/tor_kybyz.pid
