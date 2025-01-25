@@ -74,6 +74,18 @@ def init():
 def serve(env=None, start_response=None):
     '''
     handle web requests
+
+    we need at least two dispatchers: one for local use, where requests
+    come from the kybyz command line, and from the local browser.
+
+    the other dispatcher is for requests coming from IRC and from the Tor
+    network. these must be considered hostile, and there need to be checks
+    for friend status and other considerations before deciding what to send.
+
+    the primary exception to the checks is for kybyz.com itself; it can
+    (and should?) show its own newsfeed to the world. but should still be
+    selective about what it accepts from the world. and rate-limited to avoid
+    denial of (service|disk space) attacks.
     '''
     # pylint: disable=too-many-locals, too-many-statements
     global REQUEST_COUNT  # pylint: disable=global-statement
