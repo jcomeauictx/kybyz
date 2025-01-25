@@ -9,7 +9,7 @@ events {
 http {
 	server {
 		listen $EXTERNAL_PORT;
-		server_name $APP $APP.com $ALT.com www.$APP.com www.$ALT.com;
+		server_name $APP $APP.com www.$APP.com;
 		charset utf-8;
 		access_log $USER_LOG/kybyz_nginx.access.log;
 		location / {

@@ -2,7 +2,6 @@
 KB_USERNAME ?= no_more_than_9-chars_is_best
 KB_EMAIL ?= 9_char_nick@example.com
 APP := kybyz
-ALT := kybytz
 export
 
 all:
