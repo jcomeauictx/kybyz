@@ -9,15 +9,11 @@ PKG_REQUIRED := uwsgi-plugin-python3 python3-gnupg pylint3
 PIP_REQUIRED := uwsgi python-gnupg pylint
 USER_BIN ?= $(HOME)/.local/bin
 USER_LOG ?= $(HOME)/.local/log
-PY_VER := $(shell python -c "import sys; print(sys.version_info[0])")
+PYTHON ?= $(shell which python3 python python2 false | head -n 1)
+PIP ?= $(shell which pip3 pip pip2 false | head -n 1)
+PYLINT ?= $(shell which pylint3 pylint pylint2 true | head -n 1)
+PY_VER := $(shell $(PYTHON) -c "import sys; print(sys.version_info[0])")
 ifeq ($(PY_VER),3)
- PYTHON ?= python
- PYLINT ?= pylint
- PIP ?= pip
-else
- PYTHON ?= python3
- PYLINT ?= pylint3
- PIP ?= pip3
  REQUIRED += $(PKG_REQUIRED)
 endif
 # set KB_DELAY to smaller number for more frequent progress logging
