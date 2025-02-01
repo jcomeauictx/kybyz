@@ -102,6 +102,9 @@ example, you can embed the hash of the post in a BCH transaction along with
 the hash of the previous block. This proves the post is no older than the
 previous block, and no newer than the transaction timestamp.
 
+There is now a somewhat-decentralized service for this:
+<https://opentimestamps.org/>
+
 ## prerequisites
 
 * python3
