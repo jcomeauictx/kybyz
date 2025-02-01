@@ -1,6 +1,21 @@
 # kybyz
 a peer to peer collaboration and social media platform
 
+intended to be a replacement for, among others:
+
+* Facebook
+* Twitter/X
+* Messenger
+* Calendar
+* To-do lists
+
+also meant to re-envision, or improve upon:
+
+* [Charles Cameron](https://zenpundit.com/?p=68207)'s hipbone games and
+  analysis tools
+* curating, and providing human-readable and memorable titles for,
+  [IPFS](https://ipfs.tech/) content
+
 ## quickstart
 
 Install and test on a <https://digitalocean.com> Debian-11 droplet, the cheapest
