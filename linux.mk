@@ -26,7 +26,8 @@ PATH := $(USER_BIN):$(PATH)
 KB_WEB := $(shell $(PYTHON) -c "print(int('kbz', 36))")
 KB_COMMS := $(shell expr $(KB_WEB) + 1)
 TMPDIR := $(shell $(PYTHON) -c "import tempfile; print(tempfile.gettempdir())")
-ONION_ADDR = $(shell cat /tmp/kybyz.tor/hostname)
+ONION_FILE := /tmp/kybyz.tor/hostname
+ONION_ADDR = $(shell test -e $(ONION_FILE) && cat $(ONION_FILE))
 EXTERNAL_PORT := 8008
 ONION_URL := http://$(ONION_ADDR):$(EXTERNAL_PORT)
 ifeq ($(SHOWENV),)
