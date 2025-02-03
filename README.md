@@ -15,6 +15,16 @@ also meant to re-envision, or improve upon:
   analysis tools
 * curating, and providing human-readable and memorable titles for,
   [IPFS](https://ipfs.tech/) content
+* delivery services like DoorDash and <https://w-a-s-t-e.org/>
+* rideshare services like Uber and Lyft
+* online identity, proof of age, and document signing
+
+if kybyz can incorporate web3 (decentralized finance) functionality, it
+will also be able to revolutionize such things as:
+
+* auction sites like ebay
+* escrow services
+* freelancing sites like Upwork and Toptal
 
 ## quickstart
 
