@@ -5,6 +5,7 @@ Version 0.1 of Kybyz, a peer to peer (p2p) social media platform
 # pylint: disable=bad-option-value, consider-using-f-string
 import sys, os, math, time, threading  # pylint: disable=multiple-imports
 import shlex, re, subprocess  # pylint: disable=multiple-imports
+import readline
 from socket import fromfd, AF_INET, SOCK_STREAM
 from io import BytesIO
 from urllib.request import Request, urlopen
@@ -18,6 +19,7 @@ from kbutils import register  # pylint: disable=unused-import
 from kbcommon import CACHE, CACHED, logging, MESSAGE_QUEUE, TO_PAGE
 from kbcommon import COMMAND, ARGS, read
 
+readline.read_init_file('kybyz_readline.rc')
 RUNNING = threading.Event()
 CURDIR = os.path.abspath(os.curdir)
 REQUEST_COUNT = 0
