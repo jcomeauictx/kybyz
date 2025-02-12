@@ -46,6 +46,8 @@ USER_AGENT = os.getenv(
     'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0'
 )
 REMOTE_PORT = int(os.getenv('EXTERNAL_PORT', '-1'))  # request via nginx/tor
+KB_USERNAME = os.getenv('KB_USERNAME')
+KB_EMAIL = os.getenv('KB_EMAIL')
 
 def init():
     '''
@@ -55,10 +57,8 @@ def init():
     os.makedirs(CACHE, 0o700, exist_ok=True)
     CACHED.update(registration()._asdict())
     if not CACHED['gpgkey']:
-        username = os.getenv('KB_USERNAME', None)
-        email = os.getenv('KB_EMAIL', None)
-        if username and email:
-            register(username, email)
+        if KB_USERNAME and KB_EMAIL:
+            register(KB_USERNAME, KB_EMAIL)
             CACHED.update(registration()._asdict())
         else:
             logging.error('need to set envvars KB_USERNAME and KB_EMAIL')
@@ -152,7 +152,7 @@ def serve(env=None, start_response=None):
         return update_status, update_page
 
     if requested is not None and start_response:
-        if server_port == REMOTE_PORT:
+        if server_port == REMOTE_PORT and KB_USERNAME != 'kybyzdotcom':
             logging.warning('remote request received, env: %s', env)
             status = '501 Not Implemented'
             page = b'<div>Not yet serving remote requests</div>'
