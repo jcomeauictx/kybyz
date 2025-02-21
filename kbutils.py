@@ -167,7 +167,12 @@ def post(post_type, *args, returned='hashed', **kwargs):
         logging.debug('args %s not valid JSON, using as key-value pairs', args)
         for arg in args:
             logging.debug('parsing %s', arg)
-            kwargs.update(dict((arg.split('=', 1),)))
+            try:
+                kwargs.update(dict((arg.split('=', 1),)))
+            except ValueError:
+                logging.warning('ignoring poorly formatted key-value pair %r',
+                                arg
+                )
     # override post_type if specified
     if post_type:
         kwargs.update({'type': post_type})
