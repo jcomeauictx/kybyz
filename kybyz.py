@@ -69,9 +69,15 @@ def init():
     kybyz = threading.Thread(target=background, name='kybyz', daemon=True)
     kybyz.start()
     external_server = threading.Thread(target=nginx, name='nginx', daemon=True)
-    external_server.start()
+    try:
+        external_server.start()
+    except FileNotFoundError:
+        logging.error('nginx not available, local and IRC use only')
     punchthrough = threading.Thread(target=tor, name='tor', daemon=True)
-    punchthrough.start()
+    try:
+        punchthrough.start()
+    except FileNotFoundError:
+        logging.error('tor not available, remote access only via IRC')
 
 def serve(env=None, start_response=None):
     '''
