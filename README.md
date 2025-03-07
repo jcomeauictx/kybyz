@@ -207,3 +207,4 @@ SnaMYEGiKugA
   located at `$HOME/.local/log/kybyz.log`
 * <https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html>
 * [Heit suggested WebRTC for p2p communication](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Simple_RTCDataChannel_sample)
+* on iphone6 iSH, uwsgi gives error "unable to set PTREAD_PRIO_INHERIT"
