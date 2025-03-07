@@ -6,6 +6,8 @@ kybyz post
 import os, json, re  # pylint: disable=multiple-imports
 from kbcommon import read, make_timestamp, tuplify, logging, CACHED
 from canonical_json import canonicalize
+LIKE = '\N{THUMBS UP SIGN}'
+LOVE = '\N{BLACK HEART SUIT}'
 
 class PostValidationError(ValueError):  # pylint: disable=too-few-public-methods
     '''
@@ -292,6 +294,11 @@ class Kybyz(BasePost):
     encapsulation of a "kybyz": a "thumbs-up" or other icon with optional text
     '''
     classname = 'kybyz'
+    def __init__(self):
+        super().__init__()
+        self.versions['0.0.1']['text'] = PostAttribute('text', required=LIKE)
+        del self.versions['0.0.1']['toptext']
+        del self.versions['0.0.1']['bottomtext']
 
 if __name__ == '__main__':
     logging.debug('testing post')
