@@ -48,6 +48,7 @@ USER_AGENT = os.getenv(
 REMOTE_PORT = int(os.getenv('EXTERNAL_PORT', '-1'))  # request via nginx/tor
 KB_USERNAME = os.getenv('KB_USERNAME')
 KB_EMAIL = os.getenv('KB_EMAIL')
+HELPERS = {}
 
 def init():
     '''
@@ -68,16 +69,13 @@ def init():
     RUNNING.set()
     kybyz = threading.Thread(target=background, name='kybyz', daemon=True)
     kybyz.start()
-    external_server = threading.Thread(target=nginx, name='nginx', daemon=True)
-    try:
-        external_server.start()
-    except FileNotFoundError:
-        logging.error('nginx not available, local and IRC use only')
-    punchthrough = threading.Thread(target=tor, name='tor', daemon=True)
-    try:
+    external_server = threading.Thread(
+        target=nginx, name='nginx', daemon=True
+    )
+    external_server.start()
+    if HELPERS.get('nginx'):  # will be non-null if Popen was successful
+        punchthrough = threading.Thread(target=tor, name='tor', daemon=True)
         punchthrough.start()
-    except FileNotFoundError:
-        logging.error('tor not available, remote access only via IRC')
 
 def serve(env=None, start_response=None):
     '''
@@ -248,14 +246,17 @@ def nginx():
     '''
     # pylint: disable=consider-using-with
     configuration = os.path.join(CURDIR, 'kybyz.conf')
-    subprocess.Popen([
-        'nginx',
-        '-c', configuration,
-        '-e', 'stderr',
-        '-g', 'daemon off;'
-    ])
-    while RUNNING.is_set():
-        time.sleep(1.3)  # must be less than tor's
+    try:
+        HELPERS['nginx'] = subprocess.Popen([
+            'nginx',
+            '-c', configuration,
+            '-e', 'stderr',
+            '-g', 'daemon off;'
+        ])
+        while RUNNING.is_set():
+            time.sleep(1.3)  # must be less than tor's
+    except FileNotFoundError as failed:
+        logging.error('Failed launching nginx: %s', failed)
     logging.warning('program stopped, nginx terminating...')
 
 def tor():
@@ -263,9 +264,12 @@ def tor():
     start tor for receiving external requests
     '''
     # pylint: disable=consider-using-with
-    subprocess.Popen(['tor', '-f', 'kybyz.torrc'])
-    while RUNNING.is_set():
-        time.sleep(1.5)
+    try:
+        HELPERS['tor'] = subprocess.Popen(['tor', '-f', 'kybyz.torrc'])
+        while RUNNING.is_set():
+            time.sleep(1.5)
+    except FileNotFoundError as failed:
+        logging.error('error starting tor: %s', failed)
     logging.warning('program stopped, tor terminating...')
 
 def process(args):
