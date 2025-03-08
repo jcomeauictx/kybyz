@@ -76,6 +76,8 @@ def init():
     if HELPERS.get('nginx'):  # will be non-null if Popen was successful
         punchthrough = threading.Thread(target=tor, name='tor', daemon=True)
         punchthrough.start()
+    else:
+        logging.error('not starting tor without nginx')
 
 def serve(env=None, start_response=None):
     '''
