@@ -295,11 +295,12 @@ class Kybyz(BasePost):
     encapsulation of a "kybyz": a "thumbs-up" or other icon with optional text
     '''
     classname = 'kybyz'
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        self.versions = deepcopy(self.versions)
         self.versions['0.0.1']['text'] = PostAttribute('text', required=LIKE)
         del self.versions['0.0.1']['toptext']
         del self.versions['0.0.1']['bottomtext']
+        super().__init__(*args, **kwargs)
 
 if __name__ == '__main__':
     logging.debug('testing post')
