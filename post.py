@@ -159,29 +159,35 @@ class BasePost():
     classname = 'basepost'
     versions = {
         '0.0.1': {
-            'type': PostAttribute('type', values=('post', 'netmeme', 'kybyz')),
-            'version': PostAttribute('version', values=('0.0.1',)),
-            'author': PostAttribute(
-                'author',
-                values=re.compile(r'^\w+[\w\s]*\w$')
-            ),
-            'fingerprint': PostAttribute(
-                'fingerprint',
-                values=re.compile(r'^[0-9A-F]{16}$')),
-            'image': PostAttribute('image', required=''),
-            'mimetype': PostAttribute('mimetype', required=('image',)),
-            'toptext': PostAttribute('toptext', required=''),
-            'bottomtext': PostAttribute('bottomtext', required=''),
-            'signed': PostAttribute('signed', required=False),
-            'timestamp': PostAttribute('timestamp', hashed=False),
-            'in-reply-to': PostAttribute('in-reply-to',
+            'basepost': {
+                'type': PostAttribute('type', values=(
+                    'post', 'netmeme', 'kybyz')
+                ),
+                'version': PostAttribute('version', values=('0.0.1',)),
+                'author': PostAttribute(
+                    'author',
+                    values=re.compile(r'^\w+[\w\s]*\w$')
+                ),
+                'fingerprint': PostAttribute(
+                    'fingerprint',
+                    values=re.compile(r'^[0-9A-F]{16}$')),
+                'image': PostAttribute('image', required=''),
+                'mimetype': PostAttribute('mimetype', required=('image',)),
+                'toptext': PostAttribute('toptext', required=''),
+                'bottomtext': PostAttribute('bottomtext', required=''),
+                'signed': PostAttribute('signed', required=False),
+                'timestamp': PostAttribute('timestamp', hashed=False),
+                'in-reply-to': PostAttribute('in-reply-to',
+                                             required=False,
+                                             hashed=[],
+                                             values=lambda v: isinstance(
+                                                 v, list)
+                                             ),
+                'replies': PostAttribute('replies',
                                          required=False,
                                          hashed=[],
                                          values=lambda v: isinstance(v, list)),
-            'replies': PostAttribute('replies',
-                                     required=False,
-                                     hashed=[],
-                                     values=lambda v: isinstance(v, list)),
+            }
         }
     }
     def __new__(cls, filename='', **kwargs):
