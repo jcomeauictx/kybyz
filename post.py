@@ -190,18 +190,32 @@ class BasePost():
             }
         }
     }
+    versions['0.0.1']['kybyz'] = dict(versions['0.0.1']['basepost'].items())
+    versions['0.0.1']['kybyz']['text'] = PostAttribute('text', required=LIKE)
+    del versions['0.0.1']['kybyz']['toptext']
+    del versions['0.0.1']['kybyz']['bottomtext']
+    versions['0.0.1']['post'] = dict(versions['0.0.1']['basepost'].items())
+    versions['0.0.1']['netmeme'] = dict(versions['0.0.1']['basepost'].items())
     def __new__(cls, filename='', **kwargs):
         mapping = {subclass.classname: subclass
                    for subclass in cls.__subclasses__()}
         logging.debug('mapping: %s, kwargs: %s', mapping, kwargs)
         if not kwargs:
             try:
-                kwargs = json.loads(read(filename))
-            except TypeError:
-                kwargs = {}
+                kwargs.update(json.loads(read(filename)))
+            except TypeError as failed:
+                logging.error('no keywords supplied,'
+                              ' and file %r cannot be read: %s',
+                              filename, failed)
+                return None
         logging.debug('cls.classname: %s', cls.classname)
         post_type = kwargs.get('type', cls.classname)
-        kwargs['type'] = post_type  # make sure it's there for __init__
+        # if no version specified, use latest
+        default_version = max(versions, key=tuplify)
+        version = kwargs.get('version', default_version)
+        # make sure type and version are there for __init__
+        kwargs['type'] = post_type
+        kwargs['version'] = version
         if filename and post_type not in mapping:
             post_type = os.path.splitext(filename)[1].lstrip('.')
         subclass = mapping.get(post_type, cls)
@@ -209,10 +223,12 @@ class BasePost():
             # pylint: disable=no-value-for-parameter  # (why? dunno)
             instance = super(BasePost, subclass).__new__(subclass)
             # fill in defaults from things unknown at script load time
-            instance.versions['0.0.1']['author'].required = CACHED.get(
-                'username', True)
-            instance.versions['0.0.1']['fingerprint'].required = CACHED.get(
-                'gpgkey', '')[-16:] or True
+            # FIXME: should be done during initialization, or via
+            # lambda(?) statements in `required`
+            instance.versions['0.0.1']['author'][post_type].required = \
+                CACHED.get('username', True)
+            instance.versions['0.0.1']['fingerprint'][post_type].required = \
+                CACHED.get('gpgkey', '')[-16:] or True
         except TypeError:
             logging.exception('Unknown post type %s', subclass)
             instance = None
@@ -221,18 +237,13 @@ class BasePost():
     def __init__(self, filename='', **kwargs):
         '''
         initialize instantiation from **dict
+        
+        kwargs should have been supplied in __new__()
         '''
-        if not kwargs:
-            kwargs = json.loads(read(filename))
         for key in kwargs:
             setattr(self, key, kwargs[key])
         if not getattr(self, 'timestamp', None):
             self.timestamp = make_timestamp()
-        if not getattr(self, 'type', None):
-            self.type = self.classname
-        # if no version specified, use latest
-        if not getattr(self, 'version', None):
-            self.version = max(self.versions, key=tuplify)
         self.validate()
 
     def __str__(self):
@@ -254,7 +265,7 @@ class BasePost():
         logging.debug('BasePost.validate: CACHED: %s', CACHED)
         assert (getattr(self, 'type', None) == self.classname or
                 getattr(self, 'filename', '').endswith('.' + self.classname))
-        schema = self.versions[self.version]
+        schema = self.versions[self.version][self.type]
         logging.debug('post validation schema: %s', schema)
         for attribute in schema:
             logging.debug('validating attribute %s in schema', attribute)
@@ -273,7 +284,7 @@ class BasePost():
         '''
         if for_hashing:
             dictionary = dict((value.hashvalue(self) for value in
-                               self.versions[self.version].values()))
+                               self.versions[self.version][self.type].values()))
             del dictionary[None]  # clears out last of values not to be hashed
         else:
             dictionary = self.__dict__
@@ -301,12 +312,6 @@ class Kybyz(BasePost):
     encapsulation of a "kybyz": a "thumbs-up" or other icon with optional text
     '''
     classname = 'kybyz'
-    def __init__(self, *args, **kwargs):
-        self.versions = deepcopy(self.versions)
-        self.versions['0.0.1']['text'] = PostAttribute('text', required=LIKE)
-        del self.versions['0.0.1']['toptext']
-        del self.versions['0.0.1']['bottomtext']
-        super().__init__(*args, **kwargs)
 
 if __name__ == '__main__':
     logging.debug('testing post')
