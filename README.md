@@ -28,19 +28,24 @@ will also be able to revolutionize such things as:
 
 ## quickstart
 
-Install and test on a <https://digitalocean.com> Debian-11 droplet, the cheapest
-one, currently $6/month.
+Install and test on a <https://digitalocean.com> Debian-11 droplet,
+the cheapest one, currently $6/month.
 
 **NOTE** if these instructions do not work, revert to the same version
-as the README. You will be missing the latest functionality, but the steps have
-a better chance of working correctly. I don't test the installation often.
+as the README. You will be missing the latest functionality, but the
+steps have a better chance of working correctly.
+I don't test the installation often.
+
+Also: in the following, `RH` means RedHat-based distros, such as CentOS
+and Rocky Linux.
+
 
 1. Login as root
-2. `apt update`  \# for CentOS, use `yum`
+2. `apt update`  (RH: use `yum`)
 3. `apt upgrade`
-4. `apt install make git xauth`  \# for CentOS, add `gcc`, `firefox`, and `python3-devel`
+4. `apt install make git xauth` (RH: add `gcc`, `firefox`, and `python3-devel`)
 5. `adduser tester`
-6. `usermod -a -G sudo tester`  \# will be `sudoers` on some systems
+6. `usermod -a -G sudo tester`  (will be `sudoers` on some systems)
 7. `mkdir ~tester/.ssh`
 9. `cp ~/.ssh/authorized_keys ~tester/.ssh/`
 10. `chown -R tester.tester ~tester/.ssh`
@@ -48,28 +53,42 @@ a better chance of working correctly. I don't test the installation often.
 That's all as root; you should now login as a regular user
 
 1. Login as tester; use `ssh -X` to tunnel Xwindows to your local box
-2. Set `KB_USERNAME=myusername` and `KB_EMAIL=myemail@example.com`, replacing `myusername` and `myemail@example.com` with your own, hopefully unique, username and your real email address.
-3. `gpg --default-new-key-algo "rsa3072/cert,sign+rsa3072/encr" --pinentry-mode loopback --quick-gen-key "$KB_USERNAME <$KB_EMAIL>" default default never` \# **just hit the enter key at the `Passphrase:` prompt**
+2. Set `KB_USERNAME=myusername` and `KB_EMAIL=myemail@example.com`,
+   replacing `myusername` and `myemail@example.com` with your own,
+   hopefully unique, username and your real email address.
+3. `gpg \
+     --default-new-key-algo "rsa3072/cert,sign+rsa3072/encr" \
+     --pinentry-mode loopback \
+     --quick-gen-key "$KB_USERNAME <$KB_EMAIL>" \
+       default default never`
+   (just hit the enter key at the `Passphrase:` prompt)
 4. `mkdir -p src`
 5. `cd src`
 6. `git clone https://github.com/jcomeauictx/kybyz`
 7. `cd kybyz`
-8. `cp Makefile.template Makefile`, and edit Makefile with your `KB_USERNAME` and `KB_EMAIL` values.
-9. `sudo make install && make install`  \# on CentOs, `sudo make install` will fail and you'll need to `make install` separately.
-10. `make` \# Wait until the browser launches and you see a cat netmeme. There should be a `kbz>` prompt. If not, wait a few seconds and hit the enter key, and it should appear. **If pylint fails**, you can still test the app using `make PYLINT=echo`
-11. \# Wait for the `kbz>` prompt
-12. \# `send myusername myemail@example.com this is a private message` \# remember to use your actual kybyz username and email
-13. \# Watch the log messages and make sure it was sent and received correctly.
-14. \# Send to another user. First you'll need to import their public GPG key (kybyzdotcom public key is below in this README; copy and paste it into a plain
-text file, and name it kybyzdotcom.pub).
-15. \# ^C to get back to the command line.
+8. `cp Makefile.template Makefile`, and edit Makefile with your
+   `KB_USERNAME` and `KB_EMAIL` values.
+9. `sudo make install && make install` (CS: `sudo make install` will fail
+   and you'll need to `make install` separately.)
+10. `make` (Wait until the browser launches and you see a cat netmeme.
+   There should be a `kbz>` prompt. If not, wait a few seconds and hit the
+   enter key, and it should appear.
+   **If pylint fails**, you can still test the app using `make PYLINT=echo`
+11. Wait for the `kbz>` prompt
+12. `send myusername myemail@example.com this is a private message`
+   (remember to use your actual kybyz username and email)
+13. Watch the log messages and make sure it was sent and received correctly.
+14. Send to another online user. First you'll need to import their public
+    GPG key (kybyzdotcom public key is below in this README; copy and paste
+    it into a plain text file, and name it kybyzdotcom.pub).
+15. ^C to get back to the command line.
 16. `gpg --import kybyzdotcom.pub`
 17. `gpg --sign-key kybyzdotcom`
 18. `make`
-19. \# At the `kbz>` prompt: `send kybyzdotcom kybyz@kybyz.com hey this is Joe`
+19. At the `kbz>` prompt: `send kybyzdotcom kybyz@kybyz.com hey this is Joe`
 
-I'll be able to read your message, but won't be able to verify who it's from
-unless I have imported *your* key.
+If kybyzdotcom is online, he'll be able to read your message, but won't
+be able to verify who it's from unless he has imported *your* key.
 
 ## troubleshooting
 
@@ -106,26 +125,28 @@ able to sign the new key:
 
 ## proof of authorship
 
-On a platform such as Facebook, proof of authorship is "automatic" in the sense
-that, on a centralized platform, everyone has a unique ID protected by their
-password. Of course, passwords can be guessed, phished, or otherwise obtained
-by other people and thus can impersonate the author, but generally speaking,
-if you see a post from jcomeauictx, you can assume I was the author.
+On a platform such as Facebook, proof of authorship is "automatic" in
+the sense that, on a centralized platform, everyone has a unique ID
+protected by their password. Of course, passwords can be guessed,
+phished, or otherwise obtained by other people and thus can impersonate
+the author, but generally speaking, if you see a post from jcomeauictx,
+you can assume I was the author.
 
 On a peer to peer system it's a lot harder. We'll be using cryptographic
 signatures with gpg (GNU's implementation of Pretty Good Privacy, PGP), but
 you'll still have to get your public key out to the people you want in your
-network using `gpg --armor --export me@example.com | mail -s "my public key" myfriend@example.com`.
+network using `gpg --armor --export me@example.com | \
+mail -s "my public key" myfriend@example.com`.
 
 ## timestamping
 
 In addition to proof of authorship, we will need to have a provable timestamp,
 not just the falsifiable "timestamp" field currently in
 example.kybyz/netmeme.json. See
-<https://www.jamieweb.net/blog/proof-of-timestamp/> for some ideas on this; for
-example, you can embed the hash of the post in a BCH transaction along with
-the hash of the previous block. This proves the post is no older than the
-previous block, and no newer than the transaction timestamp.
+<https://www.jamieweb.net/blog/proof-of-timestamp/> for some ideas on this;
+for example, you can embed the hash of the post in a BCH transaction along
+with the hash of the previous block. This proves the post is no older than
+the previous block, and no newer than the transaction timestamp.
 
 There is now a somewhat-decentralized service for this:
 <https://opentimestamps.org/>
@@ -144,8 +165,8 @@ to get, at least, `pylint`.
 
 Termux has the uwsgi package, but no plugin for Python, so we must build one.
 
-1. `git clone https://github.com/jcomeauictx/uwsgi` at the Termux shell prompt,
-and cd to the directory
+1. `git clone https://github.com/jcomeauictx/uwsgi` at the Termux shell
+   prompt, and cd to the directory
 2. Find what version of uwsgi you have; `uwsgi --version`. I had 2.0.20
 3. Check out that version into its own branch:
    `git checkout tags/2.0.20 -bv2.0.20`
@@ -201,8 +222,8 @@ SnaMYEGiKugA
 # developer notes
 
 * Cloudflare, which is used (now, anyway) by ipfs.io, is returning 403
-  "Forbidden" [errors on urllib requests](https://community.cloudflare.com/t/api-call-suddenly-returns-403-forbidden/396383). need to change useragent string.
-  [fixed by commit 6903a329df]
+  "Forbidden" [errors on urllib requests](https://community.cloudflare.com/t/api-call-suddenly-returns-403-forbidden/396383).
+  need to change useragent string.  [fixed by commit 6903a329df]
 * debugging messages are not shown in console window; the debug log is
   located at `$HOME/.local/log/kybyz.log`
 * <https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html>
