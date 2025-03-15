@@ -43,7 +43,7 @@ and Rocky Linux.
 1. Login as root
 2. `apt update`  (RH: use `yum`)
 3. `apt upgrade`
-4. `apt install make git xauth` (RH: add `gcc`, `firefox`, and `python3-devel`)
+4. `apt install make git xauth` (RH: + `gcc firefox python3-devel`)
 5. `adduser tester`
 6. `usermod -a -G sudo tester`  (will be `sudoers` on some systems)
 7. `mkdir ~tester/.ssh`
@@ -140,8 +140,8 @@ mail -s "my public key" myfriend@example.com`.
 
 ## timestamping
 
-In addition to proof of authorship, we will need to have a provable timestamp,
-not just the falsifiable "timestamp" field currently in
+In addition to proof of authorship, we will need to have a provable
+timestamp, not just the falsifiable "timestamp" field currently in
 example.kybyz/netmeme.json. See
 <https://www.jamieweb.net/blog/proof-of-timestamp/> for some ideas on this;
 for example, you can embed the hash of the post in a BCH transaction along
@@ -222,10 +222,13 @@ SnaMYEGiKugA
 # developer notes
 
 * Cloudflare, which is used (now, anyway) by ipfs.io, is returning 403
-  "Forbidden" [errors on urllib requests](https://community.cloudflare.com/t/api-call-suddenly-returns-403-forbidden/396383).
+  "Forbidden" [errors on urllib requests](https://
+community.cloudflare.com/t/api-call-suddenly-returns-403-forbidden/396383).
   need to change useragent string.  [fixed by commit 6903a329df]
 * debugging messages are not shown in console window; the debug log is
   located at `$HOME/.local/log/kybyz.log`
 * <https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html>
-* [Heit suggested WebRTC for p2p communication](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Simple_RTCDataChannel_sample)
+* [Heit suggested WebRTC for p2p communication](https://
+developer.mozilla.org/en-US/docs/Web/API/
+WebRTC_API/Simple_RTCDataChannel_sample)
 * on iphone6 iSH, uwsgi gives error "unable to set PTREAD_PRIO_INHERIT"
