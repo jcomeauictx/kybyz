@@ -176,7 +176,7 @@ Termux has the uwsgi package, but no plugin for Python, so we must build one.
 
 ## kybyzdotcom public key
 
-```gpg
+```
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQGNBGdxuEQBDADEfYr7yLL8+iedd9rZtJmCZ7k2KJCd3R5CkPTJdD5rhQURh+yp
