@@ -57,7 +57,7 @@ install:  # run first as root, then as user
 	  $(PIP) install --user $$package; \
 	 done; \
 	fi  
-uwsgi: kybyz.ini
+uwsgi: kybyz.ini resources/vis-network.min.js
 	#strace -f -v -t -s4096 -o $(TMPDIR)/kybyz_strace.log uwsgi $<
 	# don't `2>&1`, it may affect prompt display
 	uwsgi $<
@@ -130,3 +130,6 @@ kybyz.torrc: kybyz.torrc.template linux.mk
 push:
 	git push -u origin master
 	git push githost master
+resources/vis-network.min.js:
+	cd $(@D) && \
+	 wget https://unpkg.com/vis-network/standalone/umd/$(@F)
