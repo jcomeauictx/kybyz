@@ -211,7 +211,7 @@ class BasePost():
         logging.debug('cls.classname: %s', cls.classname)
         post_type = kwargs.get('type', cls.classname)
         # if no version specified, use latest
-        default_version = max(versions, key=tuplify)
+        default_version = max(cls.versions, key=tuplify)
         version = kwargs.get('version', default_version)
         # make sure type and version are there for __init__
         kwargs['type'] = post_type
@@ -225,9 +225,9 @@ class BasePost():
             # fill in defaults from things unknown at script load time
             # FIXME: should be done during initialization, or via
             # lambda(?) statements in `required`
-            instance.versions['0.0.1']['author'][post_type].required = \
+            instance.versions['0.0.1'][post_type]['author'].required = \
                 CACHED.get('username', True)
-            instance.versions['0.0.1']['fingerprint'][post_type].required = \
+            instance.versions['0.0.1'][post_type]['fingerprint'].required = \
                 CACHED.get('gpgkey', '')[-16:] or True
         except TypeError:
             logging.exception('Unknown post type %s', subclass)
