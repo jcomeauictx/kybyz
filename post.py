@@ -237,7 +237,7 @@ class BasePost():
     def __init__(self, filename='', **kwargs):
         '''
         initialize instantiation from **dict
-        
+
         kwargs should have been supplied in __new__()
         '''
         for key in kwargs:
