@@ -5,7 +5,8 @@ kybyz post
 # pylint: disable=bad-option-value, consider-using-f-string
 import os, json, re  # pylint: disable=multiple-imports
 from copy import deepcopy
-from kbcommon import read, make_timestamp, tuplify, logging, CACHED
+from kbcommon import read, make_timestamp, tuplify, logging, CACHED, \
+ doctestdebug
 from canonical_json import canonicalize
 LIKE = '\N{THUMBS UP SIGN}'
 LOVE = '\N{BLACK HEART SUIT}'
@@ -63,14 +64,14 @@ class PostAttribute():
             '''
             helper function for values tuple
             '''
-            logging.debug('validating that value %r in %s', value, self.values)
+            doctestdebug('validating that value %r in %s', value, self.values)
             return value in self.values
 
         def validate_pattern(value):
             '''
             helper function for values as compiled regex
             '''
-            logging.debug('validating pattern %s matches value %r',
+            doctestdebug('validating pattern %s matches value %r',
                           self.values, value)
             try:
                 return self.values.match(value)
@@ -83,14 +84,14 @@ class PostAttribute():
             '''
             helper function for value that can be anything
             '''
-            logging.debug('validating %r regardless of what it is', value)
+            doctestdebug('validating %r regardless of what it is', value)
             return True
 
         def validate_lambda(value):
             '''
             helper function for values as lambda expression
             '''
-            logging.debug('validating lambda expression %s(%r)',
+            doctestdebug('validating lambda expression %s(%r)',
                           self.values, value)
             return self.values(value)
 
@@ -106,26 +107,26 @@ class PostAttribute():
         if isinstance(required, tuple):
             evaluated = all((getattr(post, attribute, None)
                              for attribute in required))
-            logging.debug('tuple %s evaluated to required=%s',
+            doctestdebug('tuple %s evaluated to required=%s',
                           required, evaluated)
             required = evaluated
         elif required not in [True, False]:
-            logging.debug('setting default for %s to %r', self.name, required)
+            doctestdebug('setting default for %s to %r', self.name, required)
             default = required
             required = True
         value = getattr(post, self.name, default)
-        logging.debug('checking that %s value %r in %s',
+        doctestdebug('checking that %s value %r in %s',
                       self.name, value, self.values)
         validation_dispatcher[type(self.values)](value)
         if value == NoDefault and required:
             raise PostValidationError('Post %r lacks valid %s attribute' %
                                       (post, self.name))
         if value != NoDefault:
-            logging.debug('setting attribute %s in post to %s',
+            doctestdebug('setting attribute %s in post to %s',
                           self.name, value)
             setattr(post, self.name, value)  # default if nothing else
         else:
-            logging.debug('attribute %s has value %r and no default value',
+            doctestdebug('attribute %s has value %r and no default value',
                           self.name, value)
 
     def hashvalue(self, post):
@@ -203,7 +204,7 @@ class BasePost():
         '''
         mapping = {subclass.classname: subclass
                    for subclass in cls.__subclasses__()}
-        logging.debug('mapping: %s, kwargs: %s', mapping, kwargs)
+        doctestdebug('mapping: %s, kwargs: %s', mapping, kwargs)
         if not kwargs:
             try:
                 kwargs.update(json.loads(read(filename)))
@@ -212,7 +213,7 @@ class BasePost():
                               ' and file %r cannot be read: %s',
                               filename, failed)
                 return None
-        logging.debug('cls.classname: %s', cls.classname)
+        doctestdebug('cls.classname: %s', cls.classname)
         post_type = kwargs.get('type', cls.classname)
         # if no version specified, use latest
         default_version = max(cls.versions, key=tuplify)
@@ -223,7 +224,7 @@ class BasePost():
         if filename and post_type not in mapping:
             post_type = os.path.splitext(filename)[1].lstrip('.')
         subclass = mapping.get(post_type, cls)
-        logging.debug('updated kwargs: %s, subclass: %s', kwargs, subclass)
+        doctestdebug('updated kwargs: %s, subclass: %s', kwargs, subclass)
         try:
             # pylint: disable=no-value-for-parameter  # (why? dunno)
             instance = super(BasePost, subclass).__new__(subclass)
@@ -245,7 +246,7 @@ class BasePost():
 
         kwargs should have been supplied in __new__()
         '''
-        logging.debug('BasePost.__init__(): kwargs=%s', kwargs)
+        doctestdebug('BasePost.__init__(): kwargs=%s', kwargs)
         for key in kwargs:
             setattr(self, key, kwargs[key])
         if not getattr(self, 'timestamp', None):
@@ -268,13 +269,13 @@ class BasePost():
         if not self.__doc__:
             raise RuntimeError('Must not run with optimization')
         # why doesn't 'author' have default value from cache?
-        logging.debug('BasePost.validate: CACHED: %s', CACHED)
+        doctestdebug('BasePost.validate: CACHED: %s', CACHED)
         assert (getattr(self, 'type', None) == self.classname or
                 getattr(self, 'filename', '').endswith('.' + self.classname))
         schema = self.versions[self.version][self.type]
-        logging.debug('post validation schema: %s', schema)
+        doctestdebug('post validation schema: %s', schema)
         for attribute in schema:
-            logging.debug('validating attribute %s in schema', attribute)
+            doctestdebug('validating attribute %s in schema', attribute)
             schema[attribute].validate(self)
 
     def to_html(self):
