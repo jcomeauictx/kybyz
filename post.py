@@ -219,6 +219,7 @@ class BasePost():
         if filename and post_type not in mapping:
             post_type = os.path.splitext(filename)[1].lstrip('.')
         subclass = mapping.get(post_type, cls)
+        logging.debug('updated kwargs: %s, subclass: %s', kwargs, subclass)
         try:
             # pylint: disable=no-value-for-parameter  # (why? dunno)
             instance = super(BasePost, subclass).__new__(subclass)
