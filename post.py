@@ -197,6 +197,10 @@ class BasePost():
     versions['0.0.1']['post'] = dict(versions['0.0.1']['basepost'].items())
     versions['0.0.1']['netmeme'] = dict(versions['0.0.1']['basepost'].items())
     def __new__(cls, filename='', **kwargs):
+        '''
+        first approach was failing, since changes made to kwargs in __new__
+        don't make it into __init__.
+        '''
         mapping = {subclass.classname: subclass
                    for subclass in cls.__subclasses__()}
         logging.debug('mapping: %s, kwargs: %s', mapping, kwargs)
