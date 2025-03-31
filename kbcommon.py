@@ -87,3 +87,18 @@ def tuplify(versionstring):
     '0.0.100'
     '''
     return tuple(int(s) for s in versionstring.split('.'))
+
+# pylint: disable=unused-argument
+if COMMAND == 'doctest':
+    def doctestdebug(message, *args, **kwargs):
+        '''
+        show debugging message only during doctests
+        '''
+        logging.debug(message, *args, **kwargs)
+else:
+    def doctestdebug(message, *args, **kwargs):
+        '''
+        debugging message not shown outside of doctests
+        '''
+        pass  # pylint: disable=unnecessary-pass
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
