@@ -199,8 +199,17 @@ class BasePost():
     versions['0.0.1']['netmeme'] = dict(versions['0.0.1']['basepost'].items())
     def __new__(cls, filename='', **kwargs):
         '''
-        first approach was failing, since changes made to kwargs in __new__
+        previous approach was failing, since changes made to kwargs in __new__
         don't make it into __init__.
+
+        the *only reason* for __new__ is to be able to instantiate the
+        right subclass of BasePost without having to duplicate code into
+        each subclass. but to do that, it may need to fill in kwargs from
+        a file or from other sources. at the very least, it needs the
+        post_type, which points to the subclass, and the version number.
+
+        the idea behind version numbers is that, as the code grows and
+        semantics change, old posts can still be recognized and rendered.
         '''
         mapping = {subclass.classname: subclass
                    for subclass in cls.__subclasses__()}
@@ -213,14 +222,12 @@ class BasePost():
                               ' and file %r cannot be read: %s',
                               filename, failed)
                 return None
-        doctestdebug('cls.classname: %s', cls.classname)
+        doctestdebug('type: %s, cls.classname: %s',
+                     kwargs.get('type'), cls.classname)
         post_type = kwargs.get('type', cls.classname)
         # if no version specified, use latest
         default_version = max(cls.versions, key=tuplify)
         version = kwargs.get('version', default_version)
-        # make sure type and version are there for __init__
-        kwargs['type'] = post_type
-        kwargs['version'] = version
         if filename and post_type not in mapping:
             post_type = os.path.splitext(filename)[1].lstrip('.')
         subclass = mapping.get(post_type, cls)
@@ -229,11 +236,9 @@ class BasePost():
             # pylint: disable=no-value-for-parameter  # (why? dunno)
             instance = super(BasePost, subclass).__new__(subclass)
             # fill in defaults from things unknown at script load time
-            # FIXME: should be done during initialization, or via
-            # lambda(?) statements in `required`
-            instance.versions['0.0.1'][post_type]['author'].required = \
+            instance.versions[version][post_type]['author'].required = \
                 CACHED.get('username', True)
-            instance.versions['0.0.1'][post_type]['fingerprint'].required = \
+            instance.versions[version][post_type]['fingerprint'].required = \
                 CACHED.get('gpgkey', '')[-16:] or True
         except TypeError:
             logging.exception('Unknown post type %s', subclass)
@@ -242,9 +247,7 @@ class BasePost():
 
     def __init__(self, filename='', **kwargs):
         '''
-        initialize instantiation from **dict
-
-        kwargs should have been supplied in __new__()
+        initialize instantiation from file or from kwargs and defaults
         '''
         doctestdebug('BasePost.__init__(): kwargs=%s', kwargs)
         for key in kwargs:
