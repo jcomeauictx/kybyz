@@ -240,6 +240,7 @@ class BasePost():
 
         kwargs should have been supplied in __new__()
         '''
+        logging.debug('BasePost.__init__(): kwargs=%s', kwargs)
         for key in kwargs:
             setattr(self, key, kwargs[key])
         if not getattr(self, 'timestamp', None):
@@ -316,3 +317,4 @@ class Kybyz(BasePost):
 if __name__ == '__main__':
     logging.debug('testing post')
     print(BasePost('example.kybyz/testmeme.json'))
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
