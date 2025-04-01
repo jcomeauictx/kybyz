@@ -231,7 +231,7 @@ class BasePost():
         doctestdebug('updated kwargs: %s, subclass: %s', kwargs, subclass)
         try:
             # pylint: disable=no-value-for-parameter  # (why? dunno)
-            instance = super(BasePost, subclass).__new__(subclass)
+            instance = super().__new__(subclass)
             # fill in defaults from things unknown at script load time
             instance.versions[version][post_type]['author'].required = \
                 CACHED.get('username', True)
