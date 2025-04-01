@@ -219,8 +219,8 @@ class BasePost():
                               ' and file %r cannot be read: %s',
                               filename, failed)
                 return None
-        doctestdebug('type: %s, cls.classname: %s',
-                     kwargs.get('type'), cls.classname)
+        doctestdebug('type: %s, cls: %s, cls.classname: %s',
+                     kwargs.get('type'), cls, cls.classname)
         post_type = kwargs.get('type', cls.classname)
         # if no version specified, use latest
         default_version = max(cls.versions, key=tuplify)
@@ -246,12 +246,19 @@ class BasePost():
         '''
         initialize instantiation from file or from kwargs and defaults
         '''
+        if not kwargs:
+            kwargs = json.loads(read(filename))
         logging.debug('%s.__init__(): kwargs=%s',
                      MAPPING[self.classname], kwargs)
         for key in kwargs:
             setattr(self, key, kwargs[key])
         if not getattr(self, 'timestamp', None):
             self.timestamp = make_timestamp()
+        if not getattr(self, 'type', None):
+            self.type = self.classname
+        # if no version specified, use latest
+        if not getattr(self, 'version', None):
+            self.version = max(self.versions, key=tuplify)
         self.validate()
 
     def __str__(self):
