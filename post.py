@@ -211,9 +211,6 @@ class BasePost():
         the idea behind version numbers is that, as the code grows and
         semantics change, old posts can still be recognized and rendered.
         '''
-        mapping = {subclass.classname: subclass
-                   for subclass in cls.__subclasses__()}
-        doctestdebug('mapping: %s, kwargs: %s', mapping, kwargs)
         if not kwargs:
             try:
                 kwargs.update(json.loads(read(filename)))
@@ -228,9 +225,9 @@ class BasePost():
         # if no version specified, use latest
         default_version = max(cls.versions, key=tuplify)
         version = kwargs.get('version', default_version)
-        if filename and post_type not in mapping:
+        if filename and post_type not in MAPPING:
             post_type = os.path.splitext(filename)[1].lstrip('.')
-        subclass = mapping.get(post_type, cls)
+        subclass = MAPPING.get(post_type, cls)
         doctestdebug('updated kwargs: %s, subclass: %s', kwargs, subclass)
         try:
             # pylint: disable=no-value-for-parameter  # (why? dunno)
@@ -249,7 +246,8 @@ class BasePost():
         '''
         initialize instantiation from file or from kwargs and defaults
         '''
-        doctestdebug('BasePost.__init__(): kwargs=%s', kwargs)
+        logging.debug('%s.__init__(): kwargs=%s',
+                     MAPPING[self.classname], kwargs)
         for key in kwargs:
             setattr(self, key, kwargs[key])
         if not getattr(self, 'timestamp', None):
