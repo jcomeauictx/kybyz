@@ -323,7 +323,11 @@ class Kybyz(BasePost):
     '''
     classname = 'kybyz'
 
+MAPPING = {subclass.classname: subclass
+           for subclass in BasePost.__subclasses__()}
+
 if __name__ == '__main__':
+    logging.info('MAPPING: %s', MAPPING)
     logging.debug('testing post')
     print(BasePost('example.kybyz/testmeme.json'))
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
