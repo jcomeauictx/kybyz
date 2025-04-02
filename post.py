@@ -4,7 +4,6 @@ kybyz post
 '''
 # pylint: disable=bad-option-value, consider-using-f-string
 import os, json, re  # pylint: disable=multiple-imports
-from copy import deepcopy
 from kbcommon import read, make_timestamp, tuplify, logging, CACHED, \
  doctestdebug
 from canonical_json import canonicalize
