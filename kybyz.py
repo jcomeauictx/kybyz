@@ -14,7 +14,7 @@ from urllib.parse import parse_qsl
 from hashlib import md5
 from ircbot import IRCBot
 from kbutils import loadposts, registration, cache, guess_mimetype
-from kbutils import send, publish, post  # pylint: disable=unused-import
+from kbutils import send, publish, create  # pylint: disable=unused-import
 from kbutils import register  # pylint: disable=unused-import
 from kbcommon import CACHE, CACHED, logging, MESSAGE_QUEUE, TO_PAGE
 from kbcommon import COMMAND, ARGS, read
@@ -24,7 +24,7 @@ RUNNING = threading.Event()
 CURDIR = os.path.abspath(os.curdir)
 REQUEST_COUNT = 0
 LOGTIME = int(os.getenv('KB_DELAY', '600'))  # seconds
-COMMANDS = ['post', 'register', 'send', 'publish']
+COMMANDS = ['create', 'register', 'send', 'publish']
 NAVIGATION = '<div class="column" id="kbz-navigation">{navigation}</div>'
 POSTS = '''<div class="column" id="kbz-posts" data-version="{posts_hash}">
   {posts}

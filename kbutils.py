@@ -154,7 +154,7 @@ def register(username=None, email=None, gpgkey=None):
         else:
             logging.info('registering outside of running application')
 
-def post(post_type, *args, returned='hashed', **kwargs):
+def create(post_type, *args, returned='hashed', **kwargs):
     '''
     make a new post from the command line or from another subroutine
     '''
@@ -270,11 +270,11 @@ def loadposts(to_html=True, tries=0):
             raise ValueError('No posts found after example posts cached')
         # populate KYBYZ_HOME from EXAMPLE
         for example in get_posts(EXAMPLE):
-            post(None, read(example).decode())
+            create(None, read(example).decode())
         return loadposts(to_html, tries=tries + 1)
     # now cache any that came in over the wire
     for index in range(len(POSTS_QUEUE)):  # pylint: disable=unused-variable
-        post(None, POSTS_QUEUE.popleft())
+        create(None, POSTS_QUEUE.popleft())
     get_post = BasePost if to_html else read
     posts = [get_post(p) for p in get_posts(KYBYZ_HOME)]
     return sorted(filter(None, posts), key=lambda p: p.timestamp, reverse=True)
