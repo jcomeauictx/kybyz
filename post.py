@@ -161,7 +161,7 @@ class BasePost():
         '0.0.1': {
             'basepost': {
                 'type': PostAttribute('type', values=(
-                    'post', 'netmeme', 'kybyz')
+                    'post', 'netmeme', 'kybyz', 'resource')
                 ),
                 'version': PostAttribute('version', values=('0.0.1',)),
                 'author': PostAttribute(
@@ -196,6 +196,13 @@ class BasePost():
     del versions['0.0.1']['kybyz']['bottomtext']
     versions['0.0.1']['post'] = dict(versions['0.0.1']['basepost'].items())
     versions['0.0.1']['netmeme'] = dict(versions['0.0.1']['basepost'].items())
+    versions['0.0.1']['resource'] = dict(versions['0.0.1']['basepost'].items())
+    versions['0.0.1']['resource']['ipfs_id'] = PostAttribute(
+        'ipfs_id', required=True)
+    versions['0.0.1']['resource']['source_uri'] = PostAttribute(
+        'source_uri', required=False)
+    versions['0.0.1']['resource']['identifier'] = PostAttribute(
+        'identifier', required=True)
     def __new__(cls, filename='', **kwargs):
         '''
         previous approach was failing, since changes made to kwargs in __new__
@@ -326,6 +333,12 @@ class Kybyz(BasePost):
     encapsulation of a "kybyz": a "thumbs-up" or other icon with optional text
     '''
     classname = 'kybyz'
+
+class Resource(BasePost):
+    '''
+    add a book, article, movie, or any digital resource to IPFS, and name it
+    '''
+    classname='resource'
 
 MAPPING = {subclass.classname: subclass
            for subclass in BasePost.__subclasses__()}
