@@ -231,4 +231,9 @@ community.cloudflare.com/t/api-call-suddenly-returns-403-forbidden/396383).
 * [Heit suggested WebRTC for p2p communication](https://
 developer.mozilla.org/en-US/docs/Web/API/
 WebRTC_API/Simple_RTCDataChannel_sample)
-* on iphone6 iSH, uwsgi gives error "unable to set PTREAD_PRIO_INHERIT"
+* on iphone6 iSH, uwsgi gives error "unable to set PTHREAD_PRIO_INHERIT"
+* need to come up with canonical way to list resources such as books and
+  movies. first idea that will fit both is title:year:length:publisher;
+  where spaces, colons, and Unicode in title are urlescaped+; length is
+  pages or minutes as appropriate; publisher is the printer or production
+  studio.
