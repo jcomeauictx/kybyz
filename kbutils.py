@@ -279,6 +279,18 @@ def loadposts(to_html=True, tries=0):
     posts = [get_post(p) for p in get_posts(KYBYZ_HOME)]
     return sorted(filter(None, posts), key=lambda p: p.timestamp, reverse=True)
 
+def ipfs_add(filepath):
+    '''
+    add a file to IPFS
+    '''
+    exitcode, output = subprocess.getstatusoutput(['ipfs', 'add', filepath])
+    if exitcode != 0:
+        logging.error('adding "%s" to IPFS failed with code %d',
+                      filepath, exitcode)
+        return None
+    words = output.split()
+    return words[1]
+
 def decrypt(message):
     '''
     decrypt a message sent to me, and verify sender email
