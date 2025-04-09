@@ -35,6 +35,9 @@ class PostAttribute():
             present and evaluate to True; for example, mimetype is dependent on
             there being an image, so mimetype's `required` value would be
             ('image',),
+            a list of names of other post attributes, at least one of which
+            (including the attribute having this `required` value) must be
+            present and evaluate to True (NOTE: new in v0.0.2),
             or any other object which fits `values`, which will be used as
             the default, and required therefore presumed to be True.
 
