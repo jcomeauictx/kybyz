@@ -13,7 +13,7 @@ from urllib.error import HTTPError
 from urllib.parse import parse_qsl
 from hashlib import md5
 from ircbot import IRCBot
-from kbutils import loadposts, registration, cache, guess_mimetype
+from kbutils import loadposts, registration, cachewrite, guess_mimetype
 from kbutils import send, publish, create  # pylint: disable=unused-import
 from kbutils import register  # pylint: disable=unused-import
 from kbcommon import CACHE, CACHED, logging, MESSAGE_QUEUE, TO_PAGE
@@ -188,7 +188,7 @@ def serve(env=None, start_response=None):
                     headers = [
                         ('Content-type', guess_mimetype(requested, page))
                     ]
-                cache(requested, page)
+                cachewrite(requested, page)
             except HTTPError as failed:
                 headers = failed.headers.items()
                 status = ' '.join([str(failed.code), failed.msg])

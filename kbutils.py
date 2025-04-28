@@ -181,10 +181,10 @@ def create(post_type, *args, returned='hashed', **kwargs):
         jsonified = newpost.to_json()
         post_type = newpost.type
         hashed = kbhash(jsonified)
-        cached = cache('.'.join((hashed, post_type)), jsonified)
+        cached = cachewrite('.'.join((hashed, post_type)), jsonified)
         jsonified = newpost.to_json(for_hashing=True)
         hashed = kbhash(jsonified)
-        hashcached = cache('.'.join((hashed, post_type)), jsonified)
+        hashcached = cachewrite('.'.join((hashed, post_type)), jsonified)
         unadorned = os.path.splitext(hashcached)[0]
         try:
             os.symlink(cached, unadorned)
@@ -204,7 +204,7 @@ def create(post_type, *args, returned='hashed', **kwargs):
         logging.exception('Post failed with kwargs: %s', kwargs)
         return None
 
-def cache(path, data):
+def cachewrite(path, data):
     '''
     store data in cache for later retrieval
     '''
