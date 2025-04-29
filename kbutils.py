@@ -182,6 +182,7 @@ def create(post_type, *args, returned='hashed', **kwargs):
         post_type = newpost.type
         hashed = kbhash(jsonified)
         cached = cachewrite('.'.join((hashed, post_type)), jsonified)
+        # make another, canonicalized, copy for a unique hash
         jsonified = newpost.to_json(for_hashing=True)
         hashed = kbhash(jsonified)
         hashcached = cachewrite('.'.join((hashed, post_type)), jsonified)
