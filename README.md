@@ -56,11 +56,13 @@ That's all as root; you should now login as a regular user
 2. Set `KB_USERNAME=myusername` and `KB_EMAIL=myemail@example.com`,
    replacing `myusername` and `myemail@example.com` with your own,
    hopefully unique, username and your real email address.
-3. `gpg \
+3. ```
+   gpg \
      --default-new-key-algo "rsa3072/cert,sign+rsa3072/encr" \
      --pinentry-mode loopback \
      --quick-gen-key "$KB_USERNAME <$KB_EMAIL>" \
-       default default never`
+       default default never
+   ```
    (just hit the enter key at the `Passphrase:` prompt)
 4. `mkdir -p src`
 5. `cd src`
@@ -135,8 +137,11 @@ you can assume I was the author.
 On a peer to peer system it's a lot harder. We'll be using cryptographic
 signatures with gpg (GNU's implementation of Pretty Good Privacy, PGP), but
 you'll still have to get your public key out to the people you want in your
-network using `gpg --armor --export me@example.com | \
-mail -s "my public key" myfriend@example.com`.
+network using:
+ ```
+ gpg --armor --export me@example.com | \
+   mail -s "my public key" myfriend@example.com
+ ```
 
 ## timestamping
 
@@ -222,15 +227,12 @@ SnaMYEGiKugA
 # developer notes
 
 * Cloudflare, which is used (now, anyway) by ipfs.io, is returning 403
-  "Forbidden" [errors on urllib requests](https://
-community.cloudflare.com/t/api-call-suddenly-returns-403-forbidden/396383).
-  need to change useragent string.  [fixed by commit 6903a329df]
+  "Forbidden" [errors on urllib requests](https://community.cloudflare.com/t/api-call-suddenly-returns-403-forbidden/396383).
+  need to change useragent string.  (fixed by commit 6903a329df)
 * debugging messages are not shown in console window; the debug log is
   located at `$HOME/.local/log/kybyz.log`
 * <https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html>
-* [Heit suggested WebRTC for p2p communication](https://
-developer.mozilla.org/en-US/docs/Web/API/
-WebRTC_API/Simple_RTCDataChannel_sample)
+* [Heit suggested WebRTC for p2p communication](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Simple_RTCDataChannel_sample)
 * on iphone6 iSH, uwsgi gives error "unable to set PTHREAD_PRIO_INHERIT"
 * need to come up with canonical way to list resources such as books and
   movies. first idea that will fit both is title:year:length:publisher;
