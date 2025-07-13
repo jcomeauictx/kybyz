@@ -223,6 +223,23 @@ Ct5b/6KeJsXHF2wRKjzBNNej9V8kjjF5OQhQcgYTWujgfe8PcHO3E9adJYPmjLnb
 SnaMYEGiKugA
 =LueN
 -----END PGP PUBLIC KEY BLOCK-----
+
+## file storage considerations
+using the filesystem as database, at least until I figure out how kybyz
+is supposed to work. some random thoughts:
+
+* use file ownership for friends' posts: requires `sudo adduser` to friend
+  someone. must add `kybyz` user and group, and add all friends to `kybyz`
+  group.
+* use `nobody` (add `kybyz` group to it) for not-yet-friended others' posts.
+* subdirectories of `$HOME/.kybyz` for friends, topics, etc.
+* file extensions for different types of posts?
+* one subdirectory for storage (named `storage`?) for all files, symlinking
+  to other subdirectories as needed?
+* split hashes into chunks of 2 or 4 in order to keep inodes per directory
+  optimized for fast retrieval? or just use ext4 or xfs and not worry about
+  it? e.g. `storage/fe/e3/44/2a/fee3442a.txt`
+
 ```
 # developer notes
 
