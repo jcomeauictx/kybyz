@@ -230,8 +230,12 @@ is supposed to work. some random thoughts:
 
 * use file ownership for friends' posts: requires `sudo adduser` to friend
   someone. must add `kybyz` user and group, and add all friends to `kybyz`
-  group.
+  group. (no, this won't work on Termux at least; and even on Linux, would
+  require common group, and group-readable home directories, and running
+  as root, or alternatively group-writable home directories, and running
+  as groupname).
 * use `nobody` (add `kybyz` group to it) for not-yet-friended others' posts.
+  (no, see parentheses on above.)
 * subdirectories of `$HOME/.kybyz` for friends, topics, etc.
 * file extensions for different types of posts?
 * one subdirectory for storage (named `storage`?) for all files, symlinking
