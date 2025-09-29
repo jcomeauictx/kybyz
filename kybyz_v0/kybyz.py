@@ -14,7 +14,7 @@ must first mate a local IP address with the name `kybyz0` in /etc/hosts, e.g.:
 127.0.1.125 kybyz0
 '''
 from __future__ import print_function
-import sys, os, logging, pwd, subprocess, site, cgi, html
+import sys, os, logging, pwd, subprocess, site, html
 site.main()
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 logging.debug('os.getuid(): %s', os.getuid())
