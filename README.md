@@ -223,6 +223,7 @@ Ct5b/6KeJsXHF2wRKjzBNNej9V8kjjF5OQhQcgYTWujgfe8PcHO3E9adJYPmjLnb
 SnaMYEGiKugA
 =LueN
 -----END PGP PUBLIC KEY BLOCK-----
+```
 
 ## file storage considerations
 using the filesystem as database, at least until I figure out how kybyz
@@ -244,7 +245,6 @@ is supposed to work. some random thoughts:
   optimized for fast retrieval? or just use ext4 or xfs and not worry about
   it? e.g. `storage/fe/e3/44/2a/fee3442a.txt`
 
-```
 # developer notes
 
 * Cloudflare, which is used (now, anyway) by ipfs.io, is returning 403
