@@ -260,3 +260,5 @@ is supposed to work. some random thoughts:
   where spaces, colons, and Unicode in title are urlescaped+; length is
   pages or minutes as appropriate; publisher is the printer or production
   studio.
+* better to replace ad-hoc validation with one of the libraries from
+  https://json-schema.org/ or another similar set of standards. 
